@@ -1,0 +1,6 @@
+.DS_Store
+.vscode
+docker/libs/eddl
+docker/libs/ecvl
+docker/pylibs/pyeddl
+docker/pylibs/pyecvl
