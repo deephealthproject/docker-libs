@@ -81,10 +81,10 @@ define push_image
 	$(eval image := $(1))
 	$(eval target := $(2))
 	$(eval image_name := ${DOCKER_REPOSITORY_PREFIX}-${image}-${target})
-	@echo "\nPushing Docker image '${image_name}'...\n"\
-	&& docker push ${DOCKER_USER}/${image_name} \
-	&& docker push ${DOCKER_USER}/${image_name}:${BUILD_NUMBER} \
-	&& @if [ ${push_latest_tags} == true ]; then docker push ${DOCKER_USER}/${image_name}:latest; fi
+	@echo "\nPushing Docker image '${image_name}'...\n"	
+	docker push ${DOCKER_USER}/${image_name}
+	docker push ${DOCKER_USER}/${image_name}:${BUILD_NUMBER}
+	@if [ ${push_latest_tags} == true ]; then docker push ${DOCKER_USER}/${image_name}:latest; fi
 endef
 
 # 1 --> LIB_PATH
