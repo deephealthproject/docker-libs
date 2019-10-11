@@ -15,7 +15,14 @@ DOCKER_REPOSITORY_PREFIX ?= deephealth
 # latest tag settings
 LATEST_BRANCH ?= master
 
+# config file
+BUILD_CONF ?= settings.sh
+ifneq ("$(wildcard $(BUILD_CONF))","")
+include $(BUILD_CONF)
+export $(shell sed 's/=.*//' $(BUILD_CONF))
+endif
 
+# libraries path
 LOCAL_LIBS_PATH ?= libs
 LOCAL_PYLIBS_PATH ?= pylibs
 ECVL_LIB_PATH = ${LOCAL_LIBS_PATH}/ecvl
