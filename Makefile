@@ -129,10 +129,10 @@ clone_pyeddl: pylibs_folder
 	$(call clone_repository,${PYEDDL_LIB_PATH},${PYEDDL_REPOSITORY},${PYEDDL_BRANCH},${PYEDDL_REVISION})
 
 # Targets to build container images
-build: build_libs_develop \ ## Build and tag all Docker images
-	build_libs_runtime \
-	build_pylibs_develop \
-	build_pylibs_runtime
+build: _build ## Build and tag all Docker images
+_build: \
+	build_libs_develop build_libs_runtime \
+	build_pylibs_develop build_pylibs_runtime
 
 build_libs_develop: clone_ecvl clone_eddl ## Build and tag 'libs-develop' image
 	$(call build_image,libs,develop)
@@ -146,23 +146,35 @@ build_pylibs_develop: clone_pyecvl clone_pyeddl ## Build and tag 'pylibs-develop
 build_pylibs_runtime: build_pylibs_develop ## Build and tag 'pylibs-runtime' image
 	$(call build_image,pylibs,runtime)
 
-# Docker publish
-publish: \ ## Publish all build images to a Docker Registry (e.g., DockerHub)
-	repo-login \
-	publish_libs_develop publish_libs_runtime \
-	publish_pylibs_develop publish_pylibs_runtime ## Publish the `{version}` ans `latest` tagged containers to ECR
 
-publish_libs_develop: ## Publish 'libs-develop' images
+# Docker push
+push: _push ## Publish the `{version}` ans `latest` tagged containers to ECR
+_push: \
+	push_libs_develop push_libs_runtime \
+	push_pylibs_develop push_pylibs_runtime 
+
+push_libs_develop: repo-login ## Push 'libs-develop' images
 	$(call push_image,libs,develop)
 
-publish_libs_runtime: ## Publish 'libs-runtime' images
+push_libs_runtime: repo-login ## Push 'libs-runtime' images
 	$(call push_image,libs,runtime)
 
-publish_pylibs_develop: ## Publish 'pylibs-develop' images
+push_pylibs_develop: repo-login ## Push 'pylibs-develop' images
 	$(call push_image,pylibs,develop)
 
-publish_pylibs_runtime: ## Publish 'pylibs-runtime' images
+push_pylibs_runtime: repo-login ## Push 'pylibs-runtime' images
 	$(call push_image,pylibs,runtime)
+
+# Docker publish
+publish: build push ## Publish all build images to a Docker Registry (e.g., DockerHub)		
+
+publish_libs_develop: build_libs_develop push_libs_develop ## Publish 'libs-develop' images
+
+publish_libs_runtime: build_libs_runtime push_libs_runtime ## Publish 'libs-runtime' images
+
+publish_pylibs_develop: build_pylibs_develop push_pylibs_develop ## Publish 'pylibs-develop' images
+
+publish_pylibs_runtime: build_pylibs_runtime push_pylibs_runtime ## Publish 'pylibs-runtime' images
 
 # login to the Docker HUB repository
 repo-login: ## Login to the Docker Registry
@@ -185,8 +197,10 @@ clean:
 
 .PHONY: help clean \	
 	repo-login publish \
-	build build_libs_develop build_libs_runtime \
+	build _build build_libs_develop build_libs_runtime \
 	build_pylibs_develop build_pylibs_runtime \
 	clone_ecvl clone_eddl clone_pyecvl clone_pyeddl \
+	push _push push_libs_develop push_libs_runtime \
+	push_pylibs_develop push_pylibs_runtime \
 	publish_libs_develop publish_libs_runtime \
 	publish_pylibs_develop publish_pylibs_runtime
