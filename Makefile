@@ -3,7 +3,7 @@ VERSION ?= 1.0
 
 # set docker user credentials
 DOCKER_USER ?= ${USER}
-DOCKER_PASSWORD ?= ${DOCKER_PASSWORD}
+DOCKER_PASSWORD ?= ""
 
 # use DockerHub as default registry
 DOCKER_REGISTRY ?= registry.hub.docker.com
@@ -51,6 +51,9 @@ BUILD_CACHE_OPT ?=
 ifneq ("$(DISABLE_CACHE)", "")
 BUILD_CACHE_OPT = --no-cache
 endif
+
+# auxiliary flag 
+DOCKER_LOGIN_DONE = false
 
 # date.time as build number
 BUILD_NUMBER ?= $(shell date '+%Y%m%d.%H%M%S')
@@ -163,7 +166,11 @@ publish_pylibs_runtime: ## Publish 'pylibs-runtime' images
 
 # login to the Docker HUB repository
 repo-login: ## Login to the Docker Registry
-	@echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USER} --password-stdin
+	@if [[ ${DOCKER_LOGIN_DONE} == false ]]; then \
+		echo "Logging into Docker registry ${DOCKER_REGISTRY}..." ; \
+		echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USER} --password-stdin ; \
+		DOCKER_LOGIN_DONE=true ;\
+	fi
 
 version: ## Output the current BUILD_NUMBER
 	@echo $(BUILD_NUMBER)
