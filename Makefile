@@ -103,6 +103,11 @@ define clone_repository
 	fi
 endef
 
+# 1: library path
+# 2: actual revision
+define get_revision	
+$(shell if [[ -z "${2}" ]]; then cd ${1} && git rev-parse HEAD; else echo "${2}" ; fi)
+endef
 
 .DEFAULT_GOAL := help
 
