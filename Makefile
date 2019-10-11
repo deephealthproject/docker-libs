@@ -62,11 +62,12 @@ BUILD_NUMBER ?= $(shell date '+%Y%m%d.%H%M%S')
 define build_image
 	$(eval image := $(1))
 	$(eval target := $(2))
+	$(eval labels := $(3))
 	$(eval image_name := ${DOCKER_REPOSITORY_PREFIX}-${image}-${target})
 	$(eval latest_tags := \
-		$(if push_latest_tags, -t ${image_name}:latest -t ${DOCKER_USER}/${image_name}:latest))
-	@echo "\nBuilding Docker image '${image_name}'...\n" \
-	&& cd ${image} \
+		$(if push_latest_tags, -t ${image_name}:latest -t ${DOCKER_USER}/${image_name}:latest))	
+	@echo "\nBuilding Docker image '${image_name}'...\n" \	
+	cd ${image} \
 	&& docker build ${BUILD_CACHE_OPT} \
 		-f ${target}.Dockerfile \
 		-t ${image_name} \
@@ -74,6 +75,7 @@ define build_image
 		-t ${DOCKER_USER}/${image_name} \
 		-t ${DOCKER_USER}/${image_name}:${BUILD_NUMBER} \
 		${latest_tags} \
+		${labels} \
 		.
 endef
 
@@ -140,16 +142,56 @@ _build: \
 	build_pylibs_develop build_pylibs_runtime
 
 build_libs_develop: clone_ecvl clone_eddl ## Build and tag 'libs-develop' image
-	$(call build_image,libs,develop)
+	$(call build_image,libs,develop,\
+		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
+		--label EDDL_BRANCH=${EDDL_BRANCH} \
+		--label EDDL_REVISION=$(call get_revision,${EDDL_LIB_PATH},${EDDL_REVISION}) \
+		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
+		--label ECVL_BRANCH=${ECVL_BRANCH} \
+		--label ECVL_REVISION=$(call get_revision,${ECVL_LIB_PATH},${ECVL_REVISION}) \
+		)
 
-build_libs_runtime: build_libs_develop ## Build and tag 'libs-runtime' image
-	$(call build_image,libs,runtime)
+build_libs_runtime: #build_libs_develop ## Build and tag 'libs-runtime' image
+	$(call build_image,libs,runtime,\
+		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
+		--label EDDL_BRANCH=${EDDL_BRANCH} \
+		--label EDDL_REVISION=$(call get_revision,${EDDL_LIB_PATH},${EDDL_REVISION}) \
+		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
+		--label ECVL_BRANCH=${ECVL_BRANCH} \
+		--label ECVL_REVISION=$(call get_revision,${ECVL_LIB_PATH},${ECVL_REVISION}) \
+		)
 
 build_pylibs_develop: clone_pyecvl clone_pyeddl ## Build and tag 'pylibs-develop' image
-	$(call build_image,pylibs,develop)
+	$(call build_image,pylibs,develop,\
+		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
+		--label EDDL_BRANCH=${EDDL_BRANCH} \
+		--label EDDL_REVISION=$(call get_revision,${EDDL_LIB_PATH},${EDDL_REVISION}) \
+		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
+		--label ECVL_BRANCH=${ECVL_BRANCH} \
+		--label ECVL_REVISION=$(call get_revision,${ECVL_LIB_PATH},${ECVL_REVISION}) \
+		--label PYECVL_REPOSITORY=${PYECVL_REPOSITORY} \
+		--label PYECVL_BRANCH=${PYECVL_BRANCH} \
+		--label PYECVL_REVISION=$(call get_revision,${PYECVL_LIB_PATH},${PYECVL_REVISION}) \
+		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
+		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
+		--label PYEDDL_REVISION=$(call get_revision,${PYEDDL_LIB_PATH},${PYEDDL_REVISION}) \
+		)
 
 build_pylibs_runtime: build_pylibs_develop ## Build and tag 'pylibs-runtime' image
-	$(call build_image,pylibs,runtime)
+	$(call build_image,pylibs,runtime,\
+		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
+		--label EDDL_BRANCH=${EDDL_BRANCH} \
+		--label EDDL_REVISION=$(call get_revision,${EDDL_LIB_PATH},${EDDL_REVISION}) \
+		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
+		--label ECVL_BRANCH=${ECVL_BRANCH} \
+		--label ECVL_REVISION=$(call get_revision,${ECVL_LIB_PATH},${ECVL_REVISION}) \
+		--label PYECVL_REPOSITORY=${PYECVL_REPOSITORY} \
+		--label PYECVL_BRANCH=${PYECVL_BRANCH} \
+		--label PYECVL_REVISION=$(call get_revision,${PYECVL_LIB_PATH},${PYECVL_REVISION}) \
+		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
+		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
+		--label PYEDDL_REVISION=$(call get_revision,${PYEDDL_LIB_PATH},${PYEDDL_REVISION}) \
+		)
 
 
 # Docker push
