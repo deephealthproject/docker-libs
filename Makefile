@@ -10,7 +10,7 @@ DOCKER_REGISTRY ?= registry.hub.docker.com
 
 # set Docker repository
 DOCKER_REPOSITORY_OWNER ?= ${DOCKER_USER}
-DOCKER_REPOSITORY_PREFIX ?= deephealth
+#DOCKER_IMAGE_PREFIX ?= deephealth-
 
 # latest tag settings
 LATEST_BRANCH ?= master
@@ -70,7 +70,7 @@ define build_image
 	$(eval image := $(1))
 	$(eval target := $(2))
 	$(eval labels := $(3))
-	$(eval image_name := ${DOCKER_REPOSITORY_PREFIX}-${image}-${target})
+	$(eval image_name := ${DOCKER_IMAGE_PREFIX}${image}-${target})
 	$(eval latest_tags := \
 		$(if push_latest_tags, -t ${image_name}:latest -t ${DOCKER_USER}/${image_name}:latest))	
 	@echo "\nBuilding Docker image '${image_name}'...\n" \	
@@ -89,7 +89,7 @@ endef
 define push_image
 	$(eval image := $(1))
 	$(eval target := $(2))
-	$(eval image_name := ${DOCKER_REPOSITORY_PREFIX}-${image}-${target})
+	$(eval image_name := ${DOCKER_IMAGE_PREFIX}${image}-${target})
 	@echo "\nPushing Docker image '${image_name}'...\n"	
 	docker push ${DOCKER_USER}/${image_name}
 	docker push ${DOCKER_USER}/${image_name}:${BUILD_NUMBER}
