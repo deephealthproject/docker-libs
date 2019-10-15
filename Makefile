@@ -63,7 +63,7 @@ endif
 DOCKER_LOGIN_DONE = false
 
 # date.time as build number
-BUILD_NUMBER ?= $(shell date '+%Y%m%d.%H%M%S')
+BUILD_NUMBER := $(shell date '+%Y%m%d.%H%M%S')
 
 
 define build_image
