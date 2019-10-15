@@ -202,7 +202,7 @@ build_pylibs_runtime: build_pylibs_develop ## Build and tag 'pylibs-runtime' ima
 
 
 # Docker push
-push: _push ## Publish the `{version}` ans `latest` tagged containers to ECR
+push: _push ## Push all built images
 _push: \
 	push_libs_develop push_libs_runtime \
 	push_pylibs_develop push_pylibs_runtime 
@@ -220,7 +220,7 @@ push_pylibs_runtime: repo-login ## Push 'pylibs-runtime' images
 	$(call push_image,pylibs,runtime)
 
 # Docker publish
-publish: build push ## Publish all build images to a Docker Registry (e.g., DockerHub)		
+publish: build push ## Publish all built images to a Docker Registry (e.g., DockerHub)
 
 publish_libs_develop: build_libs_develop push_libs_develop ## Publish 'libs-develop' images
 
