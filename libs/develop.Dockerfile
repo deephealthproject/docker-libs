@@ -23,7 +23,7 @@ RUN \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get update -y -q \
     && apt-get install -y --no-install-recommends  \
-        build-essential git gcc-8 g++-8 wget libopencv-dev libwxgtk3.0-dev \
+        build-essential git gcc-8 g++-8 wget libopencv-dev libwxgtk3.0-dev graphviz \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 70 \
         --slave /usr/bin/g++ g++ /usr/bin/g++-7 \
         --slave /usr/bin/x86_64-linux-gnu-gcc x86_64-linux-gnu-gcc /usr/bin/x86_64-linux-gnu-gcc-7 \
