@@ -12,21 +12,16 @@ ARG pyecvl_src_target="/usr/local/src/pyecvl"
 COPY --from=deephealth-pylibs-develop ${pyeddl_src_target} ${pyeddl_src_target}
 COPY --from=deephealth-pylibs-develop ${pyecvl_src_target} ${pyecvl_src_target}
 
-
 RUN \
    echo "\nInstalling software requirements..." >&2 \
    && apt-get -y update && apt-get -y install --no-install-recommends \
       python3-dev python3-pip \   
    && apt-get clean \
    && python3 -m pip install --upgrade --no-cache-dir \
-      setuptools pip numpy pybind11 pytest
-
-RUN  \
-   cd ${pyeddl_src_target} \   
+      setuptools pip numpy pybind11 pytest \
+   && cd ${pyeddl_src_target} \   
    && echo "\nInstalling pyeddl module..." >&2 \
-   && python3 setup.py install
-
-RUN \
-   cd ${pyecvl_src_target} \   
+   && python3 setup.py install \
+   && cd ${pyecvl_src_target} \   
    && echo "\nInstalling pyecvl module..." >&2 \
    && python3 setup.py install
