@@ -11,7 +11,6 @@ RUN \
     && apt-get clean
 
 # set arguments
-ARG develop_image
 ARG eddl_src_origin="eddl"
 ARG ecvl_src_origin="ecvl"
 ARG eddl_src_target="/usr/local/src/eddl"
