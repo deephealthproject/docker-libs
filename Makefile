@@ -238,8 +238,8 @@ repo-login: ## Login to the Docker Registry
 		DOCKER_LOGIN_DONE=true ;\
 	fi
 
-version: ## Output the current BUILD_NUMBER
-	@echo $(BUILD_NUMBER)
+version: ## Output the current version of this Makefile
+	@echo $(VERSION)
 
 clean:
 	@echo "Removing $(LOCAL_LIBS_PATH)/{eddl,ecvl}..."
