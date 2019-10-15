@@ -31,10 +31,10 @@ PYECVL_LIB_PATH = ${LOCAL_PYLIBS_PATH}/pyecvl
 PYEDDL_LIB_PATH = ${LOCAL_PYLIBS_PATH}/pyeddl
 
 # software repositories
-ECVL_BRANCH ?= master
-EDDL_BRANCH ?= master
-PYECVL_BRANCH ?= master
-PYEDDL_BRANCH ?= master
+ECVL_BRANCH ?= $(shell cd ${ECVL_LIB_PATH} && git rev-parse --abbrev-ref HEAD)
+EDDL_BRANCH ?= $(shell cd ${EDDL_LIB_PATH} && git rev-parse --abbrev-ref HEAD)
+PYECVL_BRANCH ?= $(shell cd ${PYECVL_LIB_PATH} && git rev-parse --abbrev-ref HEAD)
+PYEDDL_BRANCH ?= $(shell cd ${PYEDDL_LIB_PATH} && git rev-parse --abbrev-ref HEAD)
 ECVL_REVISION ?= 
 EDDL_REVISION ?= 
 PYECVL_REVISION ?= 
