@@ -22,9 +22,12 @@ include $(BUILD_CONF)
 export $(shell sed 's/=.*//' $(BUILD_CONF))
 endif
 
+# current path
+CURRENT_PATH := $(PWD)
+
 # libraries path
-LOCAL_LIBS_PATH ?= libs
-LOCAL_PYLIBS_PATH ?= pylibs
+LOCAL_LIBS_PATH = libs
+LOCAL_PYLIBS_PATH = pylibs
 ECVL_LIB_PATH = ${LOCAL_LIBS_PATH}/ecvl
 EDDL_LIB_PATH = ${LOCAL_LIBS_PATH}/eddl
 PYECVL_LIB_PATH = ${LOCAL_PYLIBS_PATH}/pyecvl
