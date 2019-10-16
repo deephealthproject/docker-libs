@@ -103,13 +103,14 @@ endef
 # 2 --> REPOSITORY
 # 3 --> BRANCH
 # 4 --> REVISION
+# 5 --> RECURSIVE SUBMODULE CLONE (true|false)
 define clone_repository
 	@if [ ! -d ${1} ]; then \
 		git clone --single-branch -j8 \
 				--branch ${3} ${2} ${1} \
 		&& cd ${1} \
 		&& if [ -n ${4} ]; then git reset --hard ${4} ; fi \
-		&& git submodule update --init --recursive ; \
+		&& if [ ${5} == true ]; then git submodule update --init --recursive ; fi \
 	else \
 		echo "Using existing ${1} repository..." ;  \
 	fi
@@ -134,16 +135,15 @@ pylibs_folder:
 	@mkdir -p ${LOCAL_PYLIBS_PATH}
 
 clone_ecvl:	libs_folder
-	$(call clone_repository,${ECVL_LIB_PATH},${ECVL_REPOSITORY},${ECVL_BRANCH},${ECVL_REVISION})
+	$(call clone_repository,${ECVL_LIB_PATH},${ECVL_REPOSITORY},${ECVL_BRANCH},${ECVL_REVISION},true)
 
 clone_pyecvl: pylibs_folder
-	$(call clone_repository,${PYECVL_LIB_PATH},${PYECVL_REPOSITORY},${PYECVL_BRANCH},${PYECVL_REVISION})
+	$(call clone_repository,${PYECVL_LIB_PATH},${PYECVL_REPOSITORY},${PYECVL_BRANCH},${PYECVL_REVISION},false)
 
 clone_eddl: libs_folder	
-	$(call clone_repository,${EDDL_LIB_PATH},${EDDL_REPOSITORY},${EDDL_BRANCH},${EDDL_REVISION})
+	$(call clone_repository,${EDDL_LIB_PATH},${EDDL_REPOSITORY},${EDDL_BRANCH},${EDDL_REVISION},true)
 
 clone_pyeddl: pylibs_folder
-	$(call clone_repository,${PYEDDL_LIB_PATH},${PYEDDL_REPOSITORY},${PYEDDL_BRANCH},${PYEDDL_REVISION})
 	cd ${PYEDDL_LIB_PATH} && git submodule update --remote --merge && cd third_party/eddl && git checkout ${EDDL_REVISION} && cd - && bash generate_bindings.sh
 
 
