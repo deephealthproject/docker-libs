@@ -1,5 +1,10 @@
 FROM deephealth-libs-develop
 
+# set metadata
+LABEL website="https://github.com/deephealthproject/"
+LABEL description="DeepHealth European Distributed Deep Learning Library"
+LABEL version="1.0"
+
 ARG eddl_src="/usr/local/src/eddl"
 ARG ecvl_src="/usr/local/src/ecvl"
 
