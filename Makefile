@@ -116,6 +116,21 @@ define clone_repository
 	fi
 endef
 
+
+define clean_build
+	$(eval lib := $(1)) # libs or pylibs
+	@echo "Removing $(lib)/{eddl,ecvl}..."
+	@rm -rf $(LOCAL_PYLIBS_PATH)/{*eddl,*ecvl}
+	@echo "Removing sources... DONE"	
+	@echo "Stopping docker containers... "
+	docker ps -a | grep -E "(${DOCKER_IMAGE_PREFIX})?$(lib)-(runtime|develop)" | awk '{print $$1}' | xargs docker rm -f 
+	@echo "Stopping docker containers... DONE"
+	@echo "Removing docker images... "
+	docker images | grep -E "(${DOCKER_IMAGE_PREFIX})?$(lib)-(runtime|develop)" | awk '{print $$3}' | xargs docker rmi -f
+	@echo "Removing docker images... DONE"
+endef
+
+
 # 1: library path
 # 2: actual revision
 define get_revision	
