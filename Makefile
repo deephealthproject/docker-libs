@@ -271,15 +271,16 @@ repo-login: ## Login to the Docker Registry
 version: ## Output the current version of this Makefile
 	@echo $(VERSION)
 
-clean:
-	@echo "Removing $(LOCAL_LIBS_PATH)/{eddl,ecvl}..."
-	@rm -rf $(LOCAL_LIBS_PATH)/{eddl,ecvl}	
-	@echo "Removing $(LOCAL_LIBS_PATH)/{eddl,ecvl}... DONE"
-	@echo "Removing $(LOCAL_PYLIBS_PATH)/{eddl,ecvl}..."
-	@rm -rf $(LOCAL_PYLIBS_PATH)/{pyeddl,pyecvl}
-	@echo "Removing $(LOCAL_PYLIBS_PATH)/{eddl,ecvl}... DONE"
+clean: clean_libs clean_pylibs	
 
-.PHONY: help clean \	
+clean_libs: 
+	$(call clean_build,libs)
+
+clean_pylibs: 
+	$(call clean_build,pylibs)
+
+
+.PHONY: help clean clean_libs clean pylibs \	
 	repo-login publish \
 	build _build build_libs_develop build_libs_runtime \
 	build_pylibs_develop build_pylibs_runtime \
