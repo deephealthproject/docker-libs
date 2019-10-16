@@ -154,13 +154,23 @@ clone_ecvl:	libs_folder
 
 clone_pyecvl: pylibs_folder
 	$(call clone_repository,${PYECVL_LIB_PATH},${PYECVL_REPOSITORY},${PYECVL_BRANCH},${PYECVL_REVISION},false)
+	@echo "Copying revision '${ECVL_REVISION}' of ECVL library..."
+	@rm -rf ${PYECVL_LIB_PATH}/third_party/ecvl
+	@cp -a ${CURRENT_PATH}/${ECVL_LIB_PATH} ${CURRENT_PATH}/${PYECVL_LIB_PATH}/third_party/ecvl 
+	@echo "Building Python ECVL Python bindings..."
+	@cd ${PYECVL_LIB_PATH} && bash generate_bindings.sh
 
 clone_eddl: libs_folder	
 	$(call clone_repository,${EDDL_LIB_PATH},${EDDL_REPOSITORY},${EDDL_BRANCH},${EDDL_REVISION},true)
 
 clone_pyeddl: pylibs_folder
-	cd ${PYEDDL_LIB_PATH} && git submodule update --remote --merge && cd third_party/eddl && git checkout ${EDDL_REVISION} && cd - && bash generate_bindings.sh
-
+	$(call clone_repository,${PYEDDL_LIB_PATH},${PYEDDL_REPOSITORY},${PYEDDL_BRANCH},${PYEDDL_REVISION},false)
+	@echo "Copying revision '${EDDL_REVISION}' of EDDL library..."
+	@rm -rf ${PYEDDL_LIB_PATH}/third_party/eddl
+	@cp -a ${EDDL_LIB_PATH} ${PYEDDL_LIB_PATH}/third_party/eddl
+	@echo "Building Python ECVL Python bindings..."
+	@cd ${PYEDDL_LIB_PATH} \
+	&& bash generate_bindings.sh
 
 # Targets to build container images
 build: _build ## Build and tag all Docker images
