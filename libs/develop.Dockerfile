@@ -38,7 +38,8 @@ RUN \
     && mv cmake*/share/* /usr/local/share/ \
     && chown root:root /usr/local/bin/* /usr/local/share/* \
     && chmod a+rx /usr/local/bin/* \
-    && rm -rf /tmp/cmake*
+    && rm -rf /tmp/cmake* \
+    && ln -s /usr/lib/x86_64-linux-gnu/libcublas.so /usr/local/cuda/lib64/
 
 # copy libraries
 COPY ${ecvl_src_origin} ${ECVL_SRC}
@@ -48,7 +49,7 @@ RUN echo "\nBuilding EDDL library..." >&2 \
     && cd ${EDDL_SRC} \
     && mkdir build \
     && cd build \
-    && cmake BUILD_TARGET=gpu -D BUILD_TESTS=ON -D EDDL_SHARED=ON .. \ 
+    && cmake -D BUILD_TARGET=GPU -D BUILD_TESTS=ON -D EDDL_SHARED=ON .. \
     && make -j$(grep -c ^processor /proc/cpuinfo) \
     && echo "\n Installing EDDL library..." >&2 \
     && make install \

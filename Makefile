@@ -106,7 +106,7 @@ define clone_repository
 				--branch ${3} ${2} ${1} \
 		&& cd ${1} \
 		&& if [ -n ${4} ]; then git reset --hard ${4} ; fi \
-		&& git submodule update --init ; \
+		&& git submodule update --init --recursive ; \
 	else \
 		echo "Using existing ${1} repository..." ;  \
 	fi
@@ -141,6 +141,8 @@ clone_eddl: libs_folder
 
 clone_pyeddl: pylibs_folder
 	$(call clone_repository,${PYEDDL_LIB_PATH},${PYEDDL_REPOSITORY},${PYEDDL_BRANCH},${PYEDDL_REVISION})
+	cd ${PYEDDL_LIB_PATH} && git submodule update --remote --merge && cd third_party/eddl && git checkout ${EDDL_REVISION} && cd - && bash generate_bindings.sh
+
 
 # Targets to build container images
 build: _build ## Build and tag all Docker images
