@@ -145,7 +145,7 @@ define generate_pyeddl_bindings
 	   	       -e EDDL_INCLUDE="${pyeddl_mount}"/include \
 			   -e EIGEN_INCLUDE="${pyeddl_mount}"/third_party/eddl/third_party/eigen \
 			   -w "${pyeddl_mount}"/codegen crs4/binder:135f6e3 ./gen_bindings.sh
-	@echo "Building PyEDDL bindings... DONE
+	@echo "Building PyEDDL bindings... DONE"
 endef
 
 
