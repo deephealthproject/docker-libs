@@ -149,10 +149,10 @@ libs_folder:
 pylibs_folder:
 	@mkdir -p ${LOCAL_PYLIBS_PATH}
 
-clone_ecvl:	libs_folder
+ecvl_folder: libs_folder
 	$(call clone_repository,${ECVL_LIB_PATH},${ECVL_REPOSITORY},${ECVL_BRANCH},${ECVL_REVISION},true)
 
-clone_pyecvl: pylibs_folder
+pyecvl_folder: pylibs_folder
 	$(call clone_repository,${PYECVL_LIB_PATH},${PYECVL_REPOSITORY},${PYECVL_BRANCH},${PYECVL_REVISION},false)
 	@echo "Copying revision '${ECVL_REVISION}' of ECVL library..."
 	@rm -rf ${PYECVL_LIB_PATH}/third_party/ecvl
@@ -160,10 +160,10 @@ clone_pyecvl: pylibs_folder
 	@echo "Building Python ECVL Python bindings..."
 	@cd ${PYECVL_LIB_PATH} && bash generate_bindings.sh
 
-clone_eddl: libs_folder	
+eddl_folder: libs_folder	
 	$(call clone_repository,${EDDL_LIB_PATH},${EDDL_REPOSITORY},${EDDL_BRANCH},${EDDL_REVISION},true)
 
-clone_pyeddl: pylibs_folder
+pyeddl_folder: pylibs_folder
 	$(call clone_repository,${PYEDDL_LIB_PATH},${PYEDDL_REPOSITORY},${PYEDDL_BRANCH},${PYEDDL_REVISION},false)
 	@echo "Copying revision '${EDDL_REVISION}' of EDDL library..."
 	@rm -rf ${PYEDDL_LIB_PATH}/third_party/eddl
@@ -178,7 +178,7 @@ _build: \
 	build_libs_develop build_libs_runtime \
 	build_pylibs_develop build_pylibs_runtime
 
-build_libs_develop: clone_ecvl clone_eddl ## Build and tag 'libs-develop' image
+build_libs_develop: ecvl_folder eddl_folder ## Build and tag 'libs-develop' image
 	$(call build_image,libs,develop,\
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
@@ -188,7 +188,7 @@ build_libs_develop: clone_ecvl clone_eddl ## Build and tag 'libs-develop' image
 		--label ECVL_REVISION=$(call get_revision,${ECVL_LIB_PATH},${ECVL_REVISION}) \
 		)
 
-build_libs_runtime: #build_libs_develop ## Build and tag 'libs-runtime' image
+build_libs_runtime: build_libs_develop ## Build and tag 'libs-runtime' image
 	$(call build_image,libs,runtime,\
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
@@ -198,7 +198,7 @@ build_libs_runtime: #build_libs_develop ## Build and tag 'libs-runtime' image
 		--label ECVL_REVISION=$(call get_revision,${ECVL_LIB_PATH},${ECVL_REVISION}) \
 		)
 
-build_pylibs_develop: clone_pyecvl clone_pyeddl ## Build and tag 'pylibs-develop' image
+build_pylibs_develop: pyecvl_folder pyeddl_folder ## Build and tag 'pylibs-develop' image
 	$(call build_image,pylibs,develop,\
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
@@ -284,7 +284,7 @@ clean_pylibs:
 	repo-login publish \
 	build _build build_libs_develop build_libs_runtime \
 	build_pylibs_develop build_pylibs_runtime \
-	clone_ecvl clone_eddl clone_pyecvl clone_pyeddl \
+	ecvl_folder eddl_folder pyecvl_folder pyeddl_folder \
 	push _push push_libs_develop push_libs_runtime \
 	push_pylibs_develop push_pylibs_runtime \
 	publish_libs_develop publish_libs_runtime \
