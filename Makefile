@@ -299,7 +299,7 @@ publish_pylibs_runtime: build_pylibs_runtime push_pylibs_runtime ## Publish 'pyl
 repo-login: ## Login to the Docker Registry
 	@if [[ ${DOCKER_LOGIN_DONE} == false ]]; then \
 		echo "Logging into Docker registry ${DOCKER_REGISTRY}..." ; \
-		echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USER} --password-stdin ; \
+		echo ${DOCKER_PASSWORD} | docker login ${DOCKER_REGISTRY} -u ${DOCKER_USER} --password-stdin ; \
 		DOCKER_LOGIN_DONE=true ;\
 	fi
 
