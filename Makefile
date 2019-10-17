@@ -119,6 +119,7 @@ endef
 
 define generate_pyecvl_bindings
 	$(eval pyecvl_mount := /pyecvl)
+	@echo "Building PyECVL bindings..."
 	cd "${CURRENT_PATH}/${PYECVL_LIB_PATH}" \
 	&& rm -rf include && mkdir include \
 	&& docker run --rm ${DOCKER_IMAGE_PREFIX}libs-develop bash -c "tar -c -C /usr/include opencv2" | tar -x -C include	
@@ -128,12 +129,13 @@ define generate_pyecvl_bindings
 			   -e ADD_INCLUDE="-I${pyecvl_mount}/third_party/ecvl/modules/core/include -I${pyecvl_mount}/include -I${pyecvl_mount}/src" \
 			   -w "${pyecvl_mount}"/codegen crs4/binder:135f6e3 ./gen_bindings.sh \
 			   cp codegen/bindings/_core.cpp src/
+	@echo "Building PyECVL bindings... DONE"
 endef
 
 define generate_pyeddl_bindings
 	$(eval pyeddl_mount := /pyeddl)
 	$(eval pylib_path := ${CURRENT_PATH}/${PYEDDL_LIB_PATH})
-	@echo "Building PyEDDL bindings...
+	@echo "Building PyEDDL bindings..."
 	cd "${pylib_path}" \
 	&& rm -rf include && mkdir include \
 	&& ln -s ../third_party/eddl/src include/eddl
@@ -315,7 +317,7 @@ clean_pylibs:
 	$(call clean_build,pylibs)
 
 
-.PHONY: help clean clean_libs clean pylibs \	
+.PHONY: help clean clean_libs clean pylibs \
 	generate_pyecvl_bindings generate_pyeddl_bindings \
 	build _build build_libs_develop build_libs_runtime \
 	build_pylibs_develop build_pylibs_runtime \
