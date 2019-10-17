@@ -123,10 +123,10 @@ define clean_build
 	@rm -rf $(LOCAL_PYLIBS_PATH)/{*eddl,*ecvl}
 	@echo "Removing sources... DONE"	
 	@echo "Stopping docker containers... "
-	docker ps -a | grep -E "(${DOCKER_IMAGE_PREFIX})?$(lib)-(runtime|develop)" | awk '{print $$1}' | xargs docker rm -f 
+	@docker ps -a | grep -E "(${DOCKER_IMAGE_PREFIX})?$(lib)-(runtime|develop)" | awk '{print $$1}' | xargs docker rm -f 
 	@echo "Stopping docker containers... DONE"
 	@echo "Removing docker images... "
-	docker images | grep -E "(${DOCKER_IMAGE_PREFIX})?$(lib)-(runtime|develop)" | awk '{print $$3}' | xargs docker rmi -f
+	@docker images | grep -E "(${DOCKER_IMAGE_PREFIX})?$(lib)-(runtime|develop)" | awk '{print $$3}' | xargs docker rmi -f
 	@echo "Removing docker images... DONE"
 endef
 
