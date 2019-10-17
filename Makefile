@@ -66,7 +66,9 @@ endif
 DOCKER_LOGIN_DONE = false
 
 # date.time as build number
+ifeq ($(BUILD_NUMBER),)
 BUILD_NUMBER := $(shell date '+%Y%m%d.%H%M%S')
+endif
 
 
 define build_image
@@ -74,16 +76,13 @@ define build_image
 	$(eval target := $(2))
 	$(eval labels := $(3))
 	$(eval image_name := ${DOCKER_IMAGE_PREFIX}${image}-${target})
-	$(eval latest_tags := \
-		$(if push_latest_tags, -t ${image_name}:latest -t ${DOCKER_USER}/${image_name}:latest))	
+	$(eval latest_tags := $(if ${push_latest_tags}, -t ${image_name}:latest))	
 	@echo "\nBuilding Docker image '${image_name}'...\n" \	
 	cd ${image} \
 	&& docker build ${BUILD_CACHE_OPT} \
 		-f ${target}.Dockerfile \
 		-t ${image_name} \
 		-t ${image_name}:${BUILD_NUMBER} \
-		-t ${DOCKER_USER}/${image_name} \
-		-t ${DOCKER_USER}/${image_name}:${BUILD_NUMBER} \
 		${latest_tags} \
 		${labels} \
 		.
@@ -93,10 +92,14 @@ define push_image
 	$(eval image := $(1))
 	$(eval target := $(2))
 	$(eval image_name := ${DOCKER_IMAGE_PREFIX}${image}-${target})
+	$(eval full_tag := ${DOCKER_REGISTRY}/${DOCKER_USER}/${image_name}:$(BUILD_NUMBER))
+	$(eval latest_tag := ${DOCKER_REGISTRY}/${DOCKER_USER}/${image_name}:latest)
+	@echo "\nTagging images... \n"
+	docker tag ${image_name}:$(BUILD_NUMBER) ${full_tag}
+	@if [ ${push_latest_tags} == true ]; then docker tag ${image_name}:$(BUILD_NUMBER) ${latest_tag}; fi
 	@echo "\nPushing Docker image '${image_name}'...\n"	
-	docker push ${DOCKER_USER}/${image_name}
-	docker push ${DOCKER_USER}/${image_name}:${BUILD_NUMBER}
-	@if [ ${push_latest_tags} == true ]; then docker push ${DOCKER_USER}/${image_name}:latest; fi
+	docker push ${full_tag}
+	@if [ ${push_latest_tags} == true ]; then docker push ${latest_tag}; fi
 endef
 
 # 1 --> LIB_PATH
