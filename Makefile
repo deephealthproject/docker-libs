@@ -117,6 +117,36 @@ define clone_repository
 endef
 
 
+define generate_pyecvl_bindings
+	$(eval pyecvl_mount := /pyecvl)
+	cd "${CURRENT_PATH}/${PYECVL_LIB_PATH}" \
+	&& rm -rf include && mkdir include \
+	&& docker run --rm ${DOCKER_IMAGE_PREFIX}libs-develop bash -c "tar -c -C /usr/include opencv2" | tar -x -C include	
+	# generate bindings
+	docker run --rm -v "${CURRENT_PATH}/${PYECVL_LIB_PATH}":"${pyecvl_mount}" \
+			   -e BINDER_EXE='/binder/build/llvm-5.0.0/build_5.0.0*/bin/binder' \
+			   -e ADD_INCLUDE="-I${pyecvl_mount}/third_party/ecvl/modules/core/include -I${pyecvl_mount}/include -I${pyecvl_mount}/src" \
+			   -w "${pyecvl_mount}"/codegen crs4/binder:135f6e3 ./gen_bindings.sh \
+			   cp codegen/bindings/_core.cpp src/
+endef
+
+define generate_pyeddl_bindings
+	$(eval pyeddl_mount := /pyeddl)
+	$(eval pylib_path := ${CURRENT_PATH}/${PYEDDL_LIB_PATH})
+	@echo "Building PyEDDL bindings...
+	cd "${pylib_path}" \
+	&& rm -rf include && mkdir include \
+	&& ln -s ../third_party/eddl/src include/eddl
+	# generate bindings
+	docker run --rm -v "${pylib_path}":"${pyeddl_mount}" \
+			   -e BINDER_EXE='/binder/build/llvm-5.0.0/build_5.0.0*/bin/binder' \
+	   	       -e EDDL_INCLUDE="${pyeddl_mount}"/include \
+			   -e EIGEN_INCLUDE="${pyeddl_mount}"/third_party/eddl/third_party/eigen \
+			   -w "${pyeddl_mount}"/codegen crs4/binder:135f6e3 ./gen_bindings.sh
+	@echo "Building PyEDDL bindings... DONE
+endef
+
+
 define clean_build
 	$(eval lib := $(1)) # libs or pylibs
 	@echo "Removing $(lib)/{eddl,ecvl}..."
@@ -146,11 +176,14 @@ libs_folder:
 	$(info Creating ${LOCAL_LIBS_PATH} folder...)
 	@mkdir -p ${LOCAL_LIBS_PATH}
 
-pylibs_folder:
-	@mkdir -p ${LOCAL_PYLIBS_PATH}
-
 ecvl_folder: libs_folder
 	$(call clone_repository,${ECVL_LIB_PATH},${ECVL_REPOSITORY},${ECVL_BRANCH},${ECVL_REVISION},true)
+
+eddl_folder: libs_folder	
+	$(call clone_repository,${EDDL_LIB_PATH},${EDDL_REPOSITORY},${EDDL_BRANCH},${EDDL_REVISION},true)
+
+pylibs_folder:
+	@mkdir -p ${LOCAL_PYLIBS_PATH}
 
 pyecvl_folder: pylibs_folder
 	$(call clone_repository,${PYECVL_LIB_PATH},${PYECVL_REPOSITORY},${PYECVL_BRANCH},${PYECVL_REVISION},false)
@@ -158,10 +191,13 @@ pyecvl_folder: pylibs_folder
 	@rm -rf ${PYECVL_LIB_PATH}/third_party/ecvl
 	@cp -a ${CURRENT_PATH}/${ECVL_LIB_PATH} ${CURRENT_PATH}/${PYECVL_LIB_PATH}/third_party/ecvl 
 	@echo "Building Python ECVL Python bindings..."
-	@cd ${PYECVL_LIB_PATH} && bash generate_bindings.sh
+	$(call generate_pyecvl_bindings)
 
-eddl_folder: libs_folder	
-	$(call clone_repository,${EDDL_LIB_PATH},${EDDL_REPOSITORY},${EDDL_BRANCH},${EDDL_REVISION},true)
+generate_pyecvl_bindings: pyecvl_folder
+	$(call generate_pyecvl_bindings)
+
+generate_pyeddl_bindings: pyeddl_folder
+	$(call generate_pyeddl_bindings)
 
 pyeddl_folder: pylibs_folder
 	$(call clone_repository,${PYEDDL_LIB_PATH},${PYEDDL_REPOSITORY},${PYEDDL_BRANCH},${PYEDDL_REVISION},false)
@@ -169,8 +205,7 @@ pyeddl_folder: pylibs_folder
 	@rm -rf ${PYEDDL_LIB_PATH}/third_party/eddl
 	@cp -a ${EDDL_LIB_PATH} ${PYEDDL_LIB_PATH}/third_party/eddl
 	@echo "Building Python ECVL Python bindings..."
-	@cd ${PYEDDL_LIB_PATH} \
-	&& bash generate_bindings.sh
+	$(call generate_pyeddl_bindings)
 
 # Targets to build container images
 build: _build ## Build and tag all Docker images
@@ -281,11 +316,14 @@ clean_pylibs:
 
 
 .PHONY: help clean clean_libs clean pylibs \	
-	repo-login publish \
+	generate_pyecvl_bindings generate_pyeddl_bindings \
 	build _build build_libs_develop build_libs_runtime \
 	build_pylibs_develop build_pylibs_runtime \
 	ecvl_folder eddl_folder pyecvl_folder pyeddl_folder \
-	push _push push_libs_develop push_libs_runtime \
+	repo-login \
+	push \
+	_push push_libs_develop push_libs_runtime \
 	push_pylibs_develop push_pylibs_runtime \
+	publish \
 	publish_libs_develop publish_libs_runtime \
 	publish_pylibs_develop publish_pylibs_runtime
