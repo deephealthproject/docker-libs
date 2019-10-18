@@ -2,7 +2,7 @@ FROM nvidia/cuda:10.1-runtime
 
 LABEL website="https://github.com/deephealthproject"
 LABEL description="DeepHealth European Distributed Deep Learning Library"
-LABEL version="1.0"
+LABEL version="0.1"
 
 RUN \
     echo "\nInstalling software requirements..." >&2 \
