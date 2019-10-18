@@ -1,5 +1,5 @@
 # set docker user credentials
-DOCKER_USER=${USER}
+DOCKER_USER=deephealth
 DOCKER_PASSWORD=""
 
 # use DockerHub as default registry
