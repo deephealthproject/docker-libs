@@ -1,6 +1,9 @@
 # version
 VERSION := 0.1
 
+# set bash as default interpreter
+SHELL := /bin/bash
+
 # set docker user credentials
 DOCKER_USER ?= ${USER}
 DOCKER_PASSWORD ?= ""
