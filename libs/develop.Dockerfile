@@ -3,6 +3,7 @@ FROM nvidia/cuda:10.1-devel
 # set metadata
 LABEL website="https://github.com/deephealthproject/"
 LABEL description="DeepHealth European Distributed Deep Learning Library"
+LABEL software="deephealth-eddl,deephealth-ecvl"
 LABEL version="0.1"
 
 ARG cmake_release="3.14.6"
