@@ -192,10 +192,19 @@ pyeddl_folder: pylibs_folder
 # Targets to build container images
 build: _build ## Build and tag all Docker images
 _build: \
-	build_libs_develop build_libs_runtime \
-	build_pylibs_develop build_pylibs_runtime
+	build_libs_toolkit build_libs \
+	build_pylibs_toolkit build_pylibs
 
-build_libs_develop: ecvl_folder eddl_folder ## Build and tag 'libs-develop' image
+build_libs: build_libs_toolkit ## Build and tag 'libs' image
+	$(call build_image,libs,runtime,\
+		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
+		--label EDDL_BRANCH=${EDDL_BRANCH} \
+		--label EDDL_REVISION=$(call get_revision,${EDDL_LIB_PATH},${EDDL_REVISION}) \
+		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
+		--label ECVL_BRANCH=${ECVL_BRANCH} \
+		--label ECVL_REVISION=$(call get_revision,${ECVL_LIB_PATH},${ECVL_REVISION}),libs-toolkit)
+
+build_libs_toolkit: ecvl_folder eddl_folder ## Build and tag 'libs-toolkit' image
 	$(call build_image,libs,develop,\
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
@@ -205,31 +214,7 @@ build_libs_develop: ecvl_folder eddl_folder ## Build and tag 'libs-develop' imag
 		--label ECVL_REVISION=$(call get_revision,${ECVL_LIB_PATH},${ECVL_REVISION}) \
 		)
 
-build_libs_runtime: build_libs_develop ## Build and tag 'libs-runtime' image
-	$(call build_image,libs,runtime,\
-		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
-		--label EDDL_BRANCH=${EDDL_BRANCH} \
-		--label EDDL_REVISION=$(call get_revision,${EDDL_LIB_PATH},${EDDL_REVISION}) \
-		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
-		--label ECVL_BRANCH=${ECVL_BRANCH} \
-		--label ECVL_REVISION=$(call get_revision,${ECVL_LIB_PATH},${ECVL_REVISION}),libs-toolkit)
-
-build_pylibs_develop: pyecvl_folder pyeddl_folder ## Build and tag 'pylibs-develop' image
-	$(call build_image,pylibs,develop,\
-		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
-		--label EDDL_BRANCH=${EDDL_BRANCH} \
-		--label EDDL_REVISION=$(call get_revision,${EDDL_LIB_PATH},${EDDL_REVISION}) \
-		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
-		--label ECVL_BRANCH=${ECVL_BRANCH} \
-		--label ECVL_REVISION=$(call get_revision,${ECVL_LIB_PATH},${ECVL_REVISION}) \
-		--label PYECVL_REPOSITORY=${PYECVL_REPOSITORY} \
-		--label PYECVL_BRANCH=${PYECVL_BRANCH} \
-		--label PYECVL_REVISION=$(call get_revision,${PYECVL_LIB_PATH},${PYECVL_REVISION}) \
-		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
-		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
-		--label PYEDDL_REVISION=$(call get_revision,${PYEDDL_LIB_PATH},${PYEDDL_REVISION}),libs-toolkit)
-
-build_pylibs_runtime: build_pylibs_develop ## Build and tag 'pylibs-runtime' image
+build_pylibs: build_pylibs_toolkit ## Build and tag 'pylibs' image
 	$(call build_image,pylibs,runtime,\
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
@@ -244,35 +229,49 @@ build_pylibs_runtime: build_pylibs_develop ## Build and tag 'pylibs-runtime' ima
 		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
 		--label PYEDDL_REVISION=$(call get_revision,${PYEDDL_LIB_PATH},${PYEDDL_REVISION}),libs,pylibs-toolkit)
 
-
+build_pylibs_toolkit: pyecvl_folder pyeddl_folder ## Build and tag 'pylibs-toolkit' image
+	$(call build_image,pylibs,develop,\
+		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
+		--label EDDL_BRANCH=${EDDL_BRANCH} \
+		--label EDDL_REVISION=$(call get_revision,${EDDL_LIB_PATH},${EDDL_REVISION}) \
+		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
+		--label ECVL_BRANCH=${ECVL_BRANCH} \
+		--label ECVL_REVISION=$(call get_revision,${ECVL_LIB_PATH},${ECVL_REVISION}) \
+		--label PYECVL_REPOSITORY=${PYECVL_REPOSITORY} \
+		--label PYECVL_BRANCH=${PYECVL_BRANCH} \
+		--label PYECVL_REVISION=$(call get_revision,${PYECVL_LIB_PATH},${PYECVL_REVISION}) \
+		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
+		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
+		--label PYEDDL_REVISION=$(call get_revision,${PYEDDL_LIB_PATH},${PYEDDL_REVISION}),libs-toolkit)
+		
 # Docker push
 push: _push ## Push all built images
 _push: \
-	push_libs_develop push_libs_runtime \
-	push_pylibs_develop push_pylibs_runtime 
+	push_libs_toolkit push_libs \
+	push_pylibs_toolkit push_pylibs 
 
-push_libs_develop: repo-login ## Push 'libs-develop' images
-	$(call push_image,libs,develop)
-
-push_libs_runtime: repo-login ## Push 'libs-runtime' images
+push_libs: repo-login ## Push 'libs' images
 	$(call push_image,libs,runtime)
 
-push_pylibs_develop: repo-login ## Push 'pylibs-develop' images
-	$(call push_image,pylibs,develop)
+push_libs_toolkit: repo-login ## Push 'libs-toolkit' images
+	$(call push_image,libs,develop)
 
-push_pylibs_runtime: repo-login ## Push 'pylibs-runtime' images
+push_pylibs: repo-login ## Push 'pylibs' images
 	$(call push_image,pylibs,runtime)
+
+push_pylibs_toolkit: repo-login ## Push 'pylibs-toolkit' images
+	$(call push_image,pylibs,develop)
 
 # Docker publish
 publish: build push ## Publish all built images to a Docker Registry (e.g., DockerHub)
 
-publish_libs_develop: build_libs_develop push_libs_develop ## Publish 'libs-develop' images
+publish_libs: build_libs push_libs ## Publish 'libs' images
 
-publish_libs_runtime: build_libs_runtime push_libs_runtime ## Publish 'libs-runtime' images
+publish_libs_toolkit: build_libs_toolkit push_libs_toolkit ## Publish 'libs-toolkit' images
 
-publish_pylibs_develop: build_pylibs_develop push_pylibs_develop ## Publish 'pylibs-develop' images
+publish_pylibs: build_pylibs push_pylibs ## Publish 'pylibs' images
 
-publish_pylibs_runtime: build_pylibs_runtime push_pylibs_runtime ## Publish 'pylibs-runtime' images
+publish_pylibs_toolkit: build_pylibs_toolkit push_pylibs_toolkit ## Publish 'pylibs-toolkit' images
 
 # login to the Docker HUB repository
 repo-login: ## Login to the Docker Registry
@@ -295,13 +294,13 @@ clean_pylibs:
 
 
 .PHONY: help clean clean_libs clean pylibs \
-	build _build build_libs_develop build_libs_runtime \
-	build_pylibs_develop build_pylibs_runtime \
+	build _build build_libs_toolkit build_libs \
+	build_pylibs_toolkit build_pylibs \
 	ecvl_folder eddl_folder pyecvl_folder pyeddl_folder \
 	repo-login \
 	push \
-	_push push_libs_develop push_libs_runtime \
-	push_pylibs_develop push_pylibs_runtime \
+	_push push_libs_toolkit push_libs \
+	push_pylibs_toolkit push_pylibs \
 	publish \
-	publish_libs_develop publish_libs_runtime \
-	publish_pylibs_develop publish_pylibs_runtime
+	publish_libs_toolkit publish_libs \
+	publish_pylibs_toolkit publish_pylibs
