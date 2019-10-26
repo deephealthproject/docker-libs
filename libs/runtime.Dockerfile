@@ -1,3 +1,6 @@
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE} as base
+
 FROM nvidia/cuda:10.1-runtime
 
 LABEL website="https://github.com/deephealthproject"
@@ -19,9 +22,9 @@ ARG eddl_src_target="/usr/local/src/eddl"
 ARG ecvl_src_target="/usr/local/src/ecvl"
 
 # install EDDL library
-COPY --from=deephealth-libs-develop ${eddl_src_target}/build/install/lib/* /usr/lib/
-COPY --from=deephealth-libs-develop ${eddl_src_target}/build/install/include/third_party/eigen/Eigen /usr/local/include/
-COPY --from=deephealth-libs-develop ${eddl_src_target}/build/install/include/* /usr/include/
+COPY --from=base ${eddl_src_target}/build/install/lib/* /usr/lib/
+COPY --from=base ${eddl_src_target}/build/install/include/third_party/eigen/Eigen /usr/local/include/
+COPY --from=base ${eddl_src_target}/build/install/include/* /usr/include/
 # install ECVL library
-COPY --from=deephealth-libs-develop ${ecvl_src_target}/build/install/lib/* /usr/lib/
-COPY --from=deephealth-libs-develop ${ecvl_src_target}/build/install/include/* /usr/include/
+COPY --from=base ${ecvl_src_target}/build/install/lib/* /usr/lib/
+COPY --from=base ${ecvl_src_target}/build/install/include/* /usr/include/

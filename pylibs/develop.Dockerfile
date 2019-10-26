@@ -1,4 +1,6 @@
-FROM deephealth-libs-develop
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE} as base
+
 
 # set metadata
 LABEL website="https://github.com/deephealthproject/"

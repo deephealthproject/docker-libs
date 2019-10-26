@@ -1,4 +1,11 @@
-FROM deephealth-libs-runtime
+# base image to start from
+ARG BASE_IMAGE
+# pylibs-toolkit image
+ARG TOOLKIT_IMAGE
+
+FROM ${TOOLKIT_IMAGE} as toolkit_image
+
+FROM ${BASE_IMAGE} as base
 
 # set metadata
 LABEL website="https://github.com/deephealthproject/"
@@ -15,8 +22,8 @@ ARG pyeddl_src_target="/usr/local/src/pyeddl"
 ARG pyecvl_src_target="/usr/local/src/pyecvl"
 
 # Run git submodule update [--init] --recursive first
-COPY --from=deephealth-pylibs-develop ${pyeddl_src_target} ${pyeddl_src_target}
-COPY --from=deephealth-pylibs-develop ${pyecvl_src_target} ${pyecvl_src_target}
+COPY --from=toolkit_image ${pyeddl_src_target} ${pyeddl_src_target}
+COPY --from=toolkit_image ${pyecvl_src_target} ${pyecvl_src_target}
 
 RUN \
    echo "\nInstalling software requirements..." >&2 \
