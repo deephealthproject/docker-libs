@@ -90,8 +90,8 @@ define build_image
 	$(eval toolkit := $(if $(5), --build-arg TOOLKIT_IMAGE=$(5)))
 	$(eval image_name := ${DOCKER_IMAGE_PREFIX}${image}${${target}_suffix})
 	$(eval latest_tags := $(if ${push_latest_tags}, -t ${image_name}:latest))	
-	@echo "\nBuilding Docker image '${image_name}'...\n" \		
-	cd ${image} \
+	@echo "Building Docker image '${image_name}'..." \		
+	@cd ${image} \
 	&& docker build ${BUILD_CACHE_OPT} \
 		-f ${target}.Dockerfile \
 		   ${base} ${toolkit} \
@@ -108,10 +108,10 @@ define push_image
 	$(eval image_name := ${DOCKER_IMAGE_PREFIX}${image}${${target}_suffix})
 	$(eval full_tag := ${DOCKER_REGISTRY}/${DOCKER_REPOSITORY_OWNER}/${image_name}:$(BUILD_NUMBER))
 	$(eval latest_tag := ${DOCKER_REGISTRY}/${DOCKER_DOCKER_REPOSITORY_OWNERUSER}/${image_name}:latest)
-	@echo "\nTagging images... \n"
+	@echo "Tagging images... "
 	docker tag ${image_name}:$(BUILD_NUMBER) ${full_tag}
 	@if [ ${push_latest_tags} == true ]; then docker tag ${image_name}:$(BUILD_NUMBER) ${latest_tag}; fi
-	@echo "\nPushing Docker image '${image_name}'...\n"	
+	@echo "Pushing Docker image '${image_name}'..."	
 	docker push ${full_tag}
 	@if [ ${push_latest_tags} == true ]; then docker push ${latest_tag}; fi
 endef
