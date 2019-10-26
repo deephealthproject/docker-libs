@@ -6,8 +6,8 @@ DOCKER_PASSWORD=""
 DOCKER_REGISTRY=registry.hub.docker.com
 
 # set Docker repository
-DOCKER_REPOSITORY_OWNER=${DOCKER_USER}
-DOCKER_IMAGE_PREFIX=deephealth-
+DOCKER_REPOSITORY_OWNER=dhealth
+DOCKER_IMAGE_PREFIX=
 
 # latest tag settings
 LATEST_BRANCH=master
