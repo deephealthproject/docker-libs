@@ -137,7 +137,7 @@ endef
 define clean_build
 	$(eval lib := $(1)) # libs or pylibs
 	@echo "Removing $(lib)/{eddl,ecvl}..."
-	@rm -rf $(LOCAL_PYLIBS_PATH)/{*eddl,*ecvl}
+	@rm -rf $(lib)/{*eddl,*ecvl}
 	@echo "Removing sources... DONE"	
 	@echo "Stopping docker containers... "
 	@docker ps -a | grep -E "(${DOCKER_IMAGE_PREFIX})?$(lib)-(runtime|develop)" | awk '{print $$1}' | xargs docker rm -f 
