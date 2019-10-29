@@ -189,6 +189,15 @@ pyeddl_folder: pylibs_folder
 	@echo "Building Python ECVL Python bindings..."
 	@cd ${PYEDDL_LIB_PATH} && bash generate_bindings.sh
 
+apply_patches:
+	$(call clone_repository,${PYEDDL_LIB_PATH},${PYEDDL_REPOSITORY},${PYEDDL_BRANCH},${PYEDDL_REVISION},false)
+	# TODO: remove this patch when not required
+	@echo "Applying patches to the EDDL repository..."
+	cd ${EDDL_LIB_PATH} && git apply ../../${PYEDDL_LIB_PATH}/eddl.diff || true
+	@echo "Copying revision '${EDDL_REVISION}' of EDDL library..."
+	@rm -rf ${PYEDDL_LIB_PATH}/third_party/eddl
+	@cp -a ${EDDL_LIB_PATH} ${PYEDDL_LIB_PATH}/third_party/eddl
+
 # Targets to build container images
 build: _build ## Build and tag all Docker images
 _build: \
@@ -204,7 +213,7 @@ build_libs: build_libs_toolkit ## Build and tag 'libs' image
 		--label ECVL_BRANCH=${ECVL_BRANCH} \
 		--label ECVL_REVISION=$(call get_revision,${ECVL_LIB_PATH},${ECVL_REVISION}),libs-toolkit)
 
-build_libs_toolkit: ecvl_folder eddl_folder ## Build and tag 'libs-toolkit' image
+build_libs_toolkit: ecvl_folder eddl_folder apply_patches ## Build and tag 'libs-toolkit' image
 	$(call build_image,libs,develop,\
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
@@ -293,7 +302,7 @@ clean_pylibs:
 	$(call clean_build,pylibs)
 
 
-.PHONY: help clean clean_libs clean pylibs \
+.PHONY: help clean clean_libs clean_pylibs apply_patches \
 	build _build build_libs_toolkit build_libs \
 	build_pylibs_toolkit build_pylibs \
 	ecvl_folder eddl_folder pyecvl_folder pyeddl_folder \
