@@ -27,9 +27,11 @@ RUN \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 70 \
         --slave /usr/bin/g++ g++ /usr/bin/g++-7 \
         --slave /usr/bin/x86_64-linux-gnu-gcc x86_64-linux-gnu-gcc /usr/bin/x86_64-linux-gnu-gcc-7 \
+        --slave /usr/bin/x86_64-linux-gnu-g++ x86_64-linux-gnu-g++ /usr/bin/x86_64-linux-gnu-g++-7 \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 80 \
         --slave /usr/bin/g++ g++ /usr/bin/g++-8 \
         --slave /usr/bin/x86_64-linux-gnu-gcc x86_64-linux-gnu-gcc /usr/bin/x86_64-linux-gnu-gcc-8 \
+        --slave /usr/bin/x86_64-linux-gnu-g++ x86_64-linux-gnu-g++ /usr/bin/x86_64-linux-gnu-g++-8 \
     && apt-get clean \
     && cd /tmp/ \
     && wget --quiet https://github.com/Kitware/CMake/releases/download/v3.14.6/cmake-${cmake_release}-Linux-x86_64.tar.gz \
