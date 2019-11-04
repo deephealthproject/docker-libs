@@ -34,4 +34,4 @@ PYEDDL_REVISION=54ec6dc8e92c22909f19eb2a58c0f78e22ff05c2
 
 # date.time as build number
 #BUILD_NUMBER ?= $(shell date '+%Y%m%d.%H%M%S')
-BUILD_NUMBER = 0.1
+BUILD_NUMBER = 0.1.1
