@@ -25,13 +25,13 @@ PYECVL_REVISION=ec5357a4274b8561d254a6a750b6eeba404100b4
 # EDDL repository 
 EDDL_REPOSITORY=git@github.com:deephealthproject/eddl.git
 EDDL_BRANCH=develop
-EDDL_REVISION=a2e44cdd7ad99ae16aa686aeb72085998cc24557
+EDDL_REVISION=9e11e447efb3184eaf8f747336eba9ce7fb86674
 
 # PyEDDL repository
 PYEDDL_REPOSITORY=git@github.com:deephealthproject/pyeddl.git
 PYEDDL_BRANCH=master
-PYEDDL_REVISION=f0e7e2c9d0ecbfe065a187465102cf77b6c2fcd6
+PYEDDL_REVISION=54ec6dc8e92c22909f19eb2a58c0f78e22ff05c2
 
 # date.time as build number
 #BUILD_NUMBER ?= $(shell date '+%Y%m%d.%H%M%S')
-BUILD_NUMBER = 0.1
+BUILD_NUMBER = 0.1.1
