@@ -123,8 +123,7 @@ endef
 # 5 --> RECURSIVE SUBMODULE CLONE (true|false)
 define clone_repository
 	@if [ ! -d ${1} ]; then \
-		git clone --single-branch \
-				--branch ${3} ${2} ${1} \
+		git clone --branch ${3} ${2} ${1} \
 		&& cd ${1} \
 		&& if [ -n ${4} ]; then git reset --hard ${4} ; fi \
 		&& if [ ${5} == true ]; then git submodule update --init --recursive ; fi \
