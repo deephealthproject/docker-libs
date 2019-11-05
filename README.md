@@ -6,28 +6,31 @@ Docker images to develop and run software based on the [EDDL](https://github.com
 
 The `docker-libs` repository allows users to build and publish on a registry (e.g., DockerHub) Docker images containing the [EDDL](https://github.com/deephealthproject/eddl) and [ECVL](https://github.com/deephealthproject/ecvl) libraries and their Python wrappers, [PyEDDL](https://github.com/deephealthproject/pyeddl) and [PyECVL](https://github.com/deephealthproject/pycvl). All the images are based on the [NVIDIA Container Toolkit](https://github.com/NVIDIA/nvidia-docker) and the EDDL and ECVL libraries are configured to leverage NVIDIA GPUs.
 
+Precompiled images are published on [DockerHub](https://hub.docker.com/u/dhealth).
+
 The available images are:
 
-* **`libs:`** contains an installation of the EDDL and ECVL libraries
-* **`libs-toolkit:`** contains an installation of the EDDL and ECVL libraries, the source code of two libraries and all the development tools (compilers, libraries, etc.) you need to compile them
+* **[`dhealth/libs`](https://hub.docker.com/r/dhealth/libs)** contains an installation of the EDDL and ECVL libraries
+* **[`dhealth/libs-toolkit`](https://hub.docker.com/r/dhealth/libs-toolkit)** contains an installation of the EDDL and ECVL libraries, the source code of two libraries and all the development tools (compilers, libraries, etc.) you need to compile them
 
-* **`pylibs:`** extends the `libs` image with the PyEDDL and PyECVL libraries
-* **`pylibs-toolkit:`** extends the `libs-toolkit` image with the PyEDDL and PyECVL libraries
+* **[`dhealth/pylibs`](https://hub.docker.com/r/dhealth/pylibs)** extends the `libs` image with the PyEDDL and PyECVL libraries
+* **[`dhealth/pylibs-toolkit`](https://hub.docker.com/r/dhealth/pylibs-toolkit)** extends the `libs-toolkit` image with the PyEDDL and PyECVL libraries
 
-## How to use
+## Example usage
 
-All the images above are are published on [DockerHub](https://hub.docker.com), under the **`dhealth`** organization. Thus, you can directly instantiate your Docker containers by using the following Docker images:
-
-* [`dhealth/libs`](https://hub.docker.com/r/dhealth/libs)
-* [`dhealth/libs-toolkit`](https://hub.docker.com/r/dhealth/libs-toolkit)
-* [`dhealth/pylibs`](https://hub.docker.com/r/dhealth/pylibs)
-* [`dhealth/pylibs-toolkit`](https://hub.docker.com/r/dhealth/pylibs-toolkit)
-
-As an example:
+Open a shell in a container with access to the DeepHealth libraries:
 
 ```bash
 docker run -it --rm dhealth/libs /bin/bash
 ```
+
+Open a shell to compile your local project:
+
+```bash
+docker run -it -u $(id -u) -v $(pwd):/tests --rm dhealth/libs-toolkit:0.1.1 /bin/bash
+```
+
+
 
 ## How to build
 
