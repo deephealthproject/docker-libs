@@ -12,7 +12,10 @@ RUN \
     echo "\nInstalling software requirements..." >&2 \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get update -y -q \
-    && apt-get install -y --no-install-recommends wget libopencv-dev \
+    && apt-get install -y --no-install-recommends \
+        wget \
+        libopencv-dev \
+        libopenslide-dev \
     && apt-get clean
 
 # set arguments
@@ -26,5 +29,5 @@ COPY --from=base ${eddl_src_target}/build/install/lib/* /usr/lib/
 COPY --from=base ${eddl_src_target}/build/install/include/third_party/eigen/Eigen /usr/local/include/
 COPY --from=base ${eddl_src_target}/build/install/include/* /usr/include/
 # install ECVL library
-COPY --from=base ${ecvl_src_target}/build/install/lib/* /usr/lib/
-COPY --from=base ${ecvl_src_target}/build/install/include/* /usr/include/
+COPY --from=base ${ecvl_src_target}/build/install/usr/local/lib/* /usr/local/lib/
+COPY --from=base ${ecvl_src_target}/build/install/usr/local/include/* /usr/local/include/
