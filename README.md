@@ -27,7 +27,7 @@ docker run -it --rm dhealth/libs /bin/bash
 Open a shell to compile your local project:
 
 ```bash
-docker run -it -u $(id -u) -v $(pwd):/tests --rm dhealth/libs-toolkit:0.1.1 /bin/bash
+docker run -it -u $(id -u) -v $(pwd):/tests --rm dhealth/libs-toolkit:0.1.2 /bin/bash
 ```
 
 

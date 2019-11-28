@@ -23,7 +23,8 @@ RUN \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get update -y -q \
     && apt-get install -y --no-install-recommends  \
-        build-essential git gcc-8 g++-8 wget libopencv-dev libwxgtk3.0-dev graphviz \
+        build-essential git gcc-8 g++-8 wget libopencv-dev libwxgtk3.0-dev \
+        graphviz libopenslide-dev \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 70 \
         --slave /usr/bin/g++ g++ /usr/bin/g++-7 \
         --slave /usr/bin/x86_64-linux-gnu-gcc x86_64-linux-gnu-gcc /usr/bin/x86_64-linux-gnu-gcc-7 \
@@ -52,21 +53,32 @@ RUN echo "\nBuilding EDDL library..." >&2 \
     && cd ${EDDL_SRC} \
     && mkdir build \
     && cd build \
-    && cmake -D BUILD_TARGET=GPU -D BUILD_TESTS=ON -D EDDL_SHARED=ON .. \
+    && cmake \
+        -D BUILD_TARGET=GPU \
+        -D BUILD_TESTS=ON \
+        -D EDDL_SHARED=ON \
+        .. \
     && make -j$(grep -c ^processor /proc/cpuinfo) \
     && echo "\n Installing EDDL library..." >&2 \
-    && make install \
-    && cp -rf ${EDDL_SRC}/build/install/lib/* /usr/lib/ \    
-    && cp -rf ${EDDL_SRC}/build/install/include/* /usr/include/ \
-    && cp -rf install/include/third_party/eigen/Eigen /usr/local/include/
+    && make DESTDIR= install \
+    && cp -r ${EDDL_SRC}/build/install/lib/* /usr/lib/ \
+    && cp -r ${EDDL_SRC}/build/install/include/* /usr/include/ \
+    && cp -r install/include/third_party/eigen/Eigen /usr/local/include/
 
 RUN echo "\nBuilding ECVL library..." >&2 \
     && cd ${ECVL_SRC} \
     && mkdir build \
     && cd build \
-    && cmake -DECVL_BUILD_GUI=OFF .. \ 
+    && cmake \
+        -D ECVL_BUILD_GUI=OFF \
+        -D ECVL_WITH_OPENSLIDE=ON \
+        -D ECVL_DATASET_PARSER=ON \
+        -D ECVL_WITH_DICOM=ON \
+        -D ECVL_BUILD_EDDL=ON \
+        -D EDDL_DIR=${EDDL_SRC}/build/install \
+        .. \
     && make -j$(grep -c ^processor /proc/cpuinfo) \
     && echo "\n Installing ECVL library..." >&2 \
-    && make install \
-    && cp -rf ${ECVL_SRC}/build/install/lib/* /usr/lib/ \
-    && cp -rf ${ECVL_SRC}/build/install/include/* /usr/include/
+    && make DESTDIR=install install \
+    && cp -r ${ECVL_SRC}/build/install/usr/local/lib/* /usr/local/lib/ \
+    && cp -r ${ECVL_SRC}/build/install/usr/local/include/* /usr/local/include/
