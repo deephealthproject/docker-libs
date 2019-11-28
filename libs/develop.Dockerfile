@@ -52,7 +52,11 @@ RUN echo "\nBuilding EDDL library..." >&2 \
     && cd ${EDDL_SRC} \
     && mkdir build \
     && cd build \
-    && cmake -D BUILD_TARGET=GPU -D BUILD_TESTS=ON -D EDDL_SHARED=ON .. \
+    && cmake \
+        -D BUILD_TARGET=GPU \
+        -D BUILD_TESTS=ON \
+        -D EDDL_SHARED=ON \
+        .. \
     && make -j$(grep -c ^processor /proc/cpuinfo) \
     && echo "\n Installing EDDL library..." >&2 \
     && make install \

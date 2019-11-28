@@ -23,13 +23,13 @@ COPY ${pyecvl_src_origin} ${pyecvl_src_target}
 RUN \
    echo "\nInstalling software requirements..." >&2 \
    && apt-get -y update && apt-get -y install --no-install-recommends \
-      python3-dev python3-pip \   
+      python3-dev python3-pip \
    && apt-get clean \
    && python3 -m pip install --upgrade --no-cache-dir \
       setuptools pip numpy pybind11 pytest
 
 RUN  \
-   cd ${pyeddl_src_target} \   
+   cd ${pyeddl_src_target} \
    && echo "\nLinking eddl library..." >&2 \
    && rm -r third_party/eddl \
    && ln -s ${eddl_src} third_party/ \
@@ -38,7 +38,7 @@ RUN  \
    && rm -rf build/temp.*
 
 RUN \
-   cd ${pyecvl_src_target} \   
+   cd ${pyecvl_src_target} \
    && echo "\nLinking eddl library..." >&2 \
    && rm -r third_party/ecvl \
    && ln -s ${ecvl_src} third_party/ \
