@@ -12,7 +12,7 @@ RUN \
     echo "\nInstalling software requirements..." >&2 \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get update -y -q \
-    && apt-get install -y --no-install-recommends libopencv-dev \
+    && apt-get install -y --no-install-recommends wget libopencv-dev \
     && apt-get clean
 
 # set arguments
