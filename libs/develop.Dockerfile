@@ -23,7 +23,8 @@ RUN \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get update -y -q \
     && apt-get install -y --no-install-recommends  \
-        build-essential git gcc-8 g++-8 wget libopencv-dev libwxgtk3.0-dev graphviz \
+        build-essential git gcc-8 g++-8 wget libopencv-dev libwxgtk3.0-dev \
+        graphviz libopenslide-dev \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 70 \
         --slave /usr/bin/g++ g++ /usr/bin/g++-7 \
         --slave /usr/bin/x86_64-linux-gnu-gcc x86_64-linux-gnu-gcc /usr/bin/x86_64-linux-gnu-gcc-7 \
@@ -68,7 +69,14 @@ RUN echo "\nBuilding ECVL library..." >&2 \
     && cd ${ECVL_SRC} \
     && mkdir build \
     && cd build \
-    && cmake -DECVL_BUILD_GUI=OFF .. \ 
+    && cmake \
+        -D ECVL_BUILD_GUI=OFF \
+        -D ECVL_WITH_OPENSLIDE=ON \
+        -D ECVL_DATASET_PARSER=ON \
+        -D ECVL_WITH_DICOM=ON \
+        -D ECVL_BUILD_EDDL=ON \
+        -D EDDL_DIR=${EDDL_SRC}/build/install \
+        .. \
     && make -j$(grep -c ^processor /proc/cpuinfo) \
     && echo "\n Installing ECVL library..." >&2 \
     && make install \
