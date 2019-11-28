@@ -60,10 +60,10 @@ RUN echo "\nBuilding EDDL library..." >&2 \
         .. \
     && make -j$(grep -c ^processor /proc/cpuinfo) \
     && echo "\n Installing EDDL library..." >&2 \
-    && make install \
-    && cp -rf ${EDDL_SRC}/build/install/lib/* /usr/lib/ \    
-    && cp -rf ${EDDL_SRC}/build/install/include/* /usr/include/ \
-    && cp -rf install/include/third_party/eigen/Eigen /usr/local/include/
+    && make DESTDIR= install \
+    && cp -r ${EDDL_SRC}/build/install/lib/* /usr/lib/ \
+    && cp -r ${EDDL_SRC}/build/install/include/* /usr/include/ \
+    && cp -r install/include/third_party/eigen/Eigen /usr/local/include/
 
 RUN echo "\nBuilding ECVL library..." >&2 \
     && cd ${ECVL_SRC} \
@@ -79,6 +79,6 @@ RUN echo "\nBuilding ECVL library..." >&2 \
         .. \
     && make -j$(grep -c ^processor /proc/cpuinfo) \
     && echo "\n Installing ECVL library..." >&2 \
-    && make install \
-    && cp -rf ${ECVL_SRC}/build/install/lib/* /usr/lib/ \
-    && cp -rf ${ECVL_SRC}/build/install/include/* /usr/include/
+    && make DESTDIR=install install \
+    && cp -r ${ECVL_SRC}/build/install/usr/local/lib/* /usr/local/lib/ \
+    && cp -r ${ECVL_SRC}/build/install/usr/local/include/* /usr/local/include/
