@@ -15,12 +15,12 @@ LATEST_BRANCH=master
 # ECVL repository
 ECVL_REPOSITORY=git@github.com:deephealthproject/ecvl.git
 ECVL_BRANCH=master
-ECVL_REVISION=ce069064bb49442fc07ba34ed2f66dc8f1ababc1
+ECVL_REVISION=c811985deb81af8a7c70f6738f1980ef6adf21f9
 
 # PyECVL
 PYECVL_REPOSITORY=git@github.com:deephealthproject/pyecvl.git
 PYECVL_BRANCH=master
-PYECVL_REVISION=ec5357a4274b8561d254a6a750b6eeba404100b4
+PYECVL_REVISION=f0e351acc62aaa915c09d390bc5e8a31c35d7fc8
 
 # EDDL repository 
 EDDL_REPOSITORY=git@github.com:deephealthproject/eddl.git
@@ -30,7 +30,7 @@ EDDL_REVISION=9e11e447efb3184eaf8f747336eba9ce7fb86674
 # PyEDDL repository
 PYEDDL_REPOSITORY=git@github.com:deephealthproject/pyeddl.git
 PYEDDL_BRANCH=master
-PYEDDL_REVISION=54ec6dc8e92c22909f19eb2a58c0f78e22ff05c2
+PYEDDL_REVISION=963773e6e012dd4c34f4d6a750c4587e59f7f12b
 
 # date.time as build number
 #BUILD_NUMBER ?= $(shell date '+%Y%m%d.%H%M%S')
