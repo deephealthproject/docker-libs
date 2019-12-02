@@ -36,8 +36,8 @@ pipeline {
       }
       steps {
         sh 'cd ${PYEDDL_SRC} && pytest tests'
-        sh 'cd ${PYECVL_SRC}/examples && python3 Tensor/eddl_tensor.py'
-        sh 'cd ${PYECVL_SRC}/examples && bash NN/run_all_fast.sh'
+        sh 'cd ${PYEDDL_SRC}/examples && python3 Tensor/eddl_tensor.py'
+        sh 'cd ${PYEDDL_SRC}/examples && bash NN/run_all_fast.sh'
       }
     }
     stage('Test PyECVL') {
