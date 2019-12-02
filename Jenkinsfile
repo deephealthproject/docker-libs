@@ -6,20 +6,43 @@ pipeline {
   }
   stages {
     stage('print pwd') {
-        steps {
-          sh 'pwd'
-          sh 'ls .'
-        }
+      steps {
+        sh 'pwd'
+        sh 'ls .'
+      }
     }
     stage('printenv') {
-        steps {
-          sh 'printenv'
-        }
+      steps {
+        sh 'printenv'
+      }
     }
     stage('build') {
-        steps {
+      steps {
           sh 'make build'
       }
     }
+    stage('cleanup'){
+      steps {
+          sh 'rm -Rf '
+      }
+    }
   }
+  post {
+    always {
+      echo 'One way or another, I have finished'
+      deleteDir() /* clean up our workspace */
+    }
+    success {
+      echo 'I succeeded!'
+    }
+    unstable {
+      echo 'I am unstable :/'
+    }
+    failure {
+      echo 'I failed :('
+    }
+    changed {
+      echo 'Things were different before...'
+    }
+  } 
 }
