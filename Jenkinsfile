@@ -30,6 +30,16 @@ pipeline {
     //       sh 'make build'
     //   }
     // }
+    stage('Test PyEDDL') {
+      agent {
+        docker { image 'pylibs-toolkit:latest' }
+      }
+      steps {
+        sh 'cd ${PYEDDL_SRC} && pytest tests'
+        sh 'cd ${PYECVL_SRC}/examples && python3 Tensor/eddl_tensor.py'
+        sh 'cd ${PYECVL_SRC}/examples && bash NN/run_all_fast.sh'
+      }
+    }
     stage('Test PyECVL') {
       agent {
         docker { image 'pylibs-toolkit:latest' }
