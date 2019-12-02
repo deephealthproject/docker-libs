@@ -30,13 +30,13 @@ pipeline {
         docker { image 'pylibs:latest' }
       }
       steps {
-        sh 'cd/usr/local/src/pyecvl && pytest tests'
-        sh 'cd/usr/local/src/pyecvl/examples && python3 dataset.py /ecvl/build/mnist/mnist.yml'
-        sh 'cd/usr/local/src/pyecvl/examples && python3 ecvl_eddl.py /ecvl/data/test.jpg /ecvl/build/mnist/mnist.yml'
-        sh 'cd/usr/local/src/pyecvl/examples && python3 img_format.py /ecvl/data/nifti/LR_nifti.nii /ecvl/data/isic_dicom/ISIC_0000008.dcm'
-        sh 'cd/usr/local/src/pyecvl/examples && python3 imgproc.py /ecvl/data/test.jpg'
-        sh 'cd/usr/local/src/pyecvl/examples && python3 openslide.py /ecvl/data/hamamatsu/10-B1-TALG.ndpi'
-        sh 'cd/usr/local/src/pyecvl/examples && python3 read_write.py /ecvl/data/test.jpg test_mod.jpg'
+        sh 'cd /usr/local/src/pyecvl && pytest tests'
+        sh 'cd /usr/local/src/pyecvl/examples && python3 dataset.py /ecvl/build/mnist/mnist.yml'
+        sh 'cd /usr/local/src/pyecvl/examples && python3 ecvl_eddl.py /ecvl/data/test.jpg /ecvl/build/mnist/mnist.yml'
+        sh 'cd /usr/local/src/pyecvl/examples && python3 img_format.py /ecvl/data/nifti/LR_nifti.nii /ecvl/data/isic_dicom/ISIC_0000008.dcm'
+        sh 'cd /usr/local/src/pyecvl/examples && python3 imgproc.py /ecvl/data/test.jpg'
+        sh 'cd /usr/local/src/pyecvl/examples && python3 openslide.py /ecvl/data/hamamatsu/10-B1-TALG.ndpi'
+        sh 'cd /usr/local/src/pyecvl/examples && python3 read_write.py /ecvl/data/test.jpg test_mod.jpg'
       }
     }
   }
