@@ -32,7 +32,7 @@ pipeline {
     // }
     stage('Test PyECVL') {
       agent {
-        docker { image 'pylibs:latest' }
+        docker { image 'pylibs-toolkit:latest' }
       }
       steps {
         sh 'cd /usr/local/src/pyecvl && pytest tests'
