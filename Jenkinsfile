@@ -12,6 +12,7 @@ pipeline {
           sh 'pwd'
           sh 'ls .'
         }
+        sh 'pwd'
       }
     }
     stage('printenv') {
