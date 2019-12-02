@@ -33,7 +33,7 @@ pipeline {
         docker { image 'libs-toolkit:latest' }
       }
       steps {
-        ctest arguments: '-C Debug -VV', installation: 'InSearchPath', workingDir: '${ECVL_SRC}/build'
+        sh 'cd ${ECVL_SRC}/build && ctest -C Debug -VV'
       }
     }
     stage('Test PyEDDL') {
