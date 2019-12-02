@@ -20,11 +20,11 @@ pipeline {
         sh 'printenv'
       }
     }
-    stage('Build') {
-      steps {
-          sh 'make build'
-      }
-    }
+    // stage('Build') {
+    //   steps {
+    //       sh 'make build'
+    //   }
+    // }
     stage('Test PyECVL') {
       agent {
         docker { image 'pylibs:latest' }
