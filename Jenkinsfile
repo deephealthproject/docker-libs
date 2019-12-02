@@ -7,6 +7,10 @@ pipeline {
   stages {
     stage('build') {
         steps {
+          sh 'pwd'
+          sh 'ls .'
+        },
+        steps {
           sh 'printenv'
         },
         steps {
