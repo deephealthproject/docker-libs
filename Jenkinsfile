@@ -8,6 +8,8 @@ pipeline {
     stage('print pwd') {
       steps {
         sh 'pwd'
+        sh 'cd /tmp'
+        sh 'pwd'
         sh 'ls .'
       }
     }
@@ -16,9 +18,18 @@ pipeline {
         sh 'printenv'
       }
     }
-    stage('build') {
+    stage('Build') {
       steps {
           sh 'make build'
+      }
+    }
+    stage('Test PyECVL') {
+      agent {
+        docker { image 'pylibs:latest' }
+      }
+      steps {
+        sh 'cd /usr/local/src/pyecvl'
+        sh 'pwd'
       }
     }
   }
