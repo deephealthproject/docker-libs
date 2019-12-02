@@ -28,6 +28,14 @@ pipeline {
         sh 'cd ${EDDL_SRC}/build && ctest -C Debug -VV'
       }
     }
+    stage('Test ECVL') {
+      agent {
+        docker { image 'libs-toolkit:latest' }
+      }
+      steps {
+        ctest arguments: '-C Debug -VV', installation: 'InSearchPath', workingDir: '${ECVL_SRC}/build'
+      }
+    }
     stage('Test PyEDDL') {
       agent {
         docker { image 'pylibs-toolkit:latest' }
