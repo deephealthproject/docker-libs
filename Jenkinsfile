@@ -20,6 +20,14 @@ pipeline {
     //       sh 'make build'
     //   }
     // }
+    stage('Test EDDL') {
+      agent {
+        docker { image 'libs-toolkit:latest' }
+      }
+      steps {
+        sh 'cd ${EDDL_SRC}/build && ctest -C Debug -VV'
+      }
+    }
     stage('Test PyEDDL') {
       agent {
         docker { image 'pylibs-toolkit:latest' }
