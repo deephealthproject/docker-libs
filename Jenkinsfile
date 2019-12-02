@@ -21,11 +21,6 @@ pipeline {
           sh 'make build'
       }
     }
-    stage('cleanup'){
-      steps {
-          sh 'rm -Rf '
-      }
-    }
   }
   post {
     always {
