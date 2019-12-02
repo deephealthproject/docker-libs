@@ -9,10 +9,14 @@ pipeline {
         steps {
           sh 'pwd'
           sh 'ls .'
-        },
+        }
+    }
+    stage('build') {
         steps {
           sh 'printenv'
-        },
+        }
+    }
+    stage('build') {
         steps {
           sh 'make build'
       }
