@@ -8,9 +8,10 @@ pipeline {
     stage('print pwd') {
       steps {
         sh 'pwd'
-        sh 'cd /tmp'
-        sh 'pwd'
-        sh 'ls .'
+        dir('cd /tmp'){
+          sh 'pwd'
+          sh 'ls .'
+        }
       }
     }
     stage('printenv') {
@@ -28,8 +29,9 @@ pipeline {
         docker { image 'pylibs:latest' }
       }
       steps {
-        sh 'cd /usr/local/src/pyecvl'
-        sh 'pwd'
+        dir('cd /usr/local/src/pyecvl'){
+          sh 'pwd'
+        }
       }
     }
   }
