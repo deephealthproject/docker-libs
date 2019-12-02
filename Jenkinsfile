@@ -8,7 +8,7 @@ pipeline {
     stage('print pwd') {
       steps {
         sh 'pwd'
-        dir('/tmp'){
+        dir('tests'){
           sh 'pwd'
           sh 'ls .'
         }
