@@ -5,13 +5,13 @@ pipeline {
     EDDL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/eddl.git master | awk '{print \$1}'")
   }
   stages {
-    stage('build') {
+    stage('print pwd') {
         steps {
           sh 'pwd'
           sh 'ls .'
         }
     }
-    stage('build') {
+    stage('printenv') {
         steps {
           sh 'printenv'
         }
