@@ -30,7 +30,7 @@ pipeline {
         docker { image 'pylibs:latest' }
       }
       steps {
-        dir('/usr/local/src/pyecvl'){
+        ws('/usr/local/src/pyecvl'){
           sh 'pwd'
         }
       }
