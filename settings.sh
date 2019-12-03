@@ -10,7 +10,7 @@ DOCKER_REPOSITORY_OWNER=dhealth
 DOCKER_IMAGE_PREFIX=
 
 # latest tag settings
-LATEST_BRANCH=master
+DOCKER_IMAGE_LATEST=false
 
 # ECVL repository
 ECVL_REPOSITORY=git@github.com:deephealthproject/ecvl.git
