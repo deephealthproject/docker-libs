@@ -6,8 +6,12 @@ pipeline {
     EDDL_SRC = "${BASE_SRC}/eddl"
     PYECVL_SRC = "${BASE_SRC}/pyecvl"
     PYEDDL_SRC = "${BASE_SRC}/pyeddl"
-    ECVL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/ecvl.git master | awk '{print \$1}'")
-    EDDL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/eddl.git master | awk '{print \$1}'")
+    //LIBRARY_BRANCH = sh(returnStdout: true, script: "if [[ ${GIT_BRANCH} != 'master' && ${GIT_BRANCH} != 'develop' ]]; then echo 'develop'; else echo ${GIT_BRANCH}; fi")
+    LIB_BRANCH = "master"
+    ECVL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/ecvl.git ${LIB_BRANCH} | awk '{print \$1}'")
+    EDDL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/eddl.git ${LIB_BRANCH} | awk '{print \$1}'")
+    PYECVL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/pyecvl.git ${LIB_BRANCH} | awk '{print \$1}'")
+    PYEDDL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/pyeddl.git ${LIB_BRANCH} | awk '{print \$1}'")
     DOCKER_IMAGE_LATEST = sh(returnStdout: true, script: "if [[ ${GIT_BRANCH} == 'master' ]]; then echo 'true'; else echo 'false'; fi")
     DOCKER_IMAGE_TAG = sh(returnStdout: true, script: "if [[ ${GIT_BRANCH} == 'master' ]]; then echo 'build-${BUILD_NUMBER}'; else echo 'dev-build-${BUILD_NUMBER}'; fi")
   }
