@@ -18,7 +18,7 @@ runtime_suffix =
 develop_suffix = -toolkit
 
 # latest tag settings
-LATEST_BRANCH ?= master
+DOCKER_IMAGE_LATEST ?= false
 
 # config file
 BUILD_CONF ?= settings.sh
@@ -59,11 +59,8 @@ PYEDDL_BRANCH ?= $(shell cd ${PYEDDL_LIB_PATH} && git rev-parse --abbrev-ref HEA
 PYEDDL_REVISION ?= 
 
 # enable latest tags
-push_latest_tags=false
-ifeq (${LATEST_BRANCH}, ${ECVL_BRANCH})
-ifeq (${LATEST_BRANCH}, ${EDDL_BRANCH})
+ifeq ("${DOCKER_IMAGE_LATEST}", "true")
 	push_latest_tags = true
-endif
 endif
 
 # set no cache option
@@ -89,13 +86,12 @@ define build_image
 	$(eval base := $(if $(4), --build-arg BASE_IMAGE=$(4)))
 	$(eval toolkit := $(if $(5), --build-arg TOOLKIT_IMAGE=$(5)))
 	$(eval image_name := ${DOCKER_IMAGE_PREFIX}${image}${${target}_suffix})
-	$(eval latest_tags := $(if ${push_latest_tags}, -t ${image_name}:latest))	
-	@echo "Building Docker image '${image_name}'..." \		
+	$(eval latest_tags := $(shell if [ "${push_latest_tags}" == "true" ]; then echo "-t ${image_name}:latest"; fi))
+	@echo "Building Docker image '${image_name}'..."
 	@cd ${image} \
 	&& docker build ${BUILD_CACHE_OPT} \
 		-f ${target}.Dockerfile \
 		   ${base} ${toolkit} \
-		-t ${image_name} \
 		-t ${image_name}:${BUILD_NUMBER} \
 		${latest_tags} \
 		${labels} \
