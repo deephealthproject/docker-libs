@@ -17,11 +17,11 @@ pipeline {
         sh 'printenv'
       }
     }
-    // stage('Build') {
-    //   steps {
-    //       sh 'make build'
-    //   }
-    // }
+    stage('Build') {
+      steps {
+          sh 'make build'
+      }
+    }
     stage('Test EDDL') {
       agent {
         docker { image 'libs-toolkit:latest' }
