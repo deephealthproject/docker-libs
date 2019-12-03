@@ -9,6 +9,7 @@ pipeline {
     ECVL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/ecvl.git master | awk '{print \$1}'")
     EDDL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/eddl.git master | awk '{print \$1}'")
     DOCKER_IMAGE_LATEST = sh(returnStdout: true, script: "if [[ ${GIT_BRANCH} == 'master' ]]; then echo 'true'; else echo 'false'; fi")
+    BUILD_NUMBER = sh(returnStdout: true, script: "if [[ ${GIT_BRANCH} == 'master' ]]; then echo '${BUILD_NUMBER}'; else echo '${GIT_BRANCH}-${BUILD_NUMBER}'; fi")
   }
   stages {
     stage('printenv') {
