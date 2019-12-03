@@ -88,12 +88,12 @@ pipeline {
       deleteDir() /* clean up our workspace */
     }
     success {
-      echo 'Docker images successfully build and published with tags: ${DOCKER_IMAGE_TAG}'
-      echo 'Library revisions...'
-      echo '* ECVL revision: ${ECVL_REVISION}'
-      echo '* EDDL revision: ${EDDL_REVISION}'
-      echo '* PyECVL revision: ${PYECVL_REVISION}'
-      echo '* PyEDDL revision: ${PYEDDL_REVISION}'      
+      echo "Docker images successfully build and published with tags: ${DOCKER_IMAGE_TAG}"
+      echo "Library revisions..."
+      echo "* ECVL revision: ${ECVL_REVISION}"
+      echo "* EDDL revision: ${EDDL_REVISION}"
+      echo "* PyECVL revision: ${PYECVL_REVISION}"
+      echo "* PyEDDL revision: ${PYEDDL_REVISION}"
     }
     unstable {
       echo 'I am unstable :/'
