@@ -173,7 +173,7 @@ pyecvl_folder: pylibs_folder
 	@rm -rf ${PYECVL_LIB_PATH}/third_party/ecvl
 	@cp -a ${CURRENT_PATH}/${ECVL_LIB_PATH} ${CURRENT_PATH}/${PYECVL_LIB_PATH}/third_party/ecvl 
 	@echo "Building Python ECVL Python bindings..."
-	@docker tag ${DOCKER_IMAGE_PREFIX}libs${develop_suffix} ecvl
+	@docker tag ${DOCKER_IMAGE_PREFIX}libs${develop_suffix}:${BUILD_NUMBER} ecvl
 	@cd ${PYECVL_LIB_PATH} && bash generate_bindings.sh
 
 pyeddl_folder: pylibs_folder
@@ -181,6 +181,7 @@ pyeddl_folder: pylibs_folder
 	@echo "Copying revision '${EDDL_REVISION}' of EDDL library..."
 	@rm -rf ${PYEDDL_LIB_PATH}/third_party/eddl
 	@cp -a ${EDDL_LIB_PATH} ${PYEDDL_LIB_PATH}/third_party/eddl
+	@docker tag ${DOCKER_IMAGE_PREFIX}libs${develop_suffix}:${BUILD_NUMBER} ecvl
 	@echo "Building Python ECVL Python bindings..."
 	@cd ${PYEDDL_LIB_PATH} && bash generate_bindings.sh
 
@@ -206,7 +207,7 @@ build_libs: build_libs_toolkit ## Build and tag 'libs' image
 		--label EDDL_REVISION=$(call get_revision,${EDDL_LIB_PATH},${EDDL_REVISION}) \
 		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
 		--label ECVL_BRANCH=${ECVL_BRANCH} \
-		--label ECVL_REVISION=$(call get_revision,${ECVL_LIB_PATH},${ECVL_REVISION}),libs-toolkit)
+		--label ECVL_REVISION=$(call get_revision,${ECVL_LIB_PATH},${ECVL_REVISION}),libs-toolkit:$(BUILD_NUMBER))
 
 build_libs_toolkit: ecvl_folder eddl_folder ## Build and tag 'libs-toolkit' image
 	$(call build_image,libs,develop,\
@@ -231,7 +232,7 @@ build_pylibs: build_pylibs_toolkit ## Build and tag 'pylibs' image
 		--label PYECVL_REVISION=$(call get_revision,${PYECVL_LIB_PATH},${PYECVL_REVISION}) \
 		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
 		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
-		--label PYEDDL_REVISION=$(call get_revision,${PYEDDL_LIB_PATH},${PYEDDL_REVISION}),libs,pylibs-toolkit)
+		--label PYEDDL_REVISION=$(call get_revision,${PYEDDL_LIB_PATH},${PYEDDL_REVISION}),libs:$(BUILD_NUMBER),pylibs-toolkit:$(BUILD_NUMBER))
 
 build_pylibs_toolkit: pyecvl_folder pyeddl_folder ## Build and tag 'pylibs-toolkit' image
 	$(call build_image,pylibs,develop,\
@@ -246,7 +247,7 @@ build_pylibs_toolkit: pyecvl_folder pyeddl_folder ## Build and tag 'pylibs-toolk
 		--label PYECVL_REVISION=$(call get_revision,${PYECVL_LIB_PATH},${PYECVL_REVISION}) \
 		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
 		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
-		--label PYEDDL_REVISION=$(call get_revision,${PYEDDL_LIB_PATH},${PYEDDL_REVISION}),libs-toolkit)
+		--label PYEDDL_REVISION=$(call get_revision,${PYEDDL_LIB_PATH},${PYEDDL_REVISION}),libs-toolkit:$(BUILD_NUMBER))
 		
 # Docker push
 push: _push ## Push all built images
