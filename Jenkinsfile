@@ -60,6 +60,20 @@ pipeline {
         sh 'cd ${PYECVL_SRC}/examples && python3 read_write.py ${ECVL_SRC}/data/test.jpg test_mod.jpg'
       }
     }
+
+    stage('Deploy') {      
+      when {
+          expression {
+            currentBuild.result == null || currentBuild.result == 'SUCCESS' 
+          }
+      }
+      steps {
+        sh 'make publish'
+      }
+    }
+    
+
+
   }
   post {
     always {
