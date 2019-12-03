@@ -72,6 +72,7 @@ pipeline {
           expression {
             currentBuild.result == null || currentBuild.result == 'SUCCESS' 
           }
+          branch pattern: "master|develop", comparator: "REGEXP"
       }
       steps {
         sh 'make publish'
