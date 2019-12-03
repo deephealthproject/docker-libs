@@ -90,7 +90,7 @@ define build_image
 	$(eval image_name := ${DOCKER_IMAGE_PREFIX}${image}${${target}_suffix})
 	$(eval latest_tags := $(shell if [ "${push_latest_tags}" == "true" ]; then echo "-t ${image_name}:latest"; fi))
 	@echo "Building Docker image '${image_name}'..."
-	@cd ${image} \
+	cd ${image} \
 	&& docker build ${BUILD_CACHE_OPT} \
 		-f ${target}.Dockerfile \
 		   ${base} ${toolkit} \
