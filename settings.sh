@@ -33,5 +33,4 @@ PYEDDL_BRANCH=master
 PYEDDL_REVISION=963773e6e012dd4c34f4d6a750c4587e59f7f12b
 
 # date.time as build number
-#BUILD_NUMBER ?= $(shell date '+%Y%m%d.%H%M%S')
-BUILD_NUMBER = 0.1.2
+DOCKER_IMAGE_TAG = 0.1.2

@@ -78,6 +78,8 @@ ifeq ($(BUILD_NUMBER),)
 BUILD_NUMBER := $(shell date '+%Y%m%d.%H%M%S')
 endif
 
+# set default Docker image TAG
+DOCKER_IMAGE_TAG ?= ${BUILD_NUMBER}
 
 define build_image
 	$(eval image := $(1))
@@ -92,7 +94,7 @@ define build_image
 	&& docker build ${BUILD_CACHE_OPT} \
 		-f ${target}.Dockerfile \
 		   ${base} ${toolkit} \
-		-t ${image_name}:${BUILD_NUMBER} \
+		-t ${image_name}:${DOCKER_IMAGE_TAG} \
 		${latest_tags} \
 		${labels} \
 		.
@@ -102,11 +104,11 @@ define push_image
 	$(eval image := $(1))
 	$(eval target := $(2))
 	$(eval image_name := ${DOCKER_IMAGE_PREFIX}${image}${${target}_suffix})
-	$(eval full_tag := ${DOCKER_REGISTRY}/${DOCKER_REPOSITORY_OWNER}/${image_name}:$(BUILD_NUMBER))
+	$(eval full_tag := ${DOCKER_REGISTRY}/${DOCKER_REPOSITORY_OWNER}/${image_name}:$(DOCKER_IMAGE_TAG))
 	$(eval latest_tag := ${DOCKER_REGISTRY}/${DOCKER_DOCKER_REPOSITORY_OWNERUSER}/${image_name}:latest)
 	@echo "Tagging images... "
-	docker tag ${image_name}:$(BUILD_NUMBER) ${full_tag}
-	@if [ ${push_latest_tags} == true ]; then docker tag ${image_name}:$(BUILD_NUMBER) ${latest_tag}; fi
+	docker tag ${image_name}:$(DOCKER_IMAGE_TAG) ${full_tag}
+	@if [ ${push_latest_tags} == true ]; then docker tag ${image_name}:$(DOCKER_IMAGE_TAG) ${latest_tag}; fi
 	@echo "Pushing Docker image '${image_name}'..."	
 	docker push ${full_tag}
 	@if [ ${push_latest_tags} == true ]; then docker push ${latest_tag}; fi
@@ -173,7 +175,7 @@ pyecvl_folder: pylibs_folder
 	@rm -rf ${PYECVL_LIB_PATH}/third_party/ecvl
 	@cp -a ${CURRENT_PATH}/${ECVL_LIB_PATH} ${CURRENT_PATH}/${PYECVL_LIB_PATH}/third_party/ecvl 
 	@echo "Building Python ECVL Python bindings..."
-	@docker tag ${DOCKER_IMAGE_PREFIX}libs${develop_suffix}:${BUILD_NUMBER} ecvl
+	@docker tag ${DOCKER_IMAGE_PREFIX}libs${develop_suffix}:${DOCKER_IMAGE_TAG} ecvl
 	@cd ${PYECVL_LIB_PATH} && bash generate_bindings.sh
 
 pyeddl_folder: pylibs_folder
@@ -181,7 +183,7 @@ pyeddl_folder: pylibs_folder
 	@echo "Copying revision '${EDDL_REVISION}' of EDDL library..."
 	@rm -rf ${PYEDDL_LIB_PATH}/third_party/eddl
 	@cp -a ${EDDL_LIB_PATH} ${PYEDDL_LIB_PATH}/third_party/eddl
-	@docker tag ${DOCKER_IMAGE_PREFIX}libs${develop_suffix}:${BUILD_NUMBER} ecvl
+	@docker tag ${DOCKER_IMAGE_PREFIX}libs${develop_suffix}:${DOCKER_IMAGE_TAG} ecvl
 	@echo "Building Python ECVL Python bindings..."
 	@cd ${PYEDDL_LIB_PATH} && bash generate_bindings.sh
 
@@ -207,7 +209,7 @@ build_libs: build_libs_toolkit ## Build and tag 'libs' image
 		--label EDDL_REVISION=$(call get_revision,${EDDL_LIB_PATH},${EDDL_REVISION}) \
 		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
 		--label ECVL_BRANCH=${ECVL_BRANCH} \
-		--label ECVL_REVISION=$(call get_revision,${ECVL_LIB_PATH},${ECVL_REVISION}),libs-toolkit:$(BUILD_NUMBER))
+		--label ECVL_REVISION=$(call get_revision,${ECVL_LIB_PATH},${ECVL_REVISION}),libs-toolkit:$(DOCKER_IMAGE_TAG))
 
 build_libs_toolkit: ecvl_folder eddl_folder ## Build and tag 'libs-toolkit' image
 	$(call build_image,libs,develop,\
@@ -232,7 +234,7 @@ build_pylibs: build_pylibs_toolkit ## Build and tag 'pylibs' image
 		--label PYECVL_REVISION=$(call get_revision,${PYECVL_LIB_PATH},${PYECVL_REVISION}) \
 		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
 		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
-		--label PYEDDL_REVISION=$(call get_revision,${PYEDDL_LIB_PATH},${PYEDDL_REVISION}),libs:$(BUILD_NUMBER),pylibs-toolkit:$(BUILD_NUMBER))
+		--label PYEDDL_REVISION=$(call get_revision,${PYEDDL_LIB_PATH},${PYEDDL_REVISION}),libs:$(DOCKER_IMAGE_TAG),pylibs-toolkit:$(DOCKER_IMAGE_TAG))
 
 build_pylibs_toolkit: pyecvl_folder pyeddl_folder ## Build and tag 'pylibs-toolkit' image
 	$(call build_image,pylibs,develop,\
@@ -247,7 +249,7 @@ build_pylibs_toolkit: pyecvl_folder pyeddl_folder ## Build and tag 'pylibs-toolk
 		--label PYECVL_REVISION=$(call get_revision,${PYECVL_LIB_PATH},${PYECVL_REVISION}) \
 		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
 		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
-		--label PYEDDL_REVISION=$(call get_revision,${PYEDDL_LIB_PATH},${PYEDDL_REVISION}),libs-toolkit:$(BUILD_NUMBER))
+		--label PYEDDL_REVISION=$(call get_revision,${PYEDDL_LIB_PATH},${PYEDDL_REVISION}),libs-toolkit:$(DOCKER_IMAGE_TAG))
 		
 # Docker push
 push: _push ## Push all built images
