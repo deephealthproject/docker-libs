@@ -28,7 +28,7 @@ pipeline {
     }
     stage('Test EDDL') {
       agent {
-        docker { image 'libs-toolkit:latest' }
+        docker { image 'libs-toolkit:${DOCKER_IMAGE_TAG}' }
       }
       steps {
         sh 'cd ${EDDL_SRC}/build && ctest -C Debug -VV'
@@ -36,7 +36,7 @@ pipeline {
     }
     stage('Test ECVL') {
       agent {
-        docker { image 'libs-toolkit:latest' }
+        docker { image 'libs-toolkit:${DOCKER_IMAGE_TAG}' }
       }
       steps {
         sh 'cd ${ECVL_SRC}/build && ctest -C Debug -VV'
@@ -44,7 +44,7 @@ pipeline {
     }
     stage('Test PyEDDL') {
       agent {
-        docker { image 'pylibs-toolkit:latest' }
+        docker { image 'pylibs-toolkit:${DOCKER_IMAGE_TAG}' }
       }
       steps {
         sh 'cd ${PYEDDL_SRC} && pytest tests'
@@ -54,7 +54,7 @@ pipeline {
     }
     stage('Test PyECVL') {
       agent {
-        docker { image 'pylibs-toolkit:latest' }
+        docker { image 'pylibs-toolkit:${DOCKER_IMAGE_TAG}' }
       }
       steps {
         sh 'cd ${PYECVL_SRC} && pytest tests'
