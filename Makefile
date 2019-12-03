@@ -94,9 +94,7 @@ define build_image
 	&& docker build ${BUILD_CACHE_OPT} \
 		-f ${target}.Dockerfile \
 		   ${base} ${toolkit} \
-		-t ${image_name}:${DOCKER_IMAGE_TAG} \
-		${latest_tags} \
-		${labels} \
+		-t ${image_name}:${DOCKER_IMAGE_TAG} ${latest_tags} ${labels} \
 		.
 endef
 
