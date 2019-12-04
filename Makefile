@@ -208,8 +208,8 @@ apply_libs_patches:
 # Targets to build container images
 build: _build ## Build and tag all Docker images
 _build: \
-	build_libs_toolkit build_libs \
-	build_pylibs_toolkit build_pylibs
+	build_libs \
+	build_pylibs
 
 build_libs: build_libs_toolkit ## Build and tag 'libs' image
 	$(call build_image,libs,runtime,\
