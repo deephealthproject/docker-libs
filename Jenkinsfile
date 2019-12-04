@@ -35,6 +35,7 @@ pipeline {
     }
     stage('Build') {
       steps {
+        sh 'echo "Build phase"'
         // script {
         //   if (env.BRANCH_NAME == 'master') {
         //     make build
@@ -93,6 +94,7 @@ pipeline {
           //branch pattern: "master|develop", comparator: "REGEXP"
       }
       steps {
+        sh 'echo "Deploy phase"'
         // script {
         //   if (env.BRANCH_NAME != 'master') {
         //     DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_RELEASE_TAG} ${DOCKER_IMAGE_RELEASE_TAG}_${DOCKER_IMAGE_TAG}"
