@@ -36,6 +36,7 @@ pipeline {
     stage('Build') {
       steps {
         sh 'echo "Build phase"'
+        sh 'if [[ ${GIT_BRANCH} == "master" ]]; then make build; else CONFIG_FILE="" && make build ; fi'
         // script {
         //   if (env.BRANCH_NAME == 'master') {
         //     make build
