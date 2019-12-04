@@ -35,7 +35,7 @@ pipeline {
     }
     stage('Build') {
       when {
-          branch 'master'
+          not { branch "master" }
       }
       steps {        
         sh 'CONFIG_FILE="" make build'
@@ -43,7 +43,7 @@ pipeline {
     }
     stage('Build Release') {
       when {
-          not { branch "master" }
+          branch 'master'
       }
       steps {
         sh 'make build'
@@ -92,7 +92,7 @@ pipeline {
 
     stage('Deploy') {
       when {
-          branch 'master'
+          not { branch "master" }
       }
       steps {        
           sh 'CONFIG_FILE="" make push'
@@ -100,7 +100,7 @@ pipeline {
     }
     stage('Deploy Release') {
       when {
-          not { branch "master" }
+          branch 'master'
       }
       steps {
         withEnv (['DOCKER_IMAGE_TAG_EXTRA=${DOCKER_IMAGE_RELEASE_TAG} ${DOCKER_IMAGE_RELEASE_TAG}_${DOCKER_IMAGE_TAG}"']){
