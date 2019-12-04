@@ -75,10 +75,9 @@ pipeline {
           }
           branch pattern: "master|develop", comparator: "REGEXP"
       }
-      steps {        
-        //sh 'if [[ ${GIT_BRANCH} == "master" ]]; then export DOCKER_IMAGE_TAG="dev-build-${BUILD_NUMBER}""; fi'
+      steps {
+        sh 'if [[ ${GIT_BRANCH} != "master" ]]; then test="${DOCKER_IMAGE_RELEASE_TAG} ${DOCKER_IMAGE_RELEASE_TAG}_${DOCKER_IMAGE_TAG}"; fi'
         sh 'make push'
-
       }
     }
     
