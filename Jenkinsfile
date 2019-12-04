@@ -38,7 +38,7 @@ pipeline {
           not { branch 'master' }
       }
       steps {
-        withEnv (["CONFIG_FILE=''"]){
+        withEnv (["CONFIG_FILE="]){
           sh 'make build'
         }
       }
