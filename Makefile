@@ -24,10 +24,10 @@ DOCKER_IMAGE_LATEST ?= false
 DOCKER_IMAGE_TAG_EXTRA ?= 
 
 # config file
-BUILD_CONF ?= settings.sh
-ifneq ("$(wildcard $(BUILD_CONF))","")
-include $(BUILD_CONF)
-export $(shell sed 's/=.*//' $(BUILD_CONF))
+CONFIG_FILE ?= settings.sh
+ifneq ("$(wildcard $(CONFIG_FILE))","")
+include $(CONFIG_FILE)
+#export $(shell sed 's/=.*//' $(CONFIG_FILE))
 endif
 
 # current path
