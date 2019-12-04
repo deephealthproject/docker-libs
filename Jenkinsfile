@@ -38,7 +38,7 @@ pipeline {
           not { branch 'master' }
       }
       steps {        
-        sh 'CONFIG_FILE=""; make build'
+        sh 'CONFIG_FILE=\"\" make build'
       }
     }
     stage('Build Release') {
