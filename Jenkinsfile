@@ -76,8 +76,9 @@ pipeline {
           branch pattern: "master|develop", comparator: "REGEXP"
       }
       steps {
-        sh 'if [[ ${GIT_BRANCH} != "master" ]]; then test="${DOCKER_IMAGE_RELEASE_TAG} ${DOCKER_IMAGE_RELEASE_TAG}_${DOCKER_IMAGE_TAG}"; fi'
-        sh 'make push'
+        sh 'if [[ ${GIT_BRANCH} != "master" ]]; then \
+            test="${DOCKER_IMAGE_RELEASE_TAG} ${DOCKER_IMAGE_RELEASE_TAG}_${DOCKER_IMAGE_TAG}"; fi \
+            make push'
       }
     }
     
