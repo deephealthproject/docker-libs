@@ -28,7 +28,7 @@ pipeline {
     DOCKER_IMAGE_RELEASE_TAG = sh(returnStdout: true, script: "grep DOCKER_IMAGE_TAG settings.sh | awk -F'[=]' '{print \$2}'").trim()
   }
   stages {
-    stage('printenv') {
+    stage('Configure') {
       steps {
         sh 'printenv'
       }
@@ -38,7 +38,7 @@ pipeline {
           not { branch 'master' }
       }
       steps {        
-        sh 'CONFIG_FILE=\"\" make build'
+        sh 'CONFIG_FILE="" make build'
       }
     }
     stage('Build Release') {
