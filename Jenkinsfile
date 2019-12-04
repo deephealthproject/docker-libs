@@ -35,7 +35,7 @@ pipeline {
     }
     stage('Build') {
       when {
-          not { branch 'master' }
+          { branch 'master' }
       }
       steps {        
         sh 'CONFIG_FILE="" make build'
@@ -43,7 +43,7 @@ pipeline {
     }
     stage('Build Release') {
       when {
-          branch "master"
+          not { branch "master" }
       }
       steps {
         sh 'make build'
@@ -92,17 +92,15 @@ pipeline {
 
     stage('Deploy') {
       when {
-          not { branch 'master' }
+          branch 'master'
       }
-      steps {
-        withEnv (["CONFIG_FILE=''"]){
-          sh 'make push'
-        }
+      steps {        
+          sh 'CONFIG_FILE="" make push'
       }
     }
     stage('Deploy Release') {
       when {
-          branch "master"
+          not { branch "master" }
       }
       steps {
         withEnv (['DOCKER_IMAGE_TAG_EXTRA=${DOCKER_IMAGE_RELEASE_TAG} ${DOCKER_IMAGE_RELEASE_TAG}_${DOCKER_IMAGE_TAG}"']){
@@ -128,6 +126,14 @@ pipeline {
       echo 'I am unstable :/'
     }
     failure {
+      mail to: "kikkomep@crs4.it"
+           bcc: '', 
+           cc: '', 
+           body: "<b>Example</b><br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br> URL de build: ${env.BUILD_URL}",
+           charset: 'UTF-8', from: '', 
+           mimeType: 'text/html', replyTo: '', 
+           subject: "ERROR CI: Project name -> ${env.JOB_NAME}";
+      
       echo 'I failed :('
     }
     changed {
