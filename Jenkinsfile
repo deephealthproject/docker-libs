@@ -35,7 +35,13 @@ pipeline {
     }
     stage('Build') {
       steps {
-          sh 'make build'
+        script {
+          if (env.BRANCH_NAME == 'master') {
+            make build
+          }else {
+            CONFIG_FILE="" make build
+          }
+        }
       }
     }
     stage('Test EDDL') {
@@ -87,9 +93,17 @@ pipeline {
           //branch pattern: "master|develop", comparator: "REGEXP"
       }
       steps {
-        sh 'if [[ ${GIT_BRANCH} != "master" ]]; then \
-            test="${DOCKER_IMAGE_RELEASE_TAG} ${DOCKER_IMAGE_RELEASE_TAG}_${DOCKER_IMAGE_TAG}"; fi \
-            make push'
+        script {
+          if (env.BRANCH_NAME != 'master') {
+            DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_RELEASE_TAG} ${DOCKER_IMAGE_RELEASE_TAG}_${DOCKER_IMAGE_TAG}"
+            make push
+          }else {
+            CONFIG_FILE="" make push
+          }
+        }
+        // sh 'if [[ ${GIT_BRANCH} != "master" ]]; then \
+        //     test="${DOCKER_IMAGE_RELEASE_TAG} ${DOCKER_IMAGE_RELEASE_TAG}_${DOCKER_IMAGE_TAG}"; fi \
+        //     make push'
       }
     }
     
