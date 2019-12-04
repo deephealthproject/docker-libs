@@ -34,18 +34,23 @@ pipeline {
       }
     }
     stage('Build') {
+      when {
+          not { branch 'master' }
+      }
       steps {
-        sh 'echo "Build phase"'
-        sh 'if [[ ${GIT_BRANCH} == "master" ]]; then make build; else CONFIG_FILE="" && make build ; fi'
-        // script {
-        //   if (env.BRANCH_NAME == 'master') {
-        //     make build
-        //   }else {
-        //     CONFIG_FILE="" make build
-        //   }
-        // }
+        withEnv (["CONFIG_FILE=''"]){
+          sh 'make build'
+        }
       }
     }
+    stage('Build Release') {
+      when {
+          branch "master"
+      }
+      steps {
+        sh 'make build'
+      }
+    }    
     stage('Test EDDL') {
       agent {
         docker { image 'libs-toolkit:${DOCKER_IMAGE_TAG}' }
@@ -87,31 +92,26 @@ pipeline {
       }
     }
 
-    stage('Deploy') {      
+    stage('Deploy') {
       when {
-          expression {
-            currentBuild.result == null || currentBuild.result == 'SUCCESS' 
-          }
-          //branch pattern: "master|develop", comparator: "REGEXP"
+          not { branch 'master' }
       }
       steps {
-        sh 'echo "Deploy phase"'
-        // script {
-        //   if (env.BRANCH_NAME != 'master') {
-        //     DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_RELEASE_TAG} ${DOCKER_IMAGE_RELEASE_TAG}_${DOCKER_IMAGE_TAG}"
-        //     make push
-        //   }else {
-        //     CONFIG_FILE="" make push
-        //   }
-        // }
-        // sh 'if [[ ${GIT_BRANCH} != "master" ]]; then \
-        //     test="${DOCKER_IMAGE_RELEASE_TAG} ${DOCKER_IMAGE_RELEASE_TAG}_${DOCKER_IMAGE_TAG}"; fi \
-        //     make push'
+        withEnv (["CONFIG_FILE=''"]){
+          sh 'make push'
+        }
       }
     }
-    
-
-
+    stage('Deploy Release') {
+      when {
+          branch "master"
+      }
+      steps {
+        withEnv (['DOCKER_IMAGE_TAG_EXTRA=${DOCKER_IMAGE_RELEASE_TAG} ${DOCKER_IMAGE_RELEASE_TAG}_${DOCKER_IMAGE_TAG}"']){
+          sh 'make push'
+        }
+      }
+    }
   }
   post {
     always {
