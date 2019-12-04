@@ -12,6 +12,9 @@ DOCKER_IMAGE_PREFIX=
 # latest tag settings
 DOCKER_IMAGE_LATEST=false
 
+# additional tags
+DOCKER_IMAGE_TAG_EXTRA=
+
 # ECVL repository
 ECVL_REPOSITORY=git@github.com:deephealthproject/ecvl.git
 ECVL_BRANCH=master

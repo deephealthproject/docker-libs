@@ -20,6 +20,9 @@ develop_suffix = -toolkit
 # latest tag settings
 DOCKER_IMAGE_LATEST ?= false
 
+# extra tags
+DOCKER_IMAGE_TAG_EXTRA ?= 
+
 # config file
 BUILD_CONF ?= settings.sh
 ifneq ("$(wildcard $(BUILD_CONF))","")
@@ -102,14 +105,20 @@ define push_image
 	$(eval image := $(1))
 	$(eval target := $(2))
 	$(eval image_name := ${DOCKER_IMAGE_PREFIX}${image}${${target}_suffix})
-	$(eval full_tag := ${DOCKER_REGISTRY}/${DOCKER_REPOSITORY_OWNER}/${image_name}:$(DOCKER_IMAGE_TAG))
-	$(eval latest_tag := ${DOCKER_REGISTRY}/${DOCKER_DOCKER_REPOSITORY_OWNERUSER}/${image_name}:latest)
+	$(eval full_image_name := ${DOCKER_REGISTRY}/${DOCKER_REPOSITORY_OWNER}/${image_name})
+	$(eval full_tag := ${full_image_name}:$(DOCKER_IMAGE_TAG))
+	$(eval latest_tag := ${full_image_name}:latest)
+	$(eval tags := ${DOCKER_IMAGE_TAG_EXTRA})
 	@echo "Tagging images... "
 	docker tag ${image_name}:$(DOCKER_IMAGE_TAG) ${full_tag}
 	@if [ ${push_latest_tags} == true ]; then docker tag ${image_name}:$(DOCKER_IMAGE_TAG) ${latest_tag}; fi
 	@echo "Pushing Docker image '${image_name}'..."	
-	docker push ${full_tag}
-	@if [ ${push_latest_tags} == true ]; then docker push ${latest_tag}; fi
+	for tag in $(tags); \
+	do \
+	img_tag=${full_image_name}:$$tag ; \
+	docker tag ${full_tag} $$img_tag ; \
+	docker push $$img_tag ; \
+	done
 endef
 
 # 1 --> LIB_PATH
