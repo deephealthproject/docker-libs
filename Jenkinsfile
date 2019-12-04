@@ -37,10 +37,8 @@ pipeline {
       when {
           not { branch 'master' }
       }
-      steps {
-        withEnv (["CONFIG_FILE="]){
-          sh 'make build'
-        }
+      steps {        
+        sh 'CONFIG_FILE=""; make build'
       }
     }
     stage('Build Release') {
