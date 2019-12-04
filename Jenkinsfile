@@ -7,19 +7,19 @@ pipeline {
     PYECVL_SRC = "${BASE_SRC}/pyecvl"
     PYEDDL_SRC = "${BASE_SRC}/pyeddl"
     // ECVL Settings
-    ECVL_REPOSITORY=git\@github.com:deephealthproject/ecvl.git    
+    ECVL_REPOSITORY="git@github.com:deephealthproject/ecvl.git"
     ECVL_BRANCH=master
     ECVL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/ecvl.git ${ECVL_BRANCH} | awk '{print \$1}'")
     // PyECVL Settings
-    PYECVL_REPOSITORY=git\@github.com:deephealthproject/pyecvl.git
+    PYECVL_REPOSITORY="git@github.com:deephealthproject/pyecvl.git"
     PYECVL_BRANCH=master
     PYECVL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/pyecvl.git ${PYECVL_BRANCH} | awk '{print \$1}'")    
     // EDDL Settings    
-    EDDL_REPOSITORY=git\@github.com:deephealthproject/eddl.git
+    EDDL_REPOSITORY="git@github.com:deephealthproject/eddl.git"
     EDDL_BRANCH=master
     EDDL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/eddl.git ${EDDL_BRANCH} | awk '{print \$1}'")    
     // PyEDDL Settings
-    PYEDDL_REPOSITORY=git\@github.com:deephealthproject/pyeddl.git
+    PYEDDL_REPOSITORY="git@github.com:deephealthproject/pyeddl.git"
     PYEDDL_BRANCH=master
     PYEDDL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/pyeddl.git ${PYEDDL_BRANCH} | awk '{print \$1}'")    
     // Docker Settings
