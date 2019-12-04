@@ -25,7 +25,7 @@ pipeline {
     // Docker Settings
     DOCKER_IMAGE_LATEST = sh(returnStdout: true, script: "if [[ ${GIT_BRANCH} == 'master' ]]; then echo 'true'; else echo 'false'; fi")
     DOCKER_IMAGE_TAG = sh(returnStdout: true, script: "if [[ ${GIT_BRANCH} == 'master' ]]; then echo 'build-${BUILD_NUMBER}' ; else echo 'dev-build-${BUILD_NUMBER}' ; fi").trim()
-    DOCKER_IMAGE_RELEASE_TAG = sh(returnStdout: true, script: "grep DOCKER_IMAGE_TAG settings.sh | awk -F'[=]' '{print \$2}'").trim()
+    DOCKER_IMAGE_RELEASE_TAG = sh(returnStdout: true, script: "git tag --sort version:refname | tail -1").trim()
   }
   stages {
     stage('Configure') {
