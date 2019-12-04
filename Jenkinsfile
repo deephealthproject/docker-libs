@@ -35,7 +35,7 @@ pipeline {
     }
     stage('Build') {
       when {
-          { branch 'master' }
+          branch 'master'
       }
       steps {        
         sh 'CONFIG_FILE="" make build'
