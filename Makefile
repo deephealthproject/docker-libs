@@ -23,13 +23,6 @@ DOCKER_IMAGE_LATEST ?= false
 # extra tags
 DOCKER_IMAGE_TAG_EXTRA ?= 
 
-# config file
-CONFIG_FILE ?= settings.sh
-ifneq ("$(wildcard $(CONFIG_FILE))","")
-include $(CONFIG_FILE)
-#export $(shell sed 's/=.*//' $(CONFIG_FILE))
-endif
-
 # current path
 CURRENT_PATH := $(PWD)
 
@@ -42,29 +35,29 @@ PYECVL_LIB_PATH = ${LOCAL_PYLIBS_PATH}/pyecvl
 PYEDDL_LIB_PATH = ${LOCAL_PYLIBS_PATH}/pyeddl
 
 # ECVL repository
-ECVL_REPOSITORY ?= https://github.com/deephealthproject/ecvl.git
-ECVL_BRANCH ?= master
-ECVL_REVISION ?= 
+ECVL_REPOSITORY := $(or ${ECVL_REPOSITORY},https://github.com/deephealthproject/ecvl.git)
+ECVL_BRANCH := $(or ${ECVL_BRANCH},master)
+ECVL_REVISION := ${ECVL_REVISION}
 
 # PyECVL repository
-PYECVL_REPOSITORY ?= https://github.com/deephealthproject/pyecvl.git
-PYECVL_BRANCH ?= master
-PYECVL_REVISION ?= 
+PYECVL_REPOSITORY := $(or ${PYECVL_REPOSITORY},https://github.com/deephealthproject/pyecvl.git)
+PYECVL_BRANCH := $(or ${PYECVL_BRANCH},master)
+PYECVL_REVISION := ${PYECVL_REVISION}
 
 # EDDL repository
-EDDL_REPOSITORY ?= https://github.com/deephealthproject/eddl.git
-EDDL_BRANCH ?= master
-EDDL_REVISION ?= 
+EDDL_REPOSITORY := $(or ${EDDL_REPOSITORY},https://github.com/deephealthproject/eddl.git)
+EDDL_BRANCH := $(or ${EDDL_BRANCH},master)
+EDDL_REVISION := ${EDDL_REVISION}
 
 # PyEDDL repository
-PYEDDL_REPOSITORY ?= https://github.com/deephealthproject/pyeddl.git
-PYEDDL_BRANCH ?= master
-PYEDDL_REVISION ?= 
+PYEDDL_REPOSITORY := $(or ${PYEDDL_REPOSITORY},https://github.com/deephealthproject/pyeddl.git)
+PYEDDL_BRANCH := $(or ${PYEDDL_BRANCH},master)
+PYEDDL_REVISION := ${PYEDDL_REVISION} 
 
-# enable latest tags
-push_latest_tags = false
-ifeq ("${DOCKER_IMAGE_LATEST}", "true")
-	push_latest_tags = true
+# config file
+CONFIG_FILE ?= settings.sh
+ifneq ($(wildcard $(CONFIG_FILE)),)
+include $(CONFIG_FILE)
 endif
 
 # set no cache option
@@ -72,6 +65,12 @@ DISABLE_CACHE ?=
 BUILD_CACHE_OPT ?= 
 ifneq ("$(DISABLE_CACHE)", "")
 BUILD_CACHE_OPT = --no-cache
+endif
+
+# enable latest tags
+push_latest_tags = false
+ifeq ("${DOCKER_IMAGE_LATEST}", "true")
+	push_latest_tags = true
 endif
 
 # auxiliary flag 
