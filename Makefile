@@ -113,7 +113,9 @@ define push_image
 	docker tag ${image_name}:$(DOCKER_IMAGE_TAG) ${full_tag}
 	@if [ ${push_latest_tags} == true ]; then docker tag ${image_name}:$(DOCKER_IMAGE_TAG) ${latest_tag}; fi
 	@echo "Pushing Docker image '${image_name}'..."	
-	for tag in $(tags); \
+	docker push ${full_tag}
+	@if [ ${push_latest_tags} == true ]; then docker push ${latest_tag}; fi
+	@for tag in $(tags); \
 	do \
 	img_tag=${full_image_name}:$$tag ; \
 	docker tag ${full_tag} $$img_tag ; \
