@@ -59,6 +59,7 @@ PYEDDL_BRANCH ?= $(shell cd ${PYEDDL_LIB_PATH} && git rev-parse --abbrev-ref HEA
 PYEDDL_REVISION ?= 
 
 # enable latest tags
+push_latest_tags = false
 ifeq ("${DOCKER_IMAGE_LATEST}", "true")
 	push_latest_tags = true
 endif
