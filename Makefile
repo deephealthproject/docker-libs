@@ -43,22 +43,22 @@ PYEDDL_LIB_PATH = ${LOCAL_PYLIBS_PATH}/pyeddl
 
 # ECVL repository
 ECVL_REPOSITORY ?= https://github.com/deephealthproject/ecvl.git
-ECVL_BRANCH ?= $(shell cd ${ECVL_LIB_PATH} && git rev-parse --abbrev-ref HEAD)
+ECVL_BRANCH ?= master
 ECVL_REVISION ?= 
 
 # PyECVL repository
 PYECVL_REPOSITORY ?= https://github.com/deephealthproject/pyecvl.git
-PYECVL_BRANCH ?= $(shell cd ${PYECVL_LIB_PATH} && git rev-parse --abbrev-ref HEAD)
+PYECVL_BRANCH ?= master
 PYECVL_REVISION ?= 
 
 # EDDL repository
 EDDL_REPOSITORY ?= https://github.com/deephealthproject/eddl.git
-EDDL_BRANCH ?= $(shell cd ${EDDL_LIB_PATH} && git rev-parse --abbrev-ref HEAD)
+EDDL_BRANCH ?= master
 EDDL_REVISION ?= 
 
 # PyEDDL repository
 PYEDDL_REPOSITORY ?= https://github.com/deephealthproject/pyeddl.git
-PYEDDL_BRANCH ?= $(shell cd ${PYEDDL_LIB_PATH} && git rev-parse --abbrev-ref HEAD)
+PYEDDL_BRANCH ?= master
 PYEDDL_REVISION ?= 
 
 # enable latest tags
