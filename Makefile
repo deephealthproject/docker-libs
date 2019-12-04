@@ -4,24 +4,30 @@ VERSION := 0.1
 # set bash as default interpreter
 SHELL := /bin/bash
 
+# date.time as build number
+BUILD_NUMBER := $(or ${BUILD_NUMBER},$(shell date '+%Y%m%d.%H%M%S'))
+
 # set docker user credentials
-DOCKER_USER ?= ${USER}
-DOCKER_PASSWORD ?= ""
+DOCKER_USER := $(or ${DOCKER_USER},${USER})
+DOCKER_PASSWORD := ${DOCKER_PASSWORD}
 
 # use DockerHub as default registry
-DOCKER_REGISTRY ?= registry.hub.docker.com
+DOCKER_REGISTRY := $(or ${DOCKER_REGISTRY},registry.hub.docker.com)
 
 # set Docker repository
-DOCKER_REPOSITORY_OWNER ?= ${DOCKER_USER}
+DOCKER_REPOSITORY_OWNER := $(or ${DOCKER_REPOSITORY_OWNER},${DOCKER_USER})
 #DOCKER_IMAGE_PREFIX ?= deephealth-
 runtime_suffix = 
 develop_suffix = -toolkit
 
 # latest tag settings
-DOCKER_IMAGE_LATEST ?= false
+DOCKER_IMAGE_LATEST := $(or ${DOCKER_IMAGE_LATEST},false)
 
 # extra tags
-DOCKER_IMAGE_TAG_EXTRA ?= 
+DOCKER_IMAGE_TAG_EXTRA := ${DOCKER_IMAGE_TAG_EXTRA}
+
+# set default Docker image TAG
+DOCKER_IMAGE_TAG := $(or ${DOCKER_IMAGE_TAG},${BUILD_NUMBER})
 
 # current path
 CURRENT_PATH := $(PWD)
@@ -75,14 +81,6 @@ endif
 
 # auxiliary flag 
 DOCKER_LOGIN_DONE = false
-
-# date.time as build number
-ifeq ($(BUILD_NUMBER),)
-BUILD_NUMBER := $(shell date '+%Y%m%d.%H%M%S')
-endif
-
-# set default Docker image TAG
-DOCKER_IMAGE_TAG ?= ${BUILD_NUMBER}
 
 define build_image
 	$(eval image := $(1))
