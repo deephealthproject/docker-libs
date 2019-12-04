@@ -73,7 +73,7 @@ pipeline {
           expression {
             currentBuild.result == null || currentBuild.result == 'SUCCESS' 
           }
-          branch pattern: "master|develop", comparator: "REGEXP"
+          //branch pattern: "master|develop", comparator: "REGEXP"
       }
       steps {
         sh 'if [[ ${GIT_BRANCH} != "master" ]]; then \
