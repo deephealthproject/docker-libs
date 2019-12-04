@@ -9,19 +9,19 @@ pipeline {
     // ECVL Settings
     ECVL_REPOSITORY = "git@github.com:deephealthproject/ecvl.git"
     ECVL_BRANCH = "master"
-    ECVL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/ecvl.git ${ECVL_BRANCH} | awk '{print \$1}'")
+    ECVL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/ecvl.git ${ECVL_BRANCH} | awk '{print \$1}'").trim()
     // PyECVL Settings
     PYECVL_REPOSITORY = "git@github.com:deephealthproject/pyecvl.git"
     PYECVL_BRANCH = "master"
-    PYECVL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/pyecvl.git ${PYECVL_BRANCH} | awk '{print \$1}'")
+    PYECVL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/pyecvl.git ${PYECVL_BRANCH} | awk '{print \$1}'").trim()
     // EDDL Settings    
     EDDL_REPOSITORY = "git@github.com:deephealthproject/eddl.git"
     EDDL_BRANCH = "master"
-    EDDL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/eddl.git ${EDDL_BRANCH} | awk '{print \$1}'")    
+    EDDL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/eddl.git ${EDDL_BRANCH} | awk '{print \$1}'").trim()
     // PyEDDL Settings
     PYEDDL_REPOSITORY = "git@github.com:deephealthproject/pyeddl.git"
     PYEDDL_BRANCH = "master"
-    PYEDDL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/pyeddl.git ${PYEDDL_BRANCH} | awk '{print \$1}'")    
+    PYEDDL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/pyeddl.git ${PYEDDL_BRANCH} | awk '{print \$1}'").trim()
     // Docker Settings
     DOCKER_IMAGE_LATEST = sh(returnStdout: true, script: "if [[ ${GIT_BRANCH} == 'master' ]]; then echo 'true'; else echo 'false'; fi")
     DOCKER_IMAGE_TAG = sh(returnStdout: true, script: "if [[ ${GIT_BRANCH} == 'master' ]]; then echo 'build-${BUILD_NUMBER}' ; else echo 'dev-build-${BUILD_NUMBER}' ; fi").trim()
