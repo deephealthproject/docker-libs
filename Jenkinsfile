@@ -13,8 +13,6 @@ pipeline {
     PYECVL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/pyecvl.git ${LIB_BRANCH} | awk '{print \$1}'")
     PYEDDL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/pyeddl.git ${LIB_BRANCH} | awk '{print \$1}'")
     DOCKER_IMAGE_LATEST = sh(returnStdout: true, script: "if [[ ${GIT_BRANCH} == 'master' ]]; then echo 'true'; else echo 'false'; fi")
-    DOCKER_IMAGE_TAG = sh(returnStdout: true, script: "if [[ ${GIT_BRANCH} == 'master' ]]; then echo build-${BUILD_NUMBER}; else echo dev-build-${BUILD_NUMBER}; fi")
-    // DOCKER_IMAGE_TAG = "dev-build-${BUILD_NUMBER}"
   }
   stages {
     stage('printenv') {
@@ -76,6 +74,7 @@ pipeline {
           branch pattern: "master|develop", comparator: "REGEXP"
       }
       steps {
+        sh 'if [[ ${GIT_BRANCH} == "master" ]]; then export DOCKER_IMAGE_TAG="dev-build-${BUILD_NUMBER}"; fi'
         sh 'make publish'
       }
     }
