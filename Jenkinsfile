@@ -28,6 +28,11 @@ pipeline {
     DOCKER_IMAGE_TAG = sh(returnStdout: true, script: "if [[ ${GIT_BRANCH} == 'master' ]]; then echo 'build-${BUILD_NUMBER}' ; else echo 'dev-build-${BUILD_NUMBER}' ; fi").trim()    
   }
   stages {
+
+    stage ("checkout") {
+        checkout scm
+    }
+    
     stage('Configure') {
       steps {
         sh 'printenv'
