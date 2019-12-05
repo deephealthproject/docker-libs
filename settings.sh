@@ -10,7 +10,7 @@ DOCKER_REGISTRY=registry.hub.docker.com
 DOCKER_IMAGE_PREFIX=
 
 # latest tag settings
-DOCKER_IMAGE_LATEST=false
+#DOCKER_IMAGE_LATEST=false
 
 # additional tags
 #DOCKER_IMAGE_TAG_EXTRA=
