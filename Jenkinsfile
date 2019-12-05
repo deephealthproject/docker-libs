@@ -36,7 +36,7 @@ pipeline {
       }
     }
     
-    stage('Build') {
+    stage('Development Build') {
       when {
           not { branch "master" }
       }
@@ -45,7 +45,7 @@ pipeline {
       }
     }
 
-    stage('Build Release') {
+    stage('Master Build') {
       when {
           branch 'master'
       }
@@ -98,7 +98,7 @@ pipeline {
       }
     }
 
-    stage('Deploy') {
+    stage('Publish Development Build') {
       when {
           not { branch "master" }
       }
@@ -107,7 +107,7 @@ pipeline {
       }
     }
 
-    stage('Deploy Release') {
+    stage('Publish Master Build') {
       environment {
         DOCKER_IMAGE_RELEASE_TAG = sh(returnStdout: true, script: "tag=\$(git tag -l --points-at HEAD); if [[ -n \${tag} ]]; then echo \${tag}; else git rev-parse --short HEAD --short; fi").trim()
         DOCKER_IMAGE_TAG_EXTRA = "${DOCKER_IMAGE_RELEASE_TAG} ${DOCKER_IMAGE_RELEASE_TAG}_${DOCKER_IMAGE_TAG}"
