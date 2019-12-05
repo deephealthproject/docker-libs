@@ -30,6 +30,14 @@ pipeline {
   stages {
 
     stage('Configure') {
+      checkout([
+        $class: 'GitSCM',
+        branches: scm.branches,
+        doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
+        extensions: scm.extensions + [[$class: 'CloneOption', noTags: false, reference: '', shallow: true]],
+        submoduleCfg: [],
+        userRemoteConfigs: scm.userRemoteConfigs
+      ])
       steps {
         sh 'printenv'
       }
