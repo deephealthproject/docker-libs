@@ -104,6 +104,7 @@ pipeline {
       }
       steps {
         withEnv (['DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_RELEASE_TAG} ${DOCKER_IMAGE_RELEASE_TAG}_${DOCKER_IMAGE_TAG}"']){
+          sh 'echo ${DOCKER_IMAGE_TAG_EXTRA}'
           sh 'make push'
         }
       }
