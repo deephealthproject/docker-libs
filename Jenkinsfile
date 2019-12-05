@@ -106,6 +106,7 @@ pipeline {
       }
       when {
           branch 'master'
+          buildingTag()
       }
       steps {
         sh 'pwd; ls .'
