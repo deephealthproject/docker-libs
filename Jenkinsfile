@@ -1,6 +1,6 @@
 pipeline {
   agent any
-  triggers{ cron('H/10 * * * *') }
+  triggers{ cron('H H(3-6) * * *') }
   environment {    
     BASE_SRC = "/usr/local/src"
     ECVL_SRC = "${BASE_SRC}/ecvl"
