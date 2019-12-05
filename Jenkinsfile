@@ -29,10 +29,6 @@ pipeline {
   }
   stages {
 
-    stage ("checkout") {
-        checkout scm
-    }
-    
     stage('Configure') {
       steps {
         sh 'printenv'
