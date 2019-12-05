@@ -108,7 +108,7 @@ pipeline {
       }
       steps {
         sh 'pwd; ls .'
-        sh 'DOCKER_IMAGE_RELEASE_TAG=$(git describe --tags $(git rev-list --tags --max-count=1)); DOCKER_IMAGE_TAG_EXTRA = "${DOCKER_IMAGE_RELEASE_TAG} ${DOCKER_IMAGE_RELEASE_TAG}_${DOCKER_IMAGE_TAG}"; make push'
+        sh 'DOCKER_IMAGE_RELEASE_TAG=$(git describe --always --tags $(git rev-list --tags --max-count=1)); DOCKER_IMAGE_TAG_EXTRA = "${DOCKER_IMAGE_RELEASE_TAG} ${DOCKER_IMAGE_RELEASE_TAG}_${DOCKER_IMAGE_TAG}"; make push'
         // sh 'echo ${DOCKER_IMAGE_TAG_EXTRA}'
         // sh 'make push'
       }
