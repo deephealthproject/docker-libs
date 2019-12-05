@@ -28,6 +28,7 @@ pipeline {
     DOCKER_IMAGE_TAG = sh(returnStdout: true, script: "if [[ ${GIT_BRANCH} == 'master' ]]; then echo 'build-${BUILD_NUMBER}' ; else echo 'dev-build-${BUILD_NUMBER}' ; fi").trim()
     DOCKER_IMAGE_RELEASE_TAG = "12" 
     //sh(returnStdout: true, script: "git tag --sort version:refname | tail -1")
+    DOCKER_IMAGE_TAG_EXTRA = "${DOCKER_IMAGE_RELEASE_TAG} ${DOCKER_IMAGE_RELEASE_TAG}_${DOCKER_IMAGE_TAG}"
   }
   stages {
     stage('Configure') {
@@ -96,8 +97,8 @@ pipeline {
       when {
           not { branch "master" }
       }
-      steps {        
-          sh 'CONFIG_FILE="" make push'
+      steps {
+          sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push'
       }
     }
     stage('Deploy Release') {
@@ -105,10 +106,8 @@ pipeline {
           branch 'master'
       }
       steps {
-        withEnv (["DOCKER_IMAGE_TAG_EXTRA=\"${DOCKER_IMAGE_RELEASE_TAG} ${DOCKER_IMAGE_RELEASE_TAG}_${DOCKER_IMAGE_TAG}\""]){
-          sh 'echo ${DOCKER_IMAGE_TAG_EXTRA}'
-          sh 'make push'
-        }
+        sh 'echo ${DOCKER_IMAGE_TAG_EXTRA}'
+        sh 'make push'
       }
     }
   }
