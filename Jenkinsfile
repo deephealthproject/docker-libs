@@ -101,7 +101,7 @@ pipeline {
     stage('Deploy Release') {
       environment {
         //DOCKER_IMAGE_RELEASE_TAG = sh(returnStdout: true, script: "git describe --always --tags \$(git rev-list --tags --max-count=1)").trim()
-        DOCKER_IMAGE_RELEASE_TAG = sh(returnStdout: true, script: "git tag --sort version:refname | tail -1").trim()        
+        DOCKER_IMAGE_RELEASE_TAG = sh(returnStdout: true, script: "git tag -l --contains HEAD").trim()
         DOCKER_IMAGE_TAG_EXTRA = "${DOCKER_IMAGE_RELEASE_TAG} ${DOCKER_IMAGE_RELEASE_TAG}_${DOCKER_IMAGE_TAG}"
       }
       when {
