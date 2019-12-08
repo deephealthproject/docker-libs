@@ -1,7 +1,12 @@
 pipeline {
   agent any
-  triggers{ cron('H H(3-6) * * *') }
-  environment {    
+  triggers{
+    cron('H H(3-6) * * *')
+    upstream(
+      upstreamProjects: 'DeepHealth/eddl/master,DeepHealth/ecvl/master,DeepHealth/pyeddl/master,DeepHealth/pyecvl/master',
+      threshold: hudson.model.Result.SUCCESS)
+  }
+  environment {
     BASE_SRC = "/usr/local/src"
     ECVL_SRC = "${BASE_SRC}/ecvl"
     EDDL_SRC = "${BASE_SRC}/eddl"
