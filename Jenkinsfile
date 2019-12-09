@@ -1,7 +1,6 @@
 pipeline {
   agent any
   triggers{
-    cron('H H(3-6) * * *')
     upstream(
       upstreamProjects: 'DeepHealth/eddl/master,DeepHealth/ecvl/master,DeepHealth/pyeddl/master,DeepHealth/pyecvl/master',
       threshold: hudson.model.Result.SUCCESS)
@@ -34,7 +33,7 @@ pipeline {
   }
   stages {
 
-    stage('Configure') {      
+    stage('Configure') {
       steps {
         sh 'git fetch --tags'
         sh 'printenv'
