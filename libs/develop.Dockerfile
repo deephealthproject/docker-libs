@@ -64,6 +64,12 @@ RUN echo "\nBuilding EDDL library..." >&2 \
     && make DESTDIR=${EDDL_SRC}/build/install install
 
 
+RUN ls -larth && ls -larth ${EDDL_SRC}/build \
+    && cp -r ${EDDL_SRC}/build/install/lib/* /usr/local/lib/ \
+    && cp -r ${EDDL_SRC}/build/install/include/* /usr/local/include/
+    # \
+    #&& cp -r ${EDDL_SRC}/install/include/third_party/eigen/Eigen /usr/local/include/
+
 RUN echo "\nBuilding ECVL library..." >&2 \
     && cd ${ECVL_SRC} \
     && mkdir build \
