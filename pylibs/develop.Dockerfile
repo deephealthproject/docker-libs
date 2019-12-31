@@ -39,9 +39,11 @@ RUN  \
 
 RUN \
    cd ${pyecvl_src_target} \
-   && echo "\nLinking eddl library..." >&2 \
+   && echo "\nLinking ecvl library..." >&2 \
    && rm -r third_party/ecvl \
-   && ln -s ${ecvl_src} third_party/ \
+   && rm -r third_party/pyeddl \
+   && ln -s ${ecvl_src} third_party/ecvl \
+   && ln -s ${pyeddl_src_target} third_party/pyeddl \
    && echo "\nInstalling pyecvl module..." >&2 \
    && python3 setup.py install \
    && rm -rf build/temp.*
