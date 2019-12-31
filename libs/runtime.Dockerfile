@@ -1,7 +1,11 @@
 ARG BASE_IMAGE
-FROM ${BASE_IMAGE} as base
+FROM ${BASE_IMAGE} AS toolkit
 
-FROM nvidia/cuda:10.1-runtime
+####################
+#### BASE image ####
+####################
+
+FROM nvidia/cuda:10.1-runtime AS base
 
 LABEL website="https://github.com/deephealthproject"
 LABEL description="DeepHealth European Distributed Deep Learning Library"
@@ -14,6 +18,7 @@ RUN \
     && apt-get update -y -q \
     && apt-get install -y --no-install-recommends \
         wget \
+        rsync \
         libopencv-dev \
         libopenslide-dev \
     && apt-get clean
