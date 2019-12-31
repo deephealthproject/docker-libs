@@ -126,7 +126,7 @@ endef
 # 4 --> REVISION
 # 5 --> RECURSIVE SUBMODULE CLONE (true|false)
 define clone_repository
-	if [ ! -d ${1} ]; then \
+	@if [ ! -d ${1} ]; then \
 		git clone --branch "${3}" ${2} ${1} \
 		&& cd "${1}" \
 		&& if [ -n "${4}" ]; then git reset --hard "${4}" ; fi \
