@@ -18,7 +18,7 @@ DOCKER_IMAGE_PREFIX=
 # ECVL repository
 ECVL_REPOSITORY=git@github.com:deephealthproject/ecvl.git
 ECVL_BRANCH=master
-ECVL_REVISION=c811985deb81af8a7c70f6738f1980ef6adf21f9
+ECVL_REVISION=af6001e218a4c1aaec8a43dd05a3731edef73e73
 
 # PyECVL
 PYECVL_REPOSITORY=git@github.com:deephealthproject/pyecvl.git
@@ -28,12 +28,12 @@ PYECVL_REVISION=f0e351acc62aaa915c09d390bc5e8a31c35d7fc8
 # EDDL repository 
 EDDL_REPOSITORY=git@github.com:deephealthproject/eddl.git
 EDDL_BRANCH=master
-EDDL_REVISION=9e11e447efb3184eaf8f747336eba9ce7fb86674
+EDDL_REVISION=b72e9029a00f224256fd5424a20c2b89e9ce1b0b
 
 # PyEDDL repository
 PYEDDL_REPOSITORY=git@github.com:deephealthproject/pyeddl.git
 PYEDDL_BRANCH=master
-PYEDDL_REVISION=963773e6e012dd4c34f4d6a750c4587e59f7f12b
+PYEDDL_REVISION=3c3c01444f8fb6c24c3251adef24a823ba5dd281
 
 # date.time as build number
 #DOCKER_IMAGE_TAG=0.1.2
