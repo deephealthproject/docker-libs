@@ -57,13 +57,12 @@ RUN echo "\nBuilding EDDL library..." >&2 \
         -D BUILD_TARGET=GPU \
         -D BUILD_TESTS=ON \
         -D EDDL_SHARED=ON \
+        -D CMAKE_INSTALL_PREFIX= \
         .. \
     && make -j$(grep -c ^processor /proc/cpuinfo) \
     && echo "\n Installing EDDL library..." >&2 \
-    && make DESTDIR= install \
-    && cp -r ${EDDL_SRC}/build/install/lib/* /usr/lib/ \
-    && cp -r ${EDDL_SRC}/build/install/include/* /usr/include/ \
-    && cp -r install/include/third_party/eigen/Eigen /usr/local/include/
+    && make DESTDIR=${EDDL_SRC}/build/install install
+
 
 RUN echo "\nBuilding ECVL library..." >&2 \
     && cd ${ECVL_SRC} \
@@ -76,9 +75,10 @@ RUN echo "\nBuilding ECVL library..." >&2 \
         -D ECVL_WITH_DICOM=ON \
         -D ECVL_BUILD_EDDL=ON \
         -D EDDL_DIR=${EDDL_SRC}/build/install \
+        -D CMAKE_INSTALL_PREFIX= \
         .. \
     && make -j$(grep -c ^processor /proc/cpuinfo) \
     && echo "\n Installing ECVL library..." >&2 \
-    && make DESTDIR=install install \
-    && cp -r ${ECVL_SRC}/build/install/usr/local/lib/* /usr/local/lib/ \
-    && cp -r ${ECVL_SRC}/build/install/usr/local/include/* /usr/local/include/
+    && make DESTDIR=${ECVL_SRC}/build/install install \
+    && cp -r ${ECVL_SRC}/build/install/lib/* /usr/local/lib/ \
+    && cp -r ${ECVL_SRC}/build/install/include/* /usr/local/include/

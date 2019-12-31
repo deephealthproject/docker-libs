@@ -25,9 +25,9 @@ ARG eddl_src_target="/usr/local/src/eddl"
 ARG ecvl_src_target="/usr/local/src/ecvl"
 
 # install EDDL library
-COPY --from=base ${eddl_src_target}/build/install/lib/* /usr/lib/
-COPY --from=base ${eddl_src_target}/build/install/include/third_party/eigen/Eigen /usr/local/include/
-COPY --from=base ${eddl_src_target}/build/install/include/* /usr/include/
+COPY --from=base ${eddl_src_target}/build/install/lib/* /usr/local/lib/
+#COPY --from=base ${eddl_src_target}/build/install/include/third_party/eigen/Eigen /usr/local/include/
+COPY --from=base ${eddl_src_target}/build/install/include/* /usr/local/include/
 # install ECVL library
-COPY --from=base ${ecvl_src_target}/build/install/usr/local/lib/* /usr/local/lib/
-COPY --from=base ${ecvl_src_target}/build/install/usr/local/include/* /usr/local/include/
+COPY --from=base ${ecvl_src_target}/build/install/lib/* /usr/local/lib/
+COPY --from=base ${ecvl_src_target}/build/install/include/* /usr/local/include/
