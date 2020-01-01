@@ -80,7 +80,7 @@ ifeq ("${DOCKER_IMAGE_LATEST}", "true")
 endif
 
 # auxiliary flag 
-DOCKER_LOGIN_DONE = false
+DOCKER_LOGIN_DONE := $(or ${DOCKER_LOGIN_DONE},false)
 
 define build_image
 	$(eval image := $(1))
@@ -292,6 +292,8 @@ repo-login: ## Login to the Docker Registry
 		echo "Logging into Docker registry ${DOCKER_REGISTRY}..." ; \
 		echo ${DOCKER_PASSWORD} | docker login ${DOCKER_REGISTRY} -u ${DOCKER_USER} --password-stdin ; \
 		DOCKER_LOGIN_DONE=true ;\
+	else \
+		echo "Logging into Docker registry already done" ; \
 	fi
 
 version: ## Output the current version of this Makefile

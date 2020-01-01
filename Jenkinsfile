@@ -30,6 +30,10 @@ pipeline {
     // Docker Settings
     DOCKER_IMAGE_LATEST = sh(returnStdout: true, script: "if [[ ${GIT_BRANCH} == 'master' ]]; then echo 'true'; else echo 'false'; fi").trim()
     DOCKER_IMAGE_TAG = sh(returnStdout: true, script: "if [[ ${GIT_BRANCH} == 'master' ]]; then echo '${BUILD_NUMBER}' ; else echo '${BUILD_NUMBER}-dev' ; fi").trim()
+    // Docker credentials
+    registryCredential = 'dockerhub-deephealthproject'
+    // Skip DockerHub
+    DOCKER_LOGIN_DONE = true
   }
   stages {
 
@@ -107,7 +111,11 @@ pipeline {
           not { branch "master" }
       }
       steps {
-          sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push'
+        script {
+          docker.withRegistry( '', registryCredential ) {
+            sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push'
+          }
+        }
       }
     }
 
@@ -120,9 +128,13 @@ pipeline {
           branch 'master'
       }
       steps {
-        sh 'echo DOCKER_IMAGE_RELEASE_TAG: ${DOCKER_IMAGE_RELEASE_TAG}'
-        sh 'echo DOCKER_IMAGE_TAG_EXTRA: ${DOCKER_IMAGE_TAG_EXTRA}'
-        sh 'make push'
+        script {
+          docker.withRegistry( '', registryCredential ) {
+            sh 'echo DOCKER_IMAGE_RELEASE_TAG: ${DOCKER_IMAGE_RELEASE_TAG}'
+            sh 'echo DOCKER_IMAGE_TAG_EXTRA: ${DOCKER_IMAGE_TAG_EXTRA}'
+            sh 'make push'
+          }
+        }
       }
     }
   }
