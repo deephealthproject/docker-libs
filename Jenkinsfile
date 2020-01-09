@@ -12,21 +12,21 @@ pipeline {
     PYECVL_SRC = "${BASE_SRC}/pyecvl"
     PYEDDL_SRC = "${BASE_SRC}/pyeddl"
     // ECVL Settings
-    ECVL_REPOSITORY = "git@github.com:deephealthproject/ecvl.git"
+    ECVL_REPOSITORY = "https://github.com/deephealthproject/ecvl.git"
     ECVL_BRANCH = "master"
-    ECVL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/ecvl.git ${ECVL_BRANCH} | awk '{print \$1}'").trim()
+    ECVL_REVISION = sh(returnStdout: true, script: "git ls-remote ${ECVL_REPOSITORY} ${ECVL_BRANCH} | awk '{print \$1}'").trim()
     // PyECVL Settings
-    PYECVL_REPOSITORY = "git@github.com:deephealthproject/pyecvl.git"
+    PYECVL_REPOSITORY = "https://github.com/deephealthproject/pyecvl.git"
     PYECVL_BRANCH = "master"
-    PYECVL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/pyecvl.git ${PYECVL_BRANCH} | awk '{print \$1}'").trim()
+    PYECVL_REVISION = sh(returnStdout: true, script: "git ls-remote ${PYECVL_REPOSITORY} ${PYECVL_BRANCH} | awk '{print \$1}'").trim()
     // EDDL Settings    
-    EDDL_REPOSITORY = "git@github.com:deephealthproject/eddl.git"
+    EDDL_REPOSITORY = "https://github.com/deephealthproject/eddl.git"
     EDDL_BRANCH = "master"
-    EDDL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/eddl.git ${EDDL_BRANCH} | awk '{print \$1}'").trim()
+    EDDL_REVISION = sh(returnStdout: true, script: "git ls-remote ${EDDL_REPOSITORY} ${EDDL_BRANCH} | awk '{print \$1}'").trim()
     // PyEDDL Settings
-    PYEDDL_REPOSITORY = "git@github.com:deephealthproject/pyeddl.git"
+    PYEDDL_REPOSITORY = "https://github.com/deephealthproject/pyeddl.git"
     PYEDDL_BRANCH = "master"
-    PYEDDL_REVISION = sh(returnStdout: true, script: "git ls-remote https://github.com/deephealthproject/pyeddl.git ${PYEDDL_BRANCH} | awk '{print \$1}'").trim()
+    PYEDDL_REVISION = sh(returnStdout: true, script: "git ls-remote ${PYEDDL_REPOSITORY} ${PYEDDL_BRANCH} | awk '{print \$1}'").trim()
     // Docker Settings
     DOCKER_IMAGE_LATEST = sh(returnStdout: true, script: "if [[ ${GIT_BRANCH} == 'master' ]]; then echo 'true'; else echo 'false'; fi").trim()
     DOCKER_IMAGE_TAG = sh(returnStdout: true, script: "if [[ ${GIT_BRANCH} == 'master' ]]; then echo '${BUILD_NUMBER}' ; else echo '${BUILD_NUMBER}-dev' ; fi").trim()
