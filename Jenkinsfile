@@ -28,8 +28,8 @@ pipeline {
     PYEDDL_BRANCH = "master"
     PYEDDL_REVISION = sh(returnStdout: true, script: "git ls-remote ${PYEDDL_REPOSITORY} ${PYEDDL_BRANCH} | awk '{print \$1}'").trim()
     // Docker Settings
-    DOCKER_IMAGE_LATEST = sh(returnStdout: true, script: "if [[ ${GIT_BRANCH} == 'master' ]]; then echo 'true'; else echo 'false'; fi").trim()
-    DOCKER_IMAGE_TAG = sh(returnStdout: true, script: "if [[ ${GIT_BRANCH} == 'master' ]]; then echo '${BUILD_NUMBER}' ; else echo '${BUILD_NUMBER}-dev' ; fi").trim()
+    DOCKER_IMAGE_LATEST = sh(returnStdout: true, script: "if [[ '${GIT_BRANCH}' == 'master' ]]; then echo 'true'; else echo 'false'; fi").trim()
+    DOCKER_IMAGE_TAG = sh(returnStdout: true, script: "if [[ '${GIT_BRANCH}' == 'master' ]]; then echo '${BUILD_NUMBER}' ; else echo '${BUILD_NUMBER}-dev' ; fi").trim()
     // Docker credentials
     registryCredential = 'dockerhub-deephealthproject'
     // Skip DockerHub
