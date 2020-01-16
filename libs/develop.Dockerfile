@@ -17,14 +17,14 @@ ARG ecvl_src_target="/usr/local/src/ecvl"
 ENV EDDL_SRC ${eddl_src_target}
 ENV ECVL_SRC ${ecvl_src_target}
 
-
+# Install software requirements
 RUN \
     echo "\nInstalling software requirements..." >&2 \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get update -y -q \
     && apt-get install -y --no-install-recommends  \
-        build-essential git gcc-8 g++-8 wget libopencv-dev libwxgtk3.0-dev \
-        graphviz libopenslide-dev \
+        build-essential git gcc-8 g++-8 wget rsync graphviz \
+        libopencv-dev libwxgtk3.0-dev libopenslide-dev \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 70 \
         --slave /usr/bin/g++ g++ /usr/bin/g++-7 \
         --slave /usr/bin/x86_64-linux-gnu-gcc x86_64-linux-gnu-gcc /usr/bin/x86_64-linux-gnu-gcc-7 \
@@ -49,6 +49,7 @@ RUN \
 COPY ${ecvl_src_origin} ${ECVL_SRC}
 COPY ${eddl_src_origin} ${EDDL_SRC}
 
+# Build and install EDDL library
 RUN echo "\nBuilding EDDL library..." >&2 \
     && cd ${EDDL_SRC} \
     && mkdir build \
@@ -60,11 +61,9 @@ RUN echo "\nBuilding EDDL library..." >&2 \
         .. \
     && make -j$(grep -c ^processor /proc/cpuinfo) \
     && echo "\n Installing EDDL library..." >&2 \
-    && make DESTDIR= install \
-    && cp -r ${EDDL_SRC}/build/install/lib/* /usr/lib/ \
-    && cp -r ${EDDL_SRC}/build/install/include/* /usr/include/ \
-    && cp -r install/include/third_party/eigen/Eigen /usr/local/include/
+    && make install 
 
+# Build and install ECVL library
 RUN echo "\nBuilding ECVL library..." >&2 \
     && cd ${ECVL_SRC} \
     && mkdir build \
@@ -79,6 +78,4 @@ RUN echo "\nBuilding ECVL library..." >&2 \
         .. \
     && make -j$(grep -c ^processor /proc/cpuinfo) \
     && echo "\n Installing ECVL library..." >&2 \
-    && make DESTDIR=install install \
-    && cp -r ${ECVL_SRC}/build/install/usr/local/lib/* /usr/local/lib/ \
-    && cp -r ${ECVL_SRC}/build/install/usr/local/include/* /usr/local/include/
+    && make install

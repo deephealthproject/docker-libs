@@ -4,28 +4,30 @@ VERSION := 0.1
 # set bash as default interpreter
 SHELL := /bin/bash
 
+# date.time as build number
+BUILD_NUMBER := $(or ${BUILD_NUMBER},$(shell date '+%Y%m%d.%H%M%S'))
+
 # set docker user credentials
-DOCKER_USER ?= ${USER}
-DOCKER_PASSWORD ?= ""
+DOCKER_USER := $(or ${DOCKER_USER},${USER})
+DOCKER_PASSWORD := ${DOCKER_PASSWORD}
 
 # use DockerHub as default registry
-DOCKER_REGISTRY ?= registry.hub.docker.com
+DOCKER_REGISTRY := $(or ${DOCKER_REGISTRY},registry.hub.docker.com)
 
 # set Docker repository
-DOCKER_REPOSITORY_OWNER ?= ${DOCKER_USER}
+DOCKER_REPOSITORY_OWNER := $(or ${DOCKER_REPOSITORY_OWNER},${DOCKER_USER})
 #DOCKER_IMAGE_PREFIX ?= deephealth-
 runtime_suffix = 
 develop_suffix = -toolkit
 
 # latest tag settings
-LATEST_BRANCH ?= master
+DOCKER_IMAGE_LATEST := $(or ${DOCKER_IMAGE_LATEST},false)
 
-# config file
-BUILD_CONF ?= settings.sh
-ifneq ("$(wildcard $(BUILD_CONF))","")
-include $(BUILD_CONF)
-export $(shell sed 's/=.*//' $(BUILD_CONF))
-endif
+# extra tags
+DOCKER_IMAGE_TAG_EXTRA := ${DOCKER_IMAGE_TAG_EXTRA}
+
+# set default Docker image TAG
+DOCKER_IMAGE_TAG := $(or ${DOCKER_IMAGE_TAG},${BUILD_NUMBER})
 
 # current path
 CURRENT_PATH := $(PWD)
@@ -39,31 +41,29 @@ PYECVL_LIB_PATH = ${LOCAL_PYLIBS_PATH}/pyecvl
 PYEDDL_LIB_PATH = ${LOCAL_PYLIBS_PATH}/pyeddl
 
 # ECVL repository
-ECVL_REPOSITORY ?= https://github.com/deephealthproject/ecvl.git
-ECVL_BRANCH ?= $(shell cd ${ECVL_LIB_PATH} && git rev-parse --abbrev-ref HEAD)
-ECVL_REVISION ?= 
+ECVL_REPOSITORY := $(or ${ECVL_REPOSITORY},https://github.com/deephealthproject/ecvl.git)
+ECVL_BRANCH := $(or ${ECVL_BRANCH},master)
+ECVL_REVISION := ${ECVL_REVISION}
 
 # PyECVL repository
-PYECVL_REPOSITORY ?= https://github.com/deephealthproject/pyecvl.git
-PYECVL_BRANCH ?= $(shell cd ${PYECVL_LIB_PATH} && git rev-parse --abbrev-ref HEAD)
-PYECVL_REVISION ?= 
+PYECVL_REPOSITORY := $(or ${PYECVL_REPOSITORY},https://github.com/deephealthproject/pyecvl.git)
+PYECVL_BRANCH := $(or ${PYECVL_BRANCH},master)
+PYECVL_REVISION := ${PYECVL_REVISION}
 
 # EDDL repository
-EDDL_REPOSITORY ?= https://github.com/deephealthproject/eddl.git
-EDDL_BRANCH ?= $(shell cd ${EDDL_LIB_PATH} && git rev-parse --abbrev-ref HEAD)
-EDDL_REVISION ?= 
+EDDL_REPOSITORY := $(or ${EDDL_REPOSITORY},https://github.com/deephealthproject/eddl.git)
+EDDL_BRANCH := $(or ${EDDL_BRANCH},master)
+EDDL_REVISION := ${EDDL_REVISION}
 
 # PyEDDL repository
-PYEDDL_REPOSITORY ?= https://github.com/deephealthproject/pyeddl.git
-PYEDDL_BRANCH ?= $(shell cd ${PYEDDL_LIB_PATH} && git rev-parse --abbrev-ref HEAD)
-PYEDDL_REVISION ?= 
+PYEDDL_REPOSITORY := $(or ${PYEDDL_REPOSITORY},https://github.com/deephealthproject/pyeddl.git)
+PYEDDL_BRANCH := $(or ${PYEDDL_BRANCH},master)
+PYEDDL_REVISION := ${PYEDDL_REVISION} 
 
-# enable latest tags
-push_latest_tags=false
-ifeq (${LATEST_BRANCH}, ${ECVL_BRANCH})
-ifeq (${LATEST_BRANCH}, ${EDDL_BRANCH})
-	push_latest_tags = true
-endif
+# config file
+CONFIG_FILE ?= settings.sh
+ifneq ($(wildcard $(CONFIG_FILE)),)
+include $(CONFIG_FILE)
 endif
 
 # set no cache option
@@ -73,14 +73,14 @@ ifneq ("$(DISABLE_CACHE)", "")
 BUILD_CACHE_OPT = --no-cache
 endif
 
-# auxiliary flag 
-DOCKER_LOGIN_DONE = false
-
-# date.time as build number
-ifeq ($(BUILD_NUMBER),)
-BUILD_NUMBER := $(shell date '+%Y%m%d.%H%M%S')
+# enable latest tags
+push_latest_tags = false
+ifeq ("${DOCKER_IMAGE_LATEST}", "true")
+	push_latest_tags = true
 endif
 
+# auxiliary flag 
+DOCKER_LOGIN_DONE := $(or ${DOCKER_LOGIN_DONE},false)
 
 define build_image
 	$(eval image := $(1))
@@ -89,31 +89,35 @@ define build_image
 	$(eval base := $(if $(4), --build-arg BASE_IMAGE=$(4)))
 	$(eval toolkit := $(if $(5), --build-arg TOOLKIT_IMAGE=$(5)))
 	$(eval image_name := ${DOCKER_IMAGE_PREFIX}${image}${${target}_suffix})
-	$(eval latest_tags := $(if ${push_latest_tags}, -t ${image_name}:latest))	
-	@echo "Building Docker image '${image_name}'..." \		
-	@cd ${image} \
+	$(eval latest_tags := $(shell if [ "${push_latest_tags}" == "true" ]; then echo "-t ${image_name}:latest"; fi))
+	@echo "Building Docker image '${image_name}'..."
+	cd ${image} \
 	&& docker build ${BUILD_CACHE_OPT} \
 		-f ${target}.Dockerfile \
 		   ${base} ${toolkit} \
-		-t ${image_name} \
-		-t ${image_name}:${BUILD_NUMBER} \
-		${latest_tags} \
-		${labels} \
-		.
+		-t ${image_name}:${DOCKER_IMAGE_TAG} ${latest_tags} ${labels} .
 endef
 
 define push_image
 	$(eval image := $(1))
 	$(eval target := $(2))
 	$(eval image_name := ${DOCKER_IMAGE_PREFIX}${image}${${target}_suffix})
-	$(eval full_tag := ${DOCKER_REGISTRY}/${DOCKER_REPOSITORY_OWNER}/${image_name}:$(BUILD_NUMBER))
-	$(eval latest_tag := ${DOCKER_REGISTRY}/${DOCKER_DOCKER_REPOSITORY_OWNERUSER}/${image_name}:latest)
+	$(eval full_image_name := ${DOCKER_REGISTRY}/${DOCKER_REPOSITORY_OWNER}/${image_name})
+	$(eval full_tag := ${full_image_name}:$(DOCKER_IMAGE_TAG))
+	$(eval latest_tag := ${full_image_name}:latest)
+	$(eval tags := ${DOCKER_IMAGE_TAG_EXTRA})
 	@echo "Tagging images... "
-	docker tag ${image_name}:$(BUILD_NUMBER) ${full_tag}
-	@if [ ${push_latest_tags} == true ]; then docker tag ${image_name}:$(BUILD_NUMBER) ${latest_tag}; fi
+	docker tag ${image_name}:$(DOCKER_IMAGE_TAG) ${full_tag}
+	@if [ ${push_latest_tags} == true ]; then docker tag ${image_name}:$(DOCKER_IMAGE_TAG) ${latest_tag}; fi
 	@echo "Pushing Docker image '${image_name}'..."	
 	docker push ${full_tag}
 	@if [ ${push_latest_tags} == true ]; then docker push ${latest_tag}; fi
+	@for tag in $(tags); \
+	do \
+	img_tag=${full_image_name}:$$tag ; \
+	docker tag ${full_tag} $$img_tag ; \
+	docker push $$img_tag ; \
+	done
 endef
 
 # 1 --> LIB_PATH
@@ -123,9 +127,9 @@ endef
 # 5 --> RECURSIVE SUBMODULE CLONE (true|false)
 define clone_repository
 	@if [ ! -d ${1} ]; then \
-		git clone --branch ${3} ${2} ${1} \
-		&& cd ${1} \
-		&& if [ -n ${4} ]; then git reset --hard ${4} ; fi \
+		git clone --branch "${3}" ${2} ${1} \
+		&& cd "${1}" \
+		&& if [ -n "${4}" ]; then git reset --hard ${4} -- ; fi \
 		&& if [ ${5} == true ]; then git submodule update --init --recursive ; fi \
 	else \
 		echo "Using existing ${1} repository..." ;  \
@@ -177,7 +181,7 @@ pyecvl_folder: pylibs_folder
 	@rm -rf ${PYECVL_LIB_PATH}/third_party/ecvl
 	@cp -a ${CURRENT_PATH}/${ECVL_LIB_PATH} ${CURRENT_PATH}/${PYECVL_LIB_PATH}/third_party/ecvl 
 	@echo "Building Python ECVL Python bindings..."
-	@docker tag ${DOCKER_IMAGE_PREFIX}libs${develop_suffix} ecvl
+	@docker tag ${DOCKER_IMAGE_PREFIX}libs${develop_suffix}:${DOCKER_IMAGE_TAG} ecvl
 	@cd ${PYECVL_LIB_PATH} && bash generate_bindings.sh
 
 pyeddl_folder: pylibs_folder
@@ -185,6 +189,7 @@ pyeddl_folder: pylibs_folder
 	@echo "Copying revision '${EDDL_REVISION}' of EDDL library..."
 	@rm -rf ${PYEDDL_LIB_PATH}/third_party/eddl
 	@cp -a ${EDDL_LIB_PATH} ${PYEDDL_LIB_PATH}/third_party/eddl
+	@docker tag ${DOCKER_IMAGE_PREFIX}libs${develop_suffix}:${DOCKER_IMAGE_TAG} ecvl
 	@echo "Building Python ECVL Python bindings..."
 	@cd ${PYEDDL_LIB_PATH} && bash generate_bindings.sh
 
@@ -200,8 +205,8 @@ apply_libs_patches:
 # Targets to build container images
 build: _build ## Build and tag all Docker images
 _build: \
-	build_libs_toolkit build_libs \
-	build_pylibs_toolkit build_pylibs
+	build_libs \
+	build_pylibs
 
 build_libs: build_libs_toolkit ## Build and tag 'libs' image
 	$(call build_image,libs,runtime,\
@@ -210,7 +215,7 @@ build_libs: build_libs_toolkit ## Build and tag 'libs' image
 		--label EDDL_REVISION=$(call get_revision,${EDDL_LIB_PATH},${EDDL_REVISION}) \
 		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
 		--label ECVL_BRANCH=${ECVL_BRANCH} \
-		--label ECVL_REVISION=$(call get_revision,${ECVL_LIB_PATH},${ECVL_REVISION}),libs-toolkit)
+		--label ECVL_REVISION=$(call get_revision,${ECVL_LIB_PATH},${ECVL_REVISION}),libs-toolkit:$(DOCKER_IMAGE_TAG))
 
 build_libs_toolkit: ecvl_folder eddl_folder ## Build and tag 'libs-toolkit' image
 	$(call build_image,libs,develop,\
@@ -235,7 +240,7 @@ build_pylibs: build_pylibs_toolkit ## Build and tag 'pylibs' image
 		--label PYECVL_REVISION=$(call get_revision,${PYECVL_LIB_PATH},${PYECVL_REVISION}) \
 		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
 		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
-		--label PYEDDL_REVISION=$(call get_revision,${PYEDDL_LIB_PATH},${PYEDDL_REVISION}),libs,pylibs-toolkit)
+		--label PYEDDL_REVISION=$(call get_revision,${PYEDDL_LIB_PATH},${PYEDDL_REVISION}),libs:$(DOCKER_IMAGE_TAG),pylibs-toolkit:$(DOCKER_IMAGE_TAG))
 
 build_pylibs_toolkit: pyecvl_folder pyeddl_folder ## Build and tag 'pylibs-toolkit' image
 	$(call build_image,pylibs,develop,\
@@ -250,7 +255,7 @@ build_pylibs_toolkit: pyecvl_folder pyeddl_folder ## Build and tag 'pylibs-toolk
 		--label PYECVL_REVISION=$(call get_revision,${PYECVL_LIB_PATH},${PYECVL_REVISION}) \
 		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
 		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
-		--label PYEDDL_REVISION=$(call get_revision,${PYEDDL_LIB_PATH},${PYEDDL_REVISION}),libs-toolkit)
+		--label PYEDDL_REVISION=$(call get_revision,${PYEDDL_LIB_PATH},${PYEDDL_REVISION}),libs-toolkit:$(DOCKER_IMAGE_TAG))
 		
 # Docker push
 push: _push ## Push all built images
@@ -287,6 +292,8 @@ repo-login: ## Login to the Docker Registry
 		echo "Logging into Docker registry ${DOCKER_REGISTRY}..." ; \
 		echo ${DOCKER_PASSWORD} | docker login ${DOCKER_REGISTRY} -u ${DOCKER_USER} --password-stdin ; \
 		DOCKER_LOGIN_DONE=true ;\
+	else \
+		echo "Logging into Docker registry already done" ; \
 	fi
 
 version: ## Output the current version of this Makefile
