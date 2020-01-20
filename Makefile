@@ -180,18 +180,12 @@ pyecvl_folder: pylibs_folder
 	@echo "Copying revision '${ECVL_REVISION}' of ECVL library..."
 	@rm -rf ${PYECVL_LIB_PATH}/third_party/ecvl
 	@cp -a ${CURRENT_PATH}/${ECVL_LIB_PATH} ${CURRENT_PATH}/${PYECVL_LIB_PATH}/third_party/ecvl 
-	@echo "Building Python ECVL Python bindings..."
-	@docker tag ${DOCKER_IMAGE_PREFIX}libs${develop_suffix}:${DOCKER_IMAGE_TAG} ecvl
-	@cd ${PYECVL_LIB_PATH} && bash generate_bindings.sh
 
 pyeddl_folder: pylibs_folder
 	$(call clone_repository,${PYEDDL_LIB_PATH},${PYEDDL_REPOSITORY},${PYEDDL_BRANCH},${PYEDDL_REVISION},false)
 	@echo "Copying revision '${EDDL_REVISION}' of EDDL library..."
 	@rm -rf ${PYEDDL_LIB_PATH}/third_party/eddl
 	@cp -a ${EDDL_LIB_PATH} ${PYEDDL_LIB_PATH}/third_party/eddl
-	@docker tag ${DOCKER_IMAGE_PREFIX}libs${develop_suffix}:${DOCKER_IMAGE_TAG} ecvl
-	@echo "Building Python ECVL Python bindings..."
-	@cd ${PYEDDL_LIB_PATH} && bash generate_bindings.sh
 
 apply_libs_patches:
 	# $(call clone_repository,${PYEDDL_LIB_PATH},${PYEDDL_REPOSITORY},${PYEDDL_BRANCH},${PYEDDL_REVISION},false)
