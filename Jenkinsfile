@@ -27,9 +27,14 @@ pipeline {
     PYEDDL_REPOSITORY = "https://github.com/deephealthproject/pyeddl.git"
     PYEDDL_BRANCH = "master"
     PYEDDL_REVISION = sh(returnStdout: true, script: "git ls-remote ${PYEDDL_REPOSITORY} ${PYEDDL_BRANCH} | awk '{print \$1}'").trim()
+    // Extract additional info
+    NORMALIZED_BRANCH_NAME = sh(returnStdout: true, script: "echo ${BRANCH_NAME} | sed 's+/+-+g'").trim()
+    REPO_TAG = sh(returnStdout: true, script: "tag=\$(git tag -l --points-at HEAD); if [[ -n \${tag} ]]; then echo \${tag}; else git rev-parse --short HEAD --short; fi").trim()
     // Docker Settings
     DOCKER_IMAGE_LATEST = sh(returnStdout: true, script: "if [ '${GIT_BRANCH}' = 'master' ]; then echo 'true'; else echo 'false'; fi").trim()
-    DOCKER_IMAGE_TAG = sh(returnStdout: true, script: "if [ '${GIT_BRANCH}' = 'master' ]; then echo '${BUILD_NUMBER}' ; else echo '${BUILD_NUMBER}-dev' ; fi").trim()
+    DOCKER_IMAGE_TAG = "${NORMALIZED_BRANCH_NAME}_build${BUILD_NUMBER}"
+    DOCKER_IMAGE_TAG_EXTRA = "${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"
+    DOCKER_REPOSITORY_OWNER = "dhealth"
     // Docker credentials
     registryCredential = 'dockerhub-deephealthproject'
     // Skip DockerHub
@@ -48,7 +53,7 @@ pipeline {
       when {
           not { branch "master" }
       }
-      steps {        
+      steps {
         sh 'CONFIG_FILE="" make build'
       }
     }
@@ -59,6 +64,17 @@ pipeline {
       }
       steps {
         sh 'make build'
+      }
+    }
+
+    stage('Push Toolkit Image Build') {
+      steps {
+        script {
+          docker.withRegistry( '', registryCredential ) {
+            sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
+            sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
+          }
+        }
       }
     }
 
@@ -113,25 +129,19 @@ pipeline {
       steps {
         script {
           docker.withRegistry( '', registryCredential ) {
-            sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push'
+            sh 'CONFIG_FILE="" make push'
           }
         }
       }
     }
 
     stage('Publish Master Build') {
-      environment {
-        DOCKER_IMAGE_RELEASE_TAG = sh(returnStdout: true, script: "tag=\$(git tag -l --points-at HEAD); if [[ -n \${tag} ]]; then echo \${tag}; else git rev-parse --short HEAD --short; fi").trim()
-        DOCKER_IMAGE_TAG_EXTRA = "${DOCKER_IMAGE_RELEASE_TAG} ${DOCKER_IMAGE_RELEASE_TAG}_${DOCKER_IMAGE_TAG}"
-      }
       when {
           branch 'master'
       }
       steps {
         script {
           docker.withRegistry( '', registryCredential ) {
-            sh 'echo DOCKER_IMAGE_RELEASE_TAG: ${DOCKER_IMAGE_RELEASE_TAG}'
-            sh 'echo DOCKER_IMAGE_TAG_EXTRA: ${DOCKER_IMAGE_TAG_EXTRA}'
             sh 'make push'
           }
         }
@@ -145,7 +155,7 @@ pipeline {
       deleteDir() /* clean up our workspace */
     }
     success {
-      echo "Docker images successfully build and published with tags: ${DOCKER_IMAGE_TAG}"
+      echo "Docker images successfully build and published with tags: ${DOCKER_IMAGE_TAG} ${DOCKER_IMAGE_TAG_EXTRA}"
       echo "Library revisions..."
       echo "* ECVL revision: ${ECVL_REVISION}"
       echo "* EDDL revision: ${EDDL_REVISION}"
