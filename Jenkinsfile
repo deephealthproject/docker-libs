@@ -52,7 +52,7 @@ pipeline {
       when {
           not { branch "master" }
       }
-      steps {        
+      steps {
         sh 'CONFIG_FILE="" make build'
       }
     }
