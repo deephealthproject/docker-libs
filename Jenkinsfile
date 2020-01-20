@@ -66,6 +66,17 @@ pipeline {
       }
     }
 
+    stage('Push Toolkit Image Build') {
+      steps {
+        script {
+          docker.withRegistry( '', registryCredential ) {
+            sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
+            sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
+          }
+        }
+      }
+    }
+
     stage('Test EDDL') {
       agent {
         docker { image 'libs-toolkit:${DOCKER_IMAGE_TAG}' }
