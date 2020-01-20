@@ -52,7 +52,7 @@ pipeline {
       when {
           not { branch "master" }
       }
-      steps {        
+      steps {
         sh 'CONFIG_FILE="" make build'
       }
     }
@@ -63,6 +63,17 @@ pipeline {
       }
       steps {
         sh 'make build'
+      }
+    }
+
+    stage('Push Toolkit Image Build') {
+      steps {
+        script {
+          docker.withRegistry( '', registryCredential ) {
+            sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
+            sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
+          }
+        }
       }
     }
 
