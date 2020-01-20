@@ -34,6 +34,7 @@ pipeline {
     DOCKER_IMAGE_LATEST = sh(returnStdout: true, script: "if [ '${GIT_BRANCH}' = 'master' ]; then echo 'true'; else echo 'false'; fi").trim()
     DOCKER_IMAGE_TAG = "${NORMALIZED_BRANCH_NAME}_build${BUILD_NUMBER}"
     DOCKER_IMAGE_TAG_EXTRA = "${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"
+    DOCKER_REPOSITORY_OWNER = "dhealth"
     // Docker credentials
     registryCredential = 'dockerhub-deephealthproject'
     // Skip DockerHub
