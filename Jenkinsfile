@@ -46,6 +46,7 @@ pipeline {
       steps {
         sh 'git fetch --tags'
         sh 'printenv'
+        sh 'docker images'
       }
     }
     
