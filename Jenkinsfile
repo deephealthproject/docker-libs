@@ -47,6 +47,8 @@ pipeline {
         sh 'git fetch --tags'
         sh 'printenv'
         sh 'docker images'
+        sh 'docker image prune'
+        sh 'docker images | grep libs | awk '{print $3}' | uniq | xargs docker rmi -f'
       }
     }
     
