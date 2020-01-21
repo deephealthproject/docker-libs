@@ -49,19 +49,19 @@ pipeline {
       }
     }
     
-    stage('Development Build') {
-      when {
-          not { branch "master" }
-      }
-      steps {
-        sh 'CONFIG_FILE="" make build'
-      }
-    }
+    // stage('Development Build') {
+    //   when {
+    //       not { branch "master" }
+    //   }
+    //   steps {
+    //     sh 'CONFIG_FILE="" make build'
+    //   }
+    // }
 
     stage('Master Build') {
-      when {
-          branch 'master'
-      }
+      // when {
+      //     branch 'master'
+      // }
       steps {
         sh 'make build'
       }
