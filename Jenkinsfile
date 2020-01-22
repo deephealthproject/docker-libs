@@ -38,7 +38,7 @@ pipeline {
     // Docker credentials
     registryCredential = 'dockerhub-deephealthproject'
     // Skip DockerHub
-    DOCKER_LOGIN_DONE = true
+    DOCKER_LOGIN_DONE = false
   }
   stages {
 
