@@ -38,7 +38,7 @@ pipeline {
     // Docker credentials
     registryCredential = 'dockerhub-deephealthproject'
     // Skip DockerHub
-    DOCKER_LOGIN_DONE = false
+    DOCKER_LOGIN_DONE = true
   }
   stages {
 
@@ -74,6 +74,7 @@ pipeline {
       steps {
         script {
           docker.withRegistry( '', registryCredential ) {
+            sh 'docker login docker.io'
             sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
             sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
           }
