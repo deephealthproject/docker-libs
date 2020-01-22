@@ -102,7 +102,7 @@ define push_image
 	$(eval image := $(1))
 	$(eval target := $(2))
 	$(eval image_name := ${DOCKER_IMAGE_PREFIX}${image}${${target}_suffix})
-	$(eval full_image_name := ${DOCKER_REGISTRY}/${DOCKER_REPOSITORY_OWNER}/${image_name})
+	$(eval full_image_name := $(shell prefix=""; if [ -n "${DOCKER_REGISTRY}" ]; then prefix="${DOCKER_REGISTRY}/"; fi; echo ${prefix}${image_name}))
 	$(eval full_tag := ${full_image_name}:$(DOCKER_IMAGE_TAG))
 	$(eval latest_tag := ${full_image_name}:latest)
 	$(eval tags := ${DOCKER_IMAGE_TAG_EXTRA})
