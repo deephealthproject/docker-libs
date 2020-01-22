@@ -158,6 +158,7 @@ pipeline {
   post {
     always {
       echo 'One way or another, I have finished'
+      deleteDir() /* clean up our workspace */
     }
     success {
       echo "Docker images successfully build and published with tags: ${DOCKER_IMAGE_TAG} ${DOCKER_IMAGE_TAG_EXTRA}"
