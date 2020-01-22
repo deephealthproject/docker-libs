@@ -61,24 +61,25 @@ pipeline {
     //   }
     // }
 
+    // stage('Master Build') {
+    //   // when {
+    //   //     branch 'master'
+    //   // }
+    //   steps {
+    //     sh 'make build'
+    //   }
+    // }
+
     stage('Master Build') {
       // when {
-      //     branch 'master'
+      //   branch 'master'
       // }
       steps {
-        sh 'make build'
-      }
-    }
-
-    stage('Push Toolkit Image Build') {
-      steps {
         script {
+          sh 'make build'
           docker.withRegistry( '', registryCredential ) {
-            sh 'docker login docker.io'
             sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
             sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
-            // sh 'docker tag libs-toolkit:fix-image-push-test_build${BUILD_NUMBER} dhealth/libs-toolkit:fix-image-push-test_build${BUILD_NUMBER}'
-            // sh 'docker push dhealth/libs-toolkit:fix-image-push-test_build${BUILD_NUMBER}'
           }
         }
       }
