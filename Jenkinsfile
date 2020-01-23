@@ -41,7 +41,7 @@ pipeline {
     DOCKER_LOGIN_DONE = true
   }
   stages {
-    stage('Parallel Stages') {
+    stage('(py){EDDL,ECVL} Docker Images') {
       parallel {
         stage('linux') {
           agent {
@@ -181,9 +181,6 @@ pipeline {
     failure {
       echo 'I failed :('
     }
-    // changed {
-    //   echo 'Things were different before...'
-    // }
     cleanup {
       deleteDir() /* clean up our workspace */
       sh 'docker images'
