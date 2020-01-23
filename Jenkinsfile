@@ -1,5 +1,7 @@
 pipeline {
-  agent any
+  agent {
+    node { label 'docker && gpu' }
+  }
   triggers{
     upstream(
       upstreamProjects: 'DeepHealth/eddl/master,DeepHealth/ecvl/master,DeepHealth/pyeddl/master,DeepHealth/pyecvl/master',
