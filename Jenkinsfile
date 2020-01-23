@@ -1,6 +1,6 @@
 pipeline {
   agent {
-    node { label 'docker && gpu' }
+    node { label 'docker && linux' }
   }
   triggers{
     upstream(
