@@ -52,7 +52,6 @@ pipeline {
               steps {
                 sh 'git fetch --tags'
                 sh 'printenv'
-                sh 'if [ "$(docker images | grep -E \"(l|pyl)ibs([[:space:]]|-toolkit)\")" ]; then docker images | grep -E "(l|pyl)ibs([[:space:]]|-toolkit)" | awk \'{print $3}\' | uniq | xargs docker rmi -f; fi;'
               }
             }
             
@@ -62,15 +61,10 @@ pipeline {
             //   }
             //   steps {
             //     sh 'CONFIG_FILE="" make build'
-            //   }
-            // }
-
-            // stage('Master Build') {
-            //   // when {
-            //   //     branch 'master'
-            //   // }
-            //   steps {
-            //     sh 'make build'
+            //     docker.withRegistry( '', registryCredential ) {
+            //         sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
+            //         sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
+            //     }
             //   }
             // }
 
