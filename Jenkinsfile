@@ -49,9 +49,15 @@ pipeline {
           }
           stages {
             stage('Configure') {
+              environment {
+                images = sh(returnStdout: true, script: = 'docker images | grep -E "(l|pyl)ibs([[:space:]]|-toolkit)" | awk \'{print $3}\' | uniq || true').trim()
+              }
               steps {
                 sh 'git fetch --tags'
                 sh 'printenv'
+                //sh "docker images | grep -E '^(\\b|dhealth/)(\\b|py)libs(\\s|-toolkit)\\s'"
+                sh 'docker images | grep -E "(l|pyl)ibs([[:space:]]|-toolkit)" || true'
+                sh 'echo "${images}"'
               }
             }
             
@@ -185,7 +191,7 @@ pipeline {
       deleteDir() /* clean up our workspace */
       sh 'docker images'
       sh 'docker image prune -f'
-      sh 'if [ "$(docker images | grep libs)" ]; then docker images | grep libs | awk \'{print $3}\' | uniq | xargs docker rmi -f; fi;'
+      //sh 'if [ "$(docker images | grep libs)" ]; then docker images | grep libs | awk \'{print $3}\' | uniq | xargs docker rmi -f; fi;'
     }
   } 
 }
