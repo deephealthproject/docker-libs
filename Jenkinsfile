@@ -50,7 +50,7 @@ pipeline {
         sh 'printenv'
         sh 'docker images'
         sh 'docker image prune -f'
-        sh 'if [ $(docker images | grep libs) ]; then docker images | grep libs | awk \'{print $3}\' | uniq | xargs docker rmi -f; fi;'
+        sh 'if [ $(docker images | grep -E \'^(\b|dhealth/)(\b|py)libs\s\') ]; then docker images | grep -E \'^(\b|dhealth/)(\b|py)libs\s\' | awk \'{print $3}\' | uniq | xargs docker rmi -f; fi;'
       }
     }
     
