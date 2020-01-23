@@ -52,9 +52,6 @@ pipeline {
               steps {
                 sh 'git fetch --tags'
                 sh 'printenv'
-                sh 'docker images'
-                sh 'docker image prune -f'
-                sh 'if [ "$(docker images | grep libs)" ]; then docker images | grep libs | awk \'{print $3}\' | uniq | xargs docker rmi -f; fi;'
               }
             }
             
@@ -169,7 +166,6 @@ pipeline {
   post {
     always {
       echo 'One way or another, I have finished'
-      deleteDir() /* clean up our workspace */
     }
     success {
       echo "Docker images successfully build and published with tags: ${DOCKER_IMAGE_TAG} ${DOCKER_IMAGE_TAG_EXTRA}"
@@ -185,8 +181,14 @@ pipeline {
     failure {
       echo 'I failed :('
     }
-    changed {
-      echo 'Things were different before...'
+    // changed {
+    //   echo 'Things were different before...'
+    // }
+    cleanup {
+      deleteDir() /* clean up our workspace */
+      sh 'docker images'
+      sh 'docker image prune -f'
+      sh 'if [ "$(docker images | grep libs)" ]; then docker images | grep libs | awk \'{print $3}\' | uniq | xargs docker rmi -f; fi;'
     }
   } 
 }
