@@ -41,108 +41,119 @@ pipeline {
     DOCKER_LOGIN_DONE = true
   }
   stages {
-
-    stage('Configure') {
-      steps {
-        sh 'git fetch --tags'
-        sh 'printenv'
-      }
-    }
-    
-    stage('Development Build') {
-      when {
-          not { branch "master" }
-      }
-      steps {
-        sh 'CONFIG_FILE="" make build'
-      }
-    }
-
-    stage('Master Build') {
-      when {
-          branch 'master'
-      }
-      steps {
-        sh 'make build'
-      }
-    }
-
-    stage('Push Toolkit Image Build') {
-      steps {
-        script {
-          docker.withRegistry( '', registryCredential ) {
-            sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
-            sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
+    stage('(py){EDDL,ECVL} Docker Images') {
+      parallel {
+        stage('linux') {
+          agent {
+            node { label 'docker && linux && !gpu' }
           }
-        }
-      }
-    }
+          stages {
+            stage('Configure') {
+              steps {
+                sh 'git fetch --tags'
+                sh 'printenv'
+              }
+            }
+            
+            stage('Development Build') {
+              when {
+                  not { branch "master" }
+              }
+              steps {
+                script {
+                  sh 'CONFIG_FILE="" make build'
+                  docker.withRegistry( '', registryCredential ) {
+                      sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
+                      sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
+                  }
+                }
+              }
+            }
 
-    stage('Test EDDL') {
-      agent {
-        docker { image 'libs-toolkit:${DOCKER_IMAGE_TAG}' }
-      }
-      steps {
-        sh 'cd ${EDDL_SRC}/build && ctest -C Debug -VV'
-      }
-    }
+            stage('Master Build') {
+              when {
+                branch 'master'
+              }
+              steps {
+                script {
+                  sh 'make build'
+                  docker.withRegistry( '', registryCredential ) {
+                    sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
+                    sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
+                  }
+                }
+              }
+            }
 
-    stage('Test ECVL') {
-      agent {
-        docker { image 'libs-toolkit:${DOCKER_IMAGE_TAG}' }
-      }
-      steps {
-        sh 'cd ${ECVL_SRC}/build && ctest -C Debug -VV'
-      }
-    }
+            stage('Test EDDL') {
+              agent {
+                docker { image '${DOCKER_REPOSITORY_OWNER}/libs-toolkit:${DOCKER_IMAGE_TAG}' }
+              }
+              steps {
+                sh 'cd ${EDDL_SRC}/build && ctest -C Debug -VV'
+              }
+            }
 
-    stage('Test PyEDDL') {
-      agent {
-        docker { image 'pylibs-toolkit:${DOCKER_IMAGE_TAG}' }
-      }
-      steps {
-        sh 'cd ${PYEDDL_SRC} && pytest tests'
-        sh 'cd ${PYEDDL_SRC}/examples && python3 Tensor/eddl_tensor.py'
-        sh 'cd ${PYEDDL_SRC}/examples && python3 NN/other/eddl_ae.py --epochs 1'
-      }
-    }
+            stage('Test ECVL') {
+              agent {
+                docker { image '${DOCKER_REPOSITORY_OWNER}/libs-toolkit:${DOCKER_IMAGE_TAG}' }
+              }
+              steps {
+                sh 'cd ${ECVL_SRC}/build && ctest -C Debug -VV'
+              }
+            }
 
-    stage('Test PyECVL') {
-      agent {
-        docker { image 'pylibs-toolkit:${DOCKER_IMAGE_TAG}' }
-      }
-      steps {
-        sh 'cd ${PYECVL_SRC} && pytest tests'
-        sh 'cd ${PYECVL_SRC}/examples && python3 dataset.py ${ECVL_SRC}/build/mnist/mnist.yml'
-        sh 'cd ${PYECVL_SRC}/examples && python3 ecvl_eddl.py ${ECVL_SRC}/data/test.jpg ${ECVL_SRC}/build/mnist/mnist.yml'
-        sh 'cd ${PYECVL_SRC}/examples && python3 img_format.py ${ECVL_SRC}/data/nifti/LR_nifti.nii ${ECVL_SRC}/data/isic_dicom/ISIC_0000008.dcm'
-        sh 'cd ${PYECVL_SRC}/examples && python3 imgproc.py ${ECVL_SRC}/data/test.jpg'
-        sh 'cd ${PYECVL_SRC}/examples && python3 openslide.py ${ECVL_SRC}/data/hamamatsu/10-B1-TALG.ndpi'
-        sh 'cd ${PYECVL_SRC}/examples && python3 read_write.py ${ECVL_SRC}/data/test.jpg test_mod.jpg'
-      }
-    }
+            stage('Test PyEDDL') {
+              agent {
+                docker { image '${DOCKER_REPOSITORY_OWNER}/pylibs-toolkit:${DOCKER_IMAGE_TAG}' }
+              }
+              steps {
+                sh 'cd ${PYEDDL_SRC} && pytest tests'
+                sh 'cd ${PYEDDL_SRC}/examples && python3 Tensor/eddl_tensor.py'
+                sh 'cd ${PYEDDL_SRC}/examples && python3 NN/other/eddl_ae.py --epochs 1'
+              }
+            }
 
-    stage('Publish Development Build') {
-      when {
-          not { branch "master" }
-      }
-      steps {
-        script {
-          docker.withRegistry( '', registryCredential ) {
-            sh 'CONFIG_FILE="" make push'
-          }
-        }
-      }
-    }
+            stage('Test PyECVL') {
+              agent {
+                docker { image '${DOCKER_REPOSITORY_OWNER}/pylibs-toolkit:${DOCKER_IMAGE_TAG}' }
+              }
+              steps {
+                sh 'cd ${PYECVL_SRC} && pytest tests'
+                sh 'cd ${PYECVL_SRC}/examples && python3 dataset.py ${ECVL_SRC}/build/mnist/mnist.yml'
+                sh 'cd ${PYECVL_SRC}/examples && python3 ecvl_eddl.py ${ECVL_SRC}/data/test.jpg ${ECVL_SRC}/build/mnist/mnist.yml'
+                sh 'cd ${PYECVL_SRC}/examples && python3 img_format.py ${ECVL_SRC}/data/nifti/LR_nifti.nii ${ECVL_SRC}/data/isic_dicom/ISIC_0000008.dcm'
+                sh 'cd ${PYECVL_SRC}/examples && python3 imgproc.py ${ECVL_SRC}/data/test.jpg'
+                sh 'cd ${PYECVL_SRC}/examples && python3 openslide.py ${ECVL_SRC}/data/hamamatsu/10-B1-TALG.ndpi'
+                sh 'cd ${PYECVL_SRC}/examples && python3 read_write.py ${ECVL_SRC}/data/test.jpg test_mod.jpg'
+              }
+            }
 
-    stage('Publish Master Build') {
-      when {
-          branch 'master'
-      }
-      steps {
-        script {
-          docker.withRegistry( '', registryCredential ) {
-            sh 'make push'
+            stage('Publish Development Build') {
+              when {
+                  not { branch "master" }
+              }
+              steps {
+                script {
+                  docker.withRegistry( '', registryCredential ) {
+                    sh 'CONFIG_FILE="" make push'
+                  }
+                }
+              }
+            }
+
+            stage('Publish Master Build') {
+              when {
+                  branch 'master'
+              }
+              steps {
+                script {
+                  docker.withRegistry( '', registryCredential ) {
+                    sh 'make push'
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -152,7 +163,6 @@ pipeline {
   post {
     always {
       echo 'One way or another, I have finished'
-      deleteDir() /* clean up our workspace */
     }
     success {
       echo "Docker images successfully build and published with tags: ${DOCKER_IMAGE_TAG} ${DOCKER_IMAGE_TAG_EXTRA}"
@@ -168,8 +178,11 @@ pipeline {
     failure {
       echo 'I failed :('
     }
-    changed {
-      echo 'Things were different before...'
+    cleanup {
+      deleteDir() /* clean up our workspace */
+      sh 'docker images'
+      sh 'docker image prune -f'
+      sh 'if [ "$(docker images | grep -E \"(l|pyl)ibs([[:space:]]|-toolkit)\")" ]; then docker images | grep -E "(l|pyl)ibs([[:space:]]|-toolkit)" | awk \'{print $3}\' | uniq | xargs docker rmi -f; fi;'
     }
   } 
 }
