@@ -55,23 +55,23 @@ pipeline {
               }
             }
             
-            // stage('Development Build') {
-            //   when {
-            //       not { branch "master" }
-            //   }
-            //   steps {
-            //     sh 'CONFIG_FILE="" make build'
-            //     docker.withRegistry( '', registryCredential ) {
-            //         sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
-            //         sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
-            //     }
-            //   }
-            // }
+            stage('Development Build') {
+              when {
+                  not { branch "master" }
+              }
+              steps {
+                sh 'CONFIG_FILE="" make build'
+                docker.withRegistry( '', registryCredential ) {
+                    sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
+                    sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
+                }
+              }
+            }
 
             stage('Master Build') {
-              // when {
-              //   branch 'master'
-              // }
+              when {
+                branch 'master'
+              }
               steps {
                 script {
                   sh 'make build'
