@@ -137,8 +137,9 @@ pipeline {
                 REPO_TAG = sh(returnStdout: true, script: "tag=\$(git tag -l --points-at HEAD); if [[ -n \${tag} ]]; then echo \${tag}; else git rev-parse --short HEAD --short; fi").trim()
                 DOCKER_IMAGE_TAG_EXTRA = "${DOCKER_IMAGE_TAG_EXTRA} ${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"
               }
-              steps {
+              steps {                
                 script {
+                  sh 'printenv'
                   docker.withRegistry( '', registryCredential ) {
                     sh 'CONFIG_FILE="" make push'
                   }
@@ -156,6 +157,7 @@ pipeline {
               }
               steps {
                 script {
+                  sh 'printenv'
                   docker.withRegistry( '', registryCredential ) {
                     sh 'make push'
                   }
