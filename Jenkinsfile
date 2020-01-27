@@ -41,13 +41,13 @@ pipeline {
     DOCKER_LOGIN_DONE = true
   }
   stages {
-    stage('(py){EDDL,ECVL} Docker Images') {
-      parallel {
-        stage('linux') {
-          agent {
-            node { label 'docker && linux && !gpu' }
-          }
-          stages {
+    // stage('(py){EDDL,ECVL} Docker Images') {
+    //   parallel {
+    //     stage('linux') {
+    //       agent {
+    //         node { label 'docker && linux && !gpu' }
+    //       }
+    //       stages {
             stage('Configure') {
               steps {
                 sh 'git fetch --tags'
@@ -165,10 +165,10 @@ pipeline {
                 }
               }
             }
-          }
-        }
-      }
-    }
+    //       }
+    //     }
+    //   }
+    // }
   }
 
   post {
@@ -191,7 +191,7 @@ pipeline {
     }
     cleanup {
       deleteDir() /* clean up our workspace */
-      make clean
+      sh 'make clean'
       sh 'docker images'
       sh 'docker image prune -f'
       sh 'if [ "$(docker images | grep -E \"(l|pyl)ibs([[:space:]]|-toolkit)\")" ]; then docker images | grep -E "(l|pyl)ibs([[:space:]]|-toolkit)" | awk \'{print $3}\' | uniq | xargs docker rmi -f; fi;'
