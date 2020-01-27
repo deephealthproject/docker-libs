@@ -189,9 +189,9 @@ pipeline {
     failure {
       echo 'I failed :('
     }
-    cleanup {
-      deleteDir() /* clean up our workspace */
+    cleanup {      
       sh 'make clean'
+      deleteDir() /* clean up our workspace */
       sh 'docker images'
       sh 'docker image prune -f'
       sh 'if [ "$(docker images | grep -E \"(l|pyl)ibs([[:space:]]|-toolkit)\")" ]; then docker images | grep -E "(l|pyl)ibs([[:space:]]|-toolkit)" | awk \'{print $3}\' | uniq | xargs docker rmi -f; fi;'
