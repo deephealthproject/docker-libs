@@ -133,6 +133,10 @@ pipeline {
               when {
                   not { branch "master" }
               }
+              environment {
+                REPO_TAG = sh(returnStdout: true, script: "tag=\$(git tag -l --points-at HEAD); if [[ -n \${tag} ]]; then echo \${tag}; else git rev-parse --short HEAD --short; fi").trim()
+                DOCKER_IMAGE_TAG_EXTRA = "${DOCKER_IMAGE_TAG_EXTRA} ${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"
+              }
               steps {
                 script {
                   docker.withRegistry( '', registryCredential ) {
@@ -145,6 +149,10 @@ pipeline {
             stage('Publish Master Build') {
               when {
                   branch 'master'
+              }
+              environment {
+                REPO_TAG = sh(returnStdout: true, script: "tag=\$(git tag -l --points-at HEAD); if [[ -n \${tag} ]]; then echo \${tag}; else git rev-parse --short HEAD --short; fi").trim()
+                DOCKER_IMAGE_TAG_EXTRA = "${DOCKER_IMAGE_TAG_EXTRA} ${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"
               }
               steps {
                 script {
