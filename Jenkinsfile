@@ -1,5 +1,7 @@
 pipeline {
-  agent any
+  agent {
+    node { label 'docker && linux && !gpu' }
+  }
   triggers{
     upstream(
       upstreamProjects: 'DeepHealth/eddl/master,DeepHealth/ecvl/master,DeepHealth/pyeddl/master,DeepHealth/pyecvl/master',
@@ -139,15 +141,20 @@ pipeline {
               when {
                   not { branch "master" }
               }
-              environment {
-                REPO_TAG = sh(returnStdout: true, script: "tag=\$(git tag -l --points-at HEAD); if [[ -n \${tag} ]]; then echo \${tag}; else git rev-parse --short HEAD --short; fi").trim()
-                DOCKER_IMAGE_TAG_EXTRA = "${DOCKER_IMAGE_TAG_EXTRA} ${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"
-              }
-              steps {                
+              steps {
                 script {
-                  sh 'printenv'
                   docker.withRegistry( '', registryCredential ) {
-                    sh 'CONFIG_FILE="" make push'
+                    sh '''
+                      tag=$(git tag -l --points-at HEAD);
+                      if [ -n "${tag}" ]; then 
+                        REPO_TAG="${tag}"
+                      else 
+                        REPO_TAG=$(git rev-parse --short HEAD --short)
+                      fi
+                      DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_TAG_EXTRA} ${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"
+                      echo "Pushing tags: ${DOCKER_IMAGE_TAG_EXTRA}"
+                      CONFIG_FILE="" make push
+                    '''
                   }
                 }
               }
@@ -157,15 +164,20 @@ pipeline {
               when {
                   branch 'master'
               }
-              environment {
-                REPO_TAG = sh(returnStdout: true, script: "tag=\$(git tag -l --points-at HEAD); if [[ -n \${tag} ]]; then echo \${tag}; else git rev-parse --short HEAD --short; fi").trim()
-                DOCKER_IMAGE_TAG_EXTRA = "${DOCKER_IMAGE_TAG_EXTRA} ${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"
-              }
               steps {
                 script {
-                  sh 'printenv'
                   docker.withRegistry( '', registryCredential ) {
-                    // sh 'make push'
+                    sh '''
+                      tag=$(git tag -l --points-at HEAD);
+                      if [ -n "${tag}" ]; then
+                        REPO_TAG="${tag}"
+                      else
+                        REPO_TAG=$(git rev-parse --short HEAD --short)
+                      fi
+                      DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_TAG_EXTRA} ${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"
+                      echo "Pushing tags: ${DOCKER_IMAGE_TAG_EXTRA}"
+                      make push
+                    '''
                   }
                 }
               }
