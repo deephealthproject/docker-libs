@@ -51,31 +51,37 @@ pipeline {
       }
     }
 
-    stage('Development Build') {
-      when {
-          not { branch "master" }
-      }
-      steps {
-        script {
-          sh 'CONFIG_FILE="" make build'
-          docker.withRegistry( '', registryCredential ) {
-              sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
-              sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
+    stage('Build') {
+
+      parallel {
+
+        stage('Master Build') {
+          when {
+            branch 'master'
+          }
+          steps {
+            script {
+              sh 'make build'
+              docker.withRegistry( '', registryCredential ) {
+                sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
+                sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
+              }
+            }
           }
         }
-      }
-    }
 
-    stage('Master Build') {
-      when {
-        branch 'master'
-      }
-      steps {
-        script {
-          sh 'make build'
-          docker.withRegistry( '', registryCredential ) {
-            sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
-            sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
+        stage('Development Build') {
+          when {
+              not { branch "master" }
+          }
+          steps {
+            script {
+              sh 'CONFIG_FILE="" make build'
+              docker.withRegistry( '', registryCredential ) {
+                  sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
+                  sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
+              }
+            }
           }
         }
       }
@@ -131,47 +137,53 @@ pipeline {
       }
     }
 
-    stage('Publish Development Build') {
-      when {
-          not { branch "master" }
-      }
-      steps {
-        script {
-          docker.withRegistry( '', registryCredential ) {
-            sh '''
-              tag=$(git tag -l --points-at HEAD);
-              if [ -n "${tag}" ]; then 
-                REPO_TAG="${tag}"
-              else 
-                REPO_TAG=$(git rev-parse --short HEAD --short)
-              fi
-              DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_TAG_EXTRA} ${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"
-              echo "Pushing tags: ${DOCKER_IMAGE_TAG_EXTRA}"
-              CONFIG_FILE="" make push
-            '''
+    stage('Publish') {
+
+      parallel {
+
+        stage('Publish Master Build') {
+          when {
+              branch 'master'
+          }
+          steps {
+            script {
+              docker.withRegistry( '', registryCredential ) {
+                sh '''
+                  tag=$(git tag -l --points-at HEAD);
+                  if [ -n "${tag}" ]; then
+                    REPO_TAG="${tag}"
+                  else
+                    REPO_TAG=$(git rev-parse --short HEAD --short)
+                  fi
+                  DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_TAG_EXTRA} ${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"
+                  echo "Pushing tags: ${DOCKER_IMAGE_TAG_EXTRA}"
+                  make push
+                '''
+              }
+            }
           }
         }
-      }
-    }
 
-    stage('Publish Master Build') {
-      when {
-          branch 'master'
-      }
-      steps {
-        script {
-          docker.withRegistry( '', registryCredential ) {
-            sh '''
-              tag=$(git tag -l --points-at HEAD);
-              if [ -n "${tag}" ]; then
-                REPO_TAG="${tag}"
-              else
-                REPO_TAG=$(git rev-parse --short HEAD --short)
-              fi
-              DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_TAG_EXTRA} ${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"
-              echo "Pushing tags: ${DOCKER_IMAGE_TAG_EXTRA}"
-              make push
-            '''
+        stage('Publish Development Build') {
+          when {
+              not { branch "master" }
+          }
+          steps {
+            script {
+              docker.withRegistry( '', registryCredential ) {
+                sh '''
+                  tag=$(git tag -l --points-at HEAD);
+                  if [ -n "${tag}" ]; then 
+                    REPO_TAG="${tag}"
+                  else 
+                    REPO_TAG=$(git rev-parse --short HEAD --short)
+                  fi
+                  DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_TAG_EXTRA} ${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"
+                  echo "Pushing tags: ${DOCKER_IMAGE_TAG_EXTRA}"
+                  CONFIG_FILE="" make push
+                '''
+              }
+            }
           }
         }
       }
