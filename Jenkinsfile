@@ -57,7 +57,10 @@ pipeline {
 
         stage('Master Build') {
           when {
-            branch 'master'
+            allOf {
+              branch 'master' ;
+              not { triggeredBy 'UpstreamCause' }
+            }
           }
           steps {
             script {
@@ -72,7 +75,10 @@ pipeline {
 
         stage('Development Build') {
           when {
-              not { branch "master" }
+            allOf {
+              not { branch "master" } ;
+              triggeredBy 'UpstreamCause'
+            }
           }
           steps {
             script {
@@ -143,7 +149,10 @@ pipeline {
 
         stage('Publish Master Build') {
           when {
-              branch 'master'
+            allOf {
+              branch 'master';
+              not { triggeredBy 'UpstreamCause' }
+            }
           }
           steps {
             script {
@@ -166,7 +175,10 @@ pipeline {
 
         stage('Publish Development Build') {
           when {
-              not { branch "master" }
+            allOf {
+              not { branch "master" };
+              triggeredBy 'UpstreamCause'
+            }
           }
           steps {
             script {
