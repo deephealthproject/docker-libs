@@ -72,70 +72,70 @@ pipeline {
             //   }
             // }
 
-            // stage('Master Build') {
-            //   // when {
-            //   //   branch 'master'
-            //   // }
-            //   steps {
-            //     script {
-            //       sh 'make build'
-            //       docker.withRegistry( '', registryCredential ) {
-            //         sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
-            //         sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
-            //       }
-            //     }
-            //   }
-            // }
+            stage('Master Build') {
+              // when {
+              //   branch 'master'
+              // }
+              steps {
+                script {
+                  sh 'make build'
+                  docker.withRegistry( '', registryCredential ) {
+                    sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
+                    sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
+                  }
+                }
+              }
+            }
 
-            // stage('Test') {
+            stage('Test') {
 
-            //   parallel {
+              parallel {
 
-            //     stage('Test EDDL') {
-            //       agent {
-            //         docker { image '${DOCKER_REPOSITORY_OWNER}/libs-toolkit:${DOCKER_IMAGE_TAG}' }
-            //       }
-            //       steps {
-            //         sh 'cd ${EDDL_SRC}/build && ctest -C Debug -VV'
-            //       }
-            //     }
+                stage('Test EDDL') {
+                  agent {
+                    docker { image '${DOCKER_REPOSITORY_OWNER}/libs-toolkit:${DOCKER_IMAGE_TAG}' }
+                  }
+                  steps {
+                    sh 'cd ${EDDL_SRC}/build && ctest -C Debug -VV'
+                  }
+                }
 
-            //     stage('Test ECVL') {
-            //       agent {
-            //         docker { image '${DOCKER_REPOSITORY_OWNER}/libs-toolkit:${DOCKER_IMAGE_TAG}' }
-            //       }
-            //       steps {
-            //         sh 'cd ${ECVL_SRC}/build && ctest -C Debug -VV'
-            //       }
-            //     }
+                stage('Test ECVL') {
+                  agent {
+                    docker { image '${DOCKER_REPOSITORY_OWNER}/libs-toolkit:${DOCKER_IMAGE_TAG}' }
+                  }
+                  steps {
+                    sh 'cd ${ECVL_SRC}/build && ctest -C Debug -VV'
+                  }
+                }
 
-            //     stage('Test PyEDDL') {
-            //       agent {
-            //         docker { image '${DOCKER_REPOSITORY_OWNER}/pylibs-toolkit:${DOCKER_IMAGE_TAG}' }
-            //       }
-            //       steps {
-            //         sh 'cd ${PYEDDL_SRC} && pytest tests'
-            //         sh 'cd ${PYEDDL_SRC}/examples && python3 Tensor/eddl_tensor.py'
-            //         sh 'cd ${PYEDDL_SRC}/examples && python3 NN/other/eddl_ae.py --epochs 1'
-            //       }
-            //     }
+                stage('Test PyEDDL') {
+                  agent {
+                    docker { image '${DOCKER_REPOSITORY_OWNER}/pylibs-toolkit:${DOCKER_IMAGE_TAG}' }
+                  }
+                  steps {
+                    sh 'cd ${PYEDDL_SRC} && pytest tests'
+                    sh 'cd ${PYEDDL_SRC}/examples && python3 Tensor/eddl_tensor.py'
+                    sh 'cd ${PYEDDL_SRC}/examples && python3 NN/other/eddl_ae.py --epochs 1'
+                  }
+                }
 
-            //     stage('Test PyECVL') {
-            //       agent {
-            //         docker { image '${DOCKER_REPOSITORY_OWNER}/pylibs-toolkit:${DOCKER_IMAGE_TAG}' }
-            //       }
-            //       steps {
-            //         sh 'cd ${PYECVL_SRC} && pytest tests'
-            //         sh 'cd ${PYECVL_SRC}/examples && python3 dataset.py ${ECVL_SRC}/build/mnist/mnist.yml'
-            //         sh 'cd ${PYECVL_SRC}/examples && python3 ecvl_eddl.py ${ECVL_SRC}/data/test.jpg ${ECVL_SRC}/build/mnist/mnist.yml'
-            //         sh 'cd ${PYECVL_SRC}/examples && python3 img_format.py ${ECVL_SRC}/data/nifti/LR_nifti.nii ${ECVL_SRC}/data/isic_dicom/ISIC_0000008.dcm'
-            //         sh 'cd ${PYECVL_SRC}/examples && python3 imgproc.py ${ECVL_SRC}/data/test.jpg'
-            //         sh 'cd ${PYECVL_SRC}/examples && python3 openslide.py ${ECVL_SRC}/data/hamamatsu/10-B1-TALG.ndpi'
-            //         sh 'cd ${PYECVL_SRC}/examples && python3 read_write.py ${ECVL_SRC}/data/test.jpg test_mod.jpg'
-            //       }
-            //     }
-            //   }
-            // }
+                stage('Test PyECVL') {
+                  agent {
+                    docker { image '${DOCKER_REPOSITORY_OWNER}/pylibs-toolkit:${DOCKER_IMAGE_TAG}' }
+                  }
+                  steps {
+                    sh 'cd ${PYECVL_SRC} && pytest tests'
+                    sh 'cd ${PYECVL_SRC}/examples && python3 dataset.py ${ECVL_SRC}/build/mnist/mnist.yml'
+                    sh 'cd ${PYECVL_SRC}/examples && python3 ecvl_eddl.py ${ECVL_SRC}/data/test.jpg ${ECVL_SRC}/build/mnist/mnist.yml'
+                    sh 'cd ${PYECVL_SRC}/examples && python3 img_format.py ${ECVL_SRC}/data/nifti/LR_nifti.nii ${ECVL_SRC}/data/isic_dicom/ISIC_0000008.dcm'
+                    sh 'cd ${PYECVL_SRC}/examples && python3 imgproc.py ${ECVL_SRC}/data/test.jpg'
+                    sh 'cd ${PYECVL_SRC}/examples && python3 openslide.py ${ECVL_SRC}/data/hamamatsu/10-B1-TALG.ndpi'
+                    sh 'cd ${PYECVL_SRC}/examples && python3 read_write.py ${ECVL_SRC}/data/test.jpg test_mod.jpg'
+                  }
+                }
+              }
+            }
 
             stage('Publish Development Build') {
               when {
