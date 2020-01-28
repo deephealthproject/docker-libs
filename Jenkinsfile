@@ -142,7 +142,7 @@ pipeline {
                 script {
                   sh 'printenv'
                   docker.withRegistry( '', registryCredential ) {
-                    // sh 'CONFIG_FILE="" make push'
+                    sh 'CONFIG_FILE="" make push'
                   }
                 }
               }
