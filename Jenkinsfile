@@ -189,7 +189,7 @@ pipeline {
       echo 'I failed :('
     }
     cleanup {      
-      sh 'make clean'
+      // sh 'make clean'
       deleteDir() /* clean up our workspace */
       sh 'docker images'
       sh 'docker image prune -f'
