@@ -52,7 +52,6 @@ pipeline {
               steps {
                 sh 'git fetch --tags'
                 sh 'printenv'
-                sh 'make clean'
               }
             }
             
