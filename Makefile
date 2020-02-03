@@ -204,6 +204,7 @@ _build: \
 
 build_libs: build_libs_toolkit ## Build and tag 'libs' image
 	$(call build_image,libs,runtime,\
+		--label CONTAINER_VERSION=${DOCKER_IMAGE_TAG} \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
 		--label EDDL_REVISION=$(call get_revision,${EDDL_LIB_PATH},${EDDL_REVISION}) \
@@ -213,6 +214,7 @@ build_libs: build_libs_toolkit ## Build and tag 'libs' image
 
 build_libs_toolkit: ecvl_folder eddl_folder ## Build and tag 'libs-toolkit' image
 	$(call build_image,libs,develop,\
+		--label CONTAINER_VERSION=${DOCKER_IMAGE_TAG} \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
 		--label EDDL_REVISION=$(call get_revision,${EDDL_LIB_PATH},${EDDL_REVISION}) \
@@ -223,6 +225,7 @@ build_libs_toolkit: ecvl_folder eddl_folder ## Build and tag 'libs-toolkit' imag
 
 build_pylibs: build_pylibs_toolkit ## Build and tag 'pylibs' image
 	$(call build_image,pylibs,runtime,\
+		--label CONTAINER_VERSION=${DOCKER_IMAGE_TAG} \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
 		--label EDDL_REVISION=$(call get_revision,${EDDL_LIB_PATH},${EDDL_REVISION}) \
@@ -238,6 +241,7 @@ build_pylibs: build_pylibs_toolkit ## Build and tag 'pylibs' image
 
 build_pylibs_toolkit: pyecvl_folder pyeddl_folder ## Build and tag 'pylibs-toolkit' image
 	$(call build_image,pylibs,develop,\
+		--label CONTAINER_VERSION=${DOCKER_IMAGE_TAG} \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
 		--label EDDL_REVISION=$(call get_revision,${EDDL_LIB_PATH},${EDDL_REVISION}) \
