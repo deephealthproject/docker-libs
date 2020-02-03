@@ -239,7 +239,7 @@ build_pylibs: build_pylibs_toolkit ## Build and tag 'pylibs' image
 		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
 		--label PYEDDL_REVISION=$(call get_revision,${PYEDDL_LIB_PATH},${PYEDDL_REVISION}),libs:$(DOCKER_IMAGE_TAG),pylibs-toolkit:$(DOCKER_IMAGE_TAG))
 
-build_pylibs_toolkit: pyecvl_folder pyeddl_folder ## Build and tag 'pylibs-toolkit' image
+build_pylibs_toolkit: pyeddl_folder pyecvl_folder ## Build and tag 'pylibs-toolkit' image
 	$(call build_image,pylibs,develop,\
 		--label CONTAINER_VERSION=${DOCKER_IMAGE_TAG} \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
