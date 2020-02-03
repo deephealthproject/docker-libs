@@ -18,7 +18,7 @@ DOCKER_IMAGE_PREFIX=
 # ECVL repository
 ECVL_REPOSITORY=https://github.com/deephealthproject/ecvl.git
 ECVL_BRANCH=master
-ECVL_REVISION=af6001e218a4c1aaec8a43dd05a3731edef73e73
+ECVL_REVISION=v0.1.0
 
 # PyECVL
 PYECVL_REPOSITORY=https://github.com/deephealthproject/pyecvl.git
