@@ -187,11 +187,11 @@ pyeddl_folder: pylibs_folder
 	@rm -rf ${PYEDDL_LIB_PATH}/third_party/eddl
 	@cp -a ${EDDL_LIB_PATH} ${PYEDDL_LIB_PATH}/third_party/eddl
 
-apply_libs_patches:
-	# $(call clone_repository,${PYEDDL_LIB_PATH},${PYEDDL_REPOSITORY},${PYEDDL_BRANCH},${PYEDDL_REVISION},false)
-	# # TODO: remove this patch when not required
-	# @echo "Applying patches to the EDDL repository..."
-	# cd ${EDDL_LIB_PATH} && git apply ../../${PYEDDL_LIB_PATH}/eddl.diff || true
+apply_pyeddl_patches:
+	# TODO: remove this patch when not required
+	@echo "Applying patches to the EDDL repository..."
+	$(call clone_repository,${PYEDDL_LIB_PATH},${PYEDDL_REPOSITORY},${PYEDDL_BRANCH},${PYEDDL_REVISION},false)
+	cd ${EDDL_LIB_PATH} && git apply ../../${PYEDDL_LIB_PATH}/eddl_0.3.patch || true
 	# @echo "Copying revision '${EDDL_REVISION}' of EDDL library..."
 	# @rm -rf ${PYEDDL_LIB_PATH}/third_party/eddl
 	# @cp -a ${EDDL_LIB_PATH} ${PYEDDL_LIB_PATH}/third_party/eddl
@@ -212,7 +212,7 @@ build_libs: build_libs_toolkit ## Build and tag 'libs' image
 		--label ECVL_BRANCH=${ECVL_BRANCH} \
 		--label ECVL_REVISION=$(call get_revision,${ECVL_LIB_PATH},${ECVL_REVISION}),libs-toolkit:$(DOCKER_IMAGE_TAG))
 
-build_libs_toolkit: ecvl_folder eddl_folder ## Build and tag 'libs-toolkit' image
+build_libs_toolkit: ecvl_folder eddl_folder apply_pyeddl_patches ## Build and tag 'libs-toolkit' image
 	$(call build_image,libs,develop,\
 		--label CONTAINER_VERSION=${DOCKER_IMAGE_TAG} \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
