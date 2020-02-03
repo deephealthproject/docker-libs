@@ -33,7 +33,7 @@ EDDL_REVISION=0.3
 # PyEDDL repository
 PYEDDL_REPOSITORY=https://github.com/deephealthproject/pyeddl.git
 PYEDDL_BRANCH=master
-PYEDDL_REVISION=3c3c01444f8fb6c24c3251adef24a823ba5dd281
+PYEDDL_REVISION=0.2.0
 
 # date.time as build number
 #DOCKER_IMAGE_TAG=0.1.2
