@@ -23,7 +23,7 @@ ECVL_REVISION=v0.1.0
 # PyECVL
 PYECVL_REPOSITORY=https://github.com/deephealthproject/pyecvl.git
 PYECVL_BRANCH=master
-PYECVL_REVISION=f0e351acc62aaa915c09d390bc5e8a31c35d7fc8
+PYECVL_REVISION=0.1.0
 
 # EDDL repository 
 EDDL_REPOSITORY=https://github.com/deephealthproject/eddl.git
