@@ -19,8 +19,11 @@ RUN \
     && apt-get install -y --no-install-recommends \
         wget \
         rsync \
-        libopencv-dev \
+        libopencv-core-dev \
+        libopencv-imgproc-dev \
+        libopencv-imgcodecs-dev \
         libopenslide-dev \
+        libgomp1 \
     && apt-get clean
 
 # set arguments
