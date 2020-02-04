@@ -6,7 +6,7 @@ FROM ${BASE_IMAGE} as base
 LABEL website="https://github.com/deephealthproject/"
 LABEL description="DeepHealth European Distributed Deep Learning Library"
 LABEL software="deephealth-eddl,deephealth-ecvl,deephealth-pyecvl,deephealth-pyeddl"
-LABEL version="0.1"
+
 
 ARG eddl_src="/usr/local/src/eddl"
 ARG ecvl_src="/usr/local/src/ecvl"
