@@ -132,12 +132,12 @@ pipeline {
           }
           steps {
             sh 'cd ${PYECVL_SRC} && pytest tests'
-            sh 'cd ${PYECVL_SRC}/examples && python3 dataset.py ${ECVL_SRC}/build/mnist/mnist.yml'
-            sh 'cd ${PYECVL_SRC}/examples && python3 ecvl_eddl.py ${ECVL_SRC}/data/test.jpg ${ECVL_SRC}/build/mnist/mnist.yml'
-            sh 'cd ${PYECVL_SRC}/examples && python3 img_format.py ${ECVL_SRC}/data/nifti/LR_nifti.nii ${ECVL_SRC}/data/isic_dicom/ISIC_0000008.dcm'
-            sh 'cd ${PYECVL_SRC}/examples && python3 imgproc.py ${ECVL_SRC}/data/test.jpg'
-            sh 'cd ${PYECVL_SRC}/examples && python3 openslide.py ${ECVL_SRC}/data/hamamatsu/10-B1-TALG.ndpi'
-            sh 'cd ${PYECVL_SRC}/examples && python3 read_write.py ${ECVL_SRC}/data/test.jpg test_mod.jpg'
+            sh 'cd ${PYECVL_SRC}/examples && python3 dataset.py "${ECVL_SRC}/examples/data/mnist/mnist.yml"'
+            sh 'cd ${PYECVL_SRC}/examples && python3 ecvl_eddl.py "${ECVL_SRC}/examples/data/test.jpg" "${ECVL_SRC}/examples/data/mnist/mnist.yml"'
+            sh 'cd ${PYECVL_SRC}/examples && python3 img_format.py "${ECVL_SRC}/examples/data/nifti/LR_nifti.nii" "${ECVL_SRC}/data/isic_dicom/ISIC_0000008.dcm"'
+            sh 'cd ${PYECVL_SRC}/examples && python3 imgproc.py "${ECVL_SRC}/examples/data/test.jpg"'
+            sh 'cd ${PYECVL_SRC}/examples && python3 openslide.py "${ECVL_SRC}/examples/data/hamamatsu/test3-DAPI 2 (387).ndpi"'
+            sh 'cd ${PYECVL_SRC}/examples && python3 read_write.py "${ECVL_SRC}/examples/data/test.jpg test_mod.jpg"'
           }
         }
       }
