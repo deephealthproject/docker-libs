@@ -58,9 +58,8 @@ COPY --from=toolkit /usr/local/src/eddl/build/install_manifest.txt /tmp/local/ed
 WORKDIR /tmp/local
 
 # merge existing system directories with those containing libraries
-RUN cat *_manifest.txt >> install_manifest.txt \
-    && sed -ie 's+/usr/local/++g' install_manifest.txt \
-    && while IFS= read -r line; do echo "--> $line"; rsync --relative "${line}" "/usr/local/"; done < "install_manifest.txt"
+RUN sed -e 's+/usr/local/++' *_manifest.txt | \
+    while IFS= read -r line; do echo ">>> $line" ; rsync --relative "${line}" "/usr/local/" || exit ; done
 
 ######################
 #### TARGET Stage ####
