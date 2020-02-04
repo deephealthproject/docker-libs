@@ -74,6 +74,7 @@ RUN echo "\nBuilding ECVL library..." >&2 \
         -D ECVL_DATASET_PARSER=ON \
         -D ECVL_WITH_DICOM=ON \
         -D ECVL_BUILD_EDDL=ON \
+        -D ECVL_BUILD_EXAMPLES=ON \
         -D EDDL_DIR=${EDDL_SRC}/build/install \
         .. \
     && make -j$(grep -c ^processor /proc/cpuinfo) \
