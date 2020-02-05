@@ -42,8 +42,7 @@ RUN \
     && mv cmake*/share/* /usr/local/share/ \
     && chown root:root /usr/local/bin/* /usr/local/share/* \
     && chmod a+rx /usr/local/bin/* \
-    && rm -rf /tmp/cmake* \
-    && ln -s /usr/lib/x86_64-linux-gnu/libcublas.so /usr/local/cuda/lib64/
+    && rm -rf /tmp/cmake*
 
 # copy libraries
 COPY ${ecvl_src_origin} ${ECVL_SRC}
