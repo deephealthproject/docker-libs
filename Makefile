@@ -143,10 +143,13 @@ define clean_build
 	@rm -rf $(lib)/{*eddl,*ecvl}
 	@echo "Removing sources... DONE"	
 	@echo "Stopping docker containers... "
-	@docker ps -a | grep -E "(${DOCKER_IMAGE_PREFIX})?$(lib)-(runtime|develop)" | awk '{print $$1}' | xargs docker rm -f 
+	# We'd use xargs --no-run-if-empty if we only wanted to work on Linux, but we also care
+	# about Mac OSX so we ignore an error in the following line (which will happen if xargs
+	# is called without any input on stdin)
+	@docker ps -a | grep -E "(${DOCKER_IMAGE_PREFIX})?$(lib)-(runtime|develop)" | awk '{print $$1}' | xargs docker rm -f  || true
 	@echo "Stopping docker containers... DONE"
 	@echo "Removing docker images... "
-	@docker images | grep -E "(${DOCKER_IMAGE_PREFIX})?$(lib)-(runtime|develop)" | awk '{print $$3}' | xargs docker rmi -f
+	@docker images | grep -E "(${DOCKER_IMAGE_PREFIX})?$(lib)-(runtime|develop)" | awk '{print $$3}' | xargs docker rmi -f || true
 	@echo "Removing docker images... DONE"
 endef
 
