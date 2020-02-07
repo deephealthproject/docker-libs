@@ -515,7 +515,7 @@ publish_pyecvl_toolkit: build_pyecvl_toolkit push_pyecvl_toolkit ## Publish 'pye
 repo-login: ## Login to the Docker Registry
 	@if [[ ${DOCKER_LOGIN_DONE} == false ]]; then \
 		echo "Logging into Docker registry ${DOCKER_REGISTRY}..." ; \
-		echo ${DOCKER_PASSWORD} | docker login ${DOCKER_REGISTRY} -u ${DOCKER_USER} --password-stdin ; \
+		docker login ${DOCKER_REGISTRY} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} ; \
 		DOCKER_LOGIN_DONE=true ;\
 	else \
 		echo "Logging into Docker registry already done" ; \
