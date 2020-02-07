@@ -237,7 +237,9 @@ apply_pyecvl_patches:
 build: _build ## Build libs+pylibs Docker images
 _build: \
 	build_libs \
-	build_pylibs
+	build_libs_toolkit \
+	build_pylibs \
+	build_pylibs_toolkit
 
 
 ############# libs-toolkit #############
