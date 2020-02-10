@@ -79,11 +79,16 @@ pipeline {
             UPSTREAM_PROJECT_DATA = upstream_data
             test = "git@github.com:kikkomep/dtests.git"
             // TODO: set revisions
-            switch(${UPSTREAM_GIT_REPO})
-              case ${ECVL_REPOSITORY}
-                echo "ECVL REPOSITORY !!!"
-              case ${test}
-                echo "Test REPOSITORY"
+            switch(UPSTREAM_GIT_REPO){
+              case ECVL_REPOSITORY:
+                ECVL_REVISION = UPSTREAM_GIT_COMMIT
+                echo "$ECVL_REVISION $UPSTREAM_GIT_COMMIT"
+              case test:
+                ECVL_REVISION = UPSTREAM_GIT_COMMIT
+                echo "Test REPOSITORY: $ECVL_REVISION $UPSTREAM_GIT_COMMIT"
+              default:
+                echo "Default repo"
+            }
 
 
             // overwrite repo tag using the upstream repo
