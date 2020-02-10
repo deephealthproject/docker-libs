@@ -1,10 +1,36 @@
+
+// ECVL Settings
+ECVL_REPOSITORY = "https://github.com/deephealthproject/ecvl.git"
+ECVL_BRANCH = "master"
+ECVL_REVISION = ""
+// PyECVL Settings
+PYECVL_REPOSITORY = "https://github.com/deephealthproject/pyecvl.git"
+PYECVL_BRANCH = "master"
+PYECVL_REVISION = ""
+// EDDL Settings    
+EDDL_REPOSITORY = "https://github.com/deephealthproject/eddl.git"
+EDDL_BRANCH = "master"
+EDDL_REVISION = ""
+// PyEDDL Settings
+PYEDDL_REPOSITORY = "https://github.com/deephealthproject/pyeddl.git"
+PYEDDL_BRANCH = "master"
+PYEDDL_REVISION = ""
+// Extract additional info
+REPO_TAG = ""
+// Docker Settings
+DOCKER_IMAGE_LATEST = ""
+DOCKER_IMAGE_TAG = ""
+DOCKER_IMAGE_TAG_EXTRA = ""
+DOCKER_REPOSITORY_OWNER = "dhealth"
+// Upstream project data
 UPSTREAM_GIT_REPO = ""
 UPSTREAM_GIT_BRANCH = ""
 UPSTREAM_GIT_REVISION = ""
 UPSTREAM_PROJECT_DATA = ""
 
-REPO_TAG = ""
-
+////////////////////////////////////////////////////////////////////////////////////////////
+// Pipeline Definition
+////////////////////////////////////////////////////////////////////////////////////////////
 pipeline {
   agent {
     node { label 'docker && linux && !gpu' }
@@ -20,30 +46,7 @@ pipeline {
     EDDL_SRC = "${BASE_SRC}/eddl"
     PYECVL_SRC = "${BASE_SRC}/pyecvl"
     PYEDDL_SRC = "${BASE_SRC}/pyeddl"
-    // ECVL Settings
-    ECVL_REPOSITORY = "https://github.com/deephealthproject/ecvl.git"
-    ECVL_BRANCH = "master"
-    ECVL_REVISION = sh(returnStdout: true, script: "git ls-remote ${ECVL_REPOSITORY} ${ECVL_BRANCH} | awk '{print \$1}'").trim()
-    // PyECVL Settings
-    PYECVL_REPOSITORY = "https://github.com/deephealthproject/pyecvl.git"
-    PYECVL_BRANCH = "master"
-    PYECVL_REVISION = sh(returnStdout: true, script: "git ls-remote ${PYECVL_REPOSITORY} ${PYECVL_BRANCH} | awk '{print \$1}'").trim()
-    // EDDL Settings    
-    EDDL_REPOSITORY = "https://github.com/deephealthproject/eddl.git"
-    EDDL_BRANCH = "master"
-    EDDL_REVISION = sh(returnStdout: true, script: "git ls-remote ${EDDL_REPOSITORY} ${EDDL_BRANCH} | awk '{print \$1}'").trim()
-    // PyEDDL Settings
-    PYEDDL_REPOSITORY = "https://github.com/deephealthproject/pyeddl.git"
-    PYEDDL_BRANCH = "master"
-    PYEDDL_REVISION = sh(returnStdout: true, script: "git ls-remote ${PYEDDL_REPOSITORY} ${PYEDDL_BRANCH} | awk '{print \$1}'").trim()
-    // Extract additional info
-    NORMALIZED_BRANCH_NAME = sh(returnStdout: true, script: "echo ${BRANCH_NAME} | sed 's+/+-+g'").trim()
-    REPO_TAG = sh(returnStdout: true, script: "tag=\$(git tag -l --points-at HEAD); if [[ -n \${tag} ]]; then echo \${tag}; else git rev-parse --short HEAD --short; fi").trim()
-    // Docker Settings
-    DOCKER_IMAGE_LATEST = sh(returnStdout: true, script: "if [ '${GIT_BRANCH}' = 'master' ]; then echo 'true'; else echo 'false'; fi").trim()
-    DOCKER_IMAGE_TAG = "${NORMALIZED_BRANCH_NAME}_build${BUILD_NUMBER}"
-    DOCKER_IMAGE_TAG_EXTRA = "${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"
-    DOCKER_REPOSITORY_OWNER = "dhealth"
+    
     // Docker credentials
     registryCredential = 'dockerhub-deephealthproject'
     // Skip DockerHub
@@ -54,8 +57,17 @@ pipeline {
 
     stage('Configure') {
       steps {
+        // Load tags
         sh 'git fetch --tags'
-        sh 'printenv'
+        // Set defaults
+        ECVL_REVISION = sh(returnStdout: true, script: "git ls-remote ${ECVL_REPOSITORY} ${ECVL_BRANCH} | awk '{print \$1}'").trim()
+        PYECVL_REVISION = sh(returnStdout: true, script: "git ls-remote ${PYECVL_REPOSITORY} ${PYECVL_BRANCH} | awk '{print \$1}'").trim()
+        EDDL_REVISION = sh(returnStdout: true, script: "git ls-remote ${EDDL_REPOSITORY} ${EDDL_BRANCH} | awk '{print \$1}'").trim()
+        PYEDDL_REVISION = sh(returnStdout: true, script: "git ls-remote ${PYEDDL_REPOSITORY} ${PYEDDL_BRANCH} | awk '{print \$1}'").trim()
+        REPO_TAG = sh(returnStdout: true, script: "tag=\$(git tag -l --points-at HEAD); if [[ -n \${tag} ]]; then echo \${tag}; else git rev-parse --short HEAD --short; fi").trim()
+        NORMALIZED_BRANCH_NAME = sh(returnStdout: true, script: "echo ${BRANCH_NAME} | sed 's+/+-+g'").trim()
+        DOCKER_IMAGE_LATEST = sh(returnStdout: true, script: "if [ '${GIT_BRANCH}' = 'master' ]; then echo 'true'; else echo 'false'; fi").trim()
+        // Extract upstream project
         script {
           currentBuild.upstreamBuilds?.each { b ->
             upstream_data = b.getBuildVariables()
@@ -63,10 +75,17 @@ pipeline {
             UPSTREAM_GIT_BRANCH = upstream_data["GIT_BRANCH"]
             UPSTREAM_GIT_COMMIT = upstream_data["GIT_COMMIT"]
             UPSTREAM_PROJECT_DATA = upstream_data
-
+            // overwrite repo tag using the upstream repo
             REPO_TAG = sh(returnStdout: true, script: "git ls-remote --tags ${UPSTREAM_GIT_REPO} | grep ${UPSTREAM_GIT_COMMIT} | awk '{print \$2}' | sed -e 's+refs/tags/++'").trim()
+            NORMALIZED_BRANCH_NAME = sh(returnStdout: true, script: "echo ${UPSTREAM_GIT_BRANCH} | sed 's+/+-+g'").trim()
+            DOCKER_IMAGE_LATEST = sh(returnStdout: true, script: "if [ '${UPSTREAM_GIT_BRANCH}' = 'master' ]; then echo 'true'; else echo 'false'; fi").trim()
           }
         }
+        //        
+        DOCKER_IMAGE_TAG = "${NORMALIZED_BRANCH_NAME}_build${BUILD_NUMBER}"
+        DOCKER_IMAGE_TAG_EXTRA = "${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"
+        // Print current environment (just for debug)
+        sh 'printenv'
       }
     }
 
