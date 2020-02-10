@@ -56,11 +56,11 @@ pipeline {
         sh 'printenv'
         script {
           currentBuild.upstreamBuilds?.each { b ->
-            echo b.getFullProjectName()
             upstream_data = b.getBuildVariables()
-            echo upstream_data["GIT_URL"]
-            echo upstream_data["GIT_COMMIT"]
-            echo upstream_data["GIT_BRANCH"]
+            UPSTREAM_GIT_REPO = upstream_data["GIT_URL"]
+            UPSTREAM_GIT_BRANCH = upstream_data["GIT_BRANCH"]
+            UPSTREAM_GIT_COMMIT = upstream_data["GIT_COMMIT"]
+            UPSTREAM_PROJECT_DATA = upstream_data
             b.getBuildVariables().each {
               key, value -> L:{
                 println "$key -- $value"
@@ -72,6 +72,19 @@ pipeline {
             }
           }
         }
+      }
+    }
+
+    stage('Use configured variable') {
+      when {
+        expression { return "$UPSTREAM_PROJECT_DATA" != "" }
+      }
+
+      steps {
+        sh "echo ${UPSTREAM_GIT_REPO}"
+        sh "echo ${UPSTREAM_GIT_BRANCH}"
+        sh "echo ${UPSTREAM_GIT_COMMIT}"
+        sh "echo ${UPSTREAM_PROJECT_DATA}"
       }
     }
 
