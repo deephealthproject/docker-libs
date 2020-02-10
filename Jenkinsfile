@@ -57,7 +57,7 @@ pipeline {
         script {
           currentBuild.upstreamBuilds?.each { b ->
             echo b.getFullProjectName()
-            var upstream_data = b.getBuildVariables()
+            upstream_data = b.getBuildVariables()
             echo upstream_data["GIT_URL"]
             echo upstream_data["GIT_COMMIT"]
             echo upstream_data["GIT_BRANCH"]
