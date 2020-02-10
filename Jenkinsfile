@@ -1,3 +1,8 @@
+UPSTREAM_GIT_REPO = ""
+UPSTREAM_GIT_BRANCH = ""
+UPSTREAM_GIT_REVISION = ""
+UPSTREAM_PROJECT_DATA = ""
+
 pipeline {
   agent {
     node { label 'docker && linux && !gpu' }
@@ -49,6 +54,24 @@ pipeline {
       steps {
         sh 'git fetch --tags'
         sh 'printenv'
+        script {
+          currentBuild.upstreamBuilds?.each { b ->
+            echo b.getFullProjectName()
+            var upstream_data = b.getBuildVariables()
+            echo upstream_data["GIT_URL"]
+            echo upstream_data["GIT_COMMIT"]
+            echo upstream_data["GIT_BRANCH"]
+            b.getBuildVariables().each {
+              key, value -> L:{
+                println "$key -- $value"
+                if ( "$key" == "GIT_BRANCH"){
+                  myVar = "$value"
+                  echo "$value --- $myVar"
+                }
+              }
+            }
+          }
+        }
       }
     }
 
