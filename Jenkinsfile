@@ -3,6 +3,8 @@ UPSTREAM_GIT_BRANCH = ""
 UPSTREAM_GIT_REVISION = ""
 UPSTREAM_PROJECT_DATA = ""
 
+REPO_TAG = ""
+
 pipeline {
   agent {
     node { label 'docker && linux && !gpu' }
@@ -61,15 +63,8 @@ pipeline {
             UPSTREAM_GIT_BRANCH = upstream_data["GIT_BRANCH"]
             UPSTREAM_GIT_COMMIT = upstream_data["GIT_COMMIT"]
             UPSTREAM_PROJECT_DATA = upstream_data
-            b.getBuildVariables().each {
-              key, value -> L:{
-                println "$key -- $value"
-                if ( "$key" == "GIT_BRANCH"){
-                  myVar = "$value"
-                  echo "$value --- $myVar"
-                }
-              }
-            }
+
+            REPO_TAG = sh(returnStdout: true, script: "git ls-remote --tags ${UPSTREAM_GIT_REPO} | grep ${UPSTREAM_GIT_COMMIT} | awk '{print \$2}' | sed -e 's+refs/tags/++'").trim()
           }
         }
       }
@@ -85,6 +80,7 @@ pipeline {
         sh "echo ${UPSTREAM_GIT_BRANCH}"
         sh "echo ${UPSTREAM_GIT_COMMIT}"
         sh "echo ${UPSTREAM_PROJECT_DATA}"
+        sh "echo ${REPO_TAG}"
       }
     }
 
