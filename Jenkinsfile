@@ -102,6 +102,10 @@ pipeline {
         sh "echo ${UPSTREAM_GIT_COMMIT}"
         sh "echo ${UPSTREAM_PROJECT_DATA}"
         sh "echo ${REPO_TAG}"
+        sh "echo ${NORMALIZED_BRANCH_NAME}"
+        sh "echo ${DOCKER_IMAGE_LATEST}"
+        sh "echo ${DOCKER_IMAGE_TAG}"
+        sh "echo ${DOCKER_IMAGE_TAG_EXTRA}"
       }
     }
 
