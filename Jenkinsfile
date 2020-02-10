@@ -77,6 +77,15 @@ pipeline {
             UPSTREAM_GIT_BRANCH = upstream_data["GIT_BRANCH"]
             UPSTREAM_GIT_COMMIT = upstream_data["GIT_COMMIT"]
             UPSTREAM_PROJECT_DATA = upstream_data
+            test = "git@github.com:kikkomep/dtests.git"
+            // TODO: set revisions
+            switch(${UPSTREAM_GIT_REPO})
+              case ${ECVL_REPOSITORY}
+                echo "ECVL REPOSITORY !!!"
+              case ${test}
+                echo "Test REPOSITORY"
+
+
             // overwrite repo tag using the upstream repo
             REPO_TAG = sh(returnStdout: true, script: "git ls-remote --tags ${UPSTREAM_GIT_REPO} | grep ${UPSTREAM_GIT_COMMIT} | awk '{print \$2}' | sed -e 's+refs/tags/++'").trim()
             NORMALIZED_BRANCH_NAME = sh(returnStdout: true, script: "echo ${UPSTREAM_GIT_BRANCH} | sed -e 's+origin/++; s+/+-+g'").trim()
