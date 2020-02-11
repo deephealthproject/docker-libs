@@ -177,6 +177,12 @@ pipeline {
       parallel {
 
         stage('Test EDDL') {
+          when {
+            anyOf {
+              expression { return "${UPSTREAM_GIT_REPO}" == "${EDDL_REPOSITORY}" } ;
+              not { triggeredBy 'UpstreamCause' }
+            }
+          }
           agent {
             docker { image '${DOCKER_REPOSITORY_OWNER}/libs-toolkit:${DOCKER_IMAGE_TAG}' }
           }
