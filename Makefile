@@ -443,7 +443,7 @@ _build_pylibs_base: _build_libs_base
 		if [ "${DOCKER_BASE_IMAGE_SKIP_PULL}" != "true" ]; then \
 		echo "Pulling the latest version of '${base_image}'..."; \
 		docker pull -q ${base_image} ; fi ; , \
-		$(call build_image,pylibs,pylibs-base,,libs:$(DOCKER_IMAGE_TAG)) \
+		$(call build_image,pylibs,pylibs-base,,libs-base:$(DOCKER_IMAGE_TAG)) \
 	)
 
 build_pyeddl: _build_pylibs_base build_pyeddl_toolkit ## Build 'pyeddl' image
