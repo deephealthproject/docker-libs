@@ -169,6 +169,25 @@ pipeline {
             }
           }
         }
+
+        stage('EDDL Build') {
+          when {
+            allOf {
+              triggeredBy 'UpstreamCause' ;
+              expression { return "${UPSTREAM_GIT_REPO}" == "${EDDL_REPOSITORY}" }
+            }
+          }
+          steps {
+            script {
+              sh 'CONFIG_FILE="" make build_eddl'
+              // docker.withRegistry( '', registryCredential ) {
+              //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
+              //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
+              // }
+            }
+          }
+        }
+
       }
     }
 
