@@ -64,7 +64,7 @@ EDDL_REVISION := ${EDDL_REVISION}
 # PyEDDL repository
 PYEDDL_REPOSITORY := $(or ${PYEDDL_REPOSITORY},https://github.com/deephealthproject/pyeddl.git)
 PYEDDL_BRANCH := $(or ${PYEDDL_BRANCH},master)
-PYEDDL_REVISION := ${PYEDDL_REVISION} 
+PYEDDL_REVISION := ${PYEDDL_REVISION}
 
 # config file
 CONFIG_FILE ?= settings.sh
