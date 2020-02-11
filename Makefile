@@ -344,14 +344,14 @@ _build_libs_base:
 		$(call build_image,libs,libs-base,,$(DOCKER_NVIDIA_RUNTIME_IMAGE)) \
 	)
 
-build_eddl: _build_libs_base build_libs_toolkit ## Build 'eddl' image
+build_eddl: _build_libs_base build_eddl_toolkit ## Build 'eddl' image
 	$(call build_image,libs,eddl,\
 		--label CONTAINER_VERSION=${DOCKER_IMAGE_TAG} \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
-		--label EDDL_REVISION=$(call get_revision,${EDDL_LIB_PATH},${EDDL_REVISION}),libs-base:$(DOCKER_BASE_IMAGE_VERSION_TAG),libs-toolkit:$(DOCKER_IMAGE_TAG))
+		--label EDDL_REVISION=$(call get_revision,${EDDL_LIB_PATH},${EDDL_REVISION}),libs-base:$(DOCKER_BASE_IMAGE_VERSION_TAG),eddl-toolkit:$(DOCKER_IMAGE_TAG))
 
-build_ecvl: build_eddl ## Build 'ecvl' image
+build_ecvl: _build_libs_base build_ecvl_toolkit## Build 'ecvl' image
 	$(call build_image,libs,ecvl,\
 		--label CONTAINER_VERSION=${DOCKER_IMAGE_TAG} \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
@@ -359,7 +359,7 @@ build_ecvl: build_eddl ## Build 'ecvl' image
 		--label EDDL_REVISION=$(call get_revision,${EDDL_LIB_PATH},${EDDL_REVISION}) \
 		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
 		--label ECVL_BRANCH=${ECVL_BRANCH} \
-		--label ECVL_REVISION=$(call get_revision,${ECVL_LIB_PATH},${ECVL_REVISION}),eddl:$(DOCKER_IMAGE_TAG),libs-toolkit:$(DOCKER_IMAGE_TAG))
+		--label ECVL_REVISION=$(call get_revision,${ECVL_LIB_PATH},${ECVL_REVISION}),eddl:$(DOCKER_IMAGE_TAG),ecvl-toolkit:$(DOCKER_IMAGE_TAG))
 
 build_libs: build_ecvl ## Build 'libs' image
 	$(call build_image,libs,libs,\
