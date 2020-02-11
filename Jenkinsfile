@@ -267,16 +267,13 @@ pipeline {
           }
         }
 
-        stage('Test ECVL') {
-          agent {
-            docker { image '${DOCKER_REPOSITORY_OWNER}/libs-toolkit:${DOCKER_IMAGE_TAG}' }
+         stage('Test PyEDDL') {
+          when {
+            anyOf {
+              expression { return "${UPSTREAM_GIT_REPO}" == "${PYEDDL_REPOSITORY}" } ;
+              not { triggeredBy 'UpstreamCause' }
+            }
           }
-          steps {
-            sh 'cd ${ECVL_SRC}/build && ctest -C Debug -VV'
-          }
-        }
-
-        stage('Test PyEDDL') {
           agent {
             docker { image '${DOCKER_REPOSITORY_OWNER}/pylibs-toolkit:${DOCKER_IMAGE_TAG}' }
           }
@@ -287,7 +284,28 @@ pipeline {
           }
         }
 
+        stage('Test ECVL') {
+          when {
+            anyOf {
+              expression { return "${UPSTREAM_GIT_REPO}" == "${ECVL_REPOSITORY}" } ;
+              not { triggeredBy 'UpstreamCause' }
+            }
+          }
+          agent {
+            docker { image '${DOCKER_REPOSITORY_OWNER}/libs-toolkit:${DOCKER_IMAGE_TAG}' }
+          }
+          steps {
+            sh 'cd ${ECVL_SRC}/build && ctest -C Debug -VV'
+          }
+        }
+
         stage('Test PyECVL') {
+          when {
+            anyOf {
+              expression { return "${UPSTREAM_GIT_REPO}" == "${PYECVL_REPOSITORY}" } ;
+              not { triggeredBy 'UpstreamCause' }
+            }
+          }
           agent {
             docker { image '${DOCKER_REPOSITORY_OWNER}/pylibs-toolkit:${DOCKER_IMAGE_TAG}' }
           }
