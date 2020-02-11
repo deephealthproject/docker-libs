@@ -188,6 +188,63 @@ pipeline {
           }
         }
 
+        stage('PyEDDL Build') {
+          when {
+            allOf {
+              triggeredBy 'UpstreamCause' ;
+              expression { return "${UPSTREAM_GIT_REPO}" == "${EDDL_REPOSITORY}" }
+            }
+          }
+          steps {
+            script {
+              sh 'CONFIG_FILE="" make build_pyeddl'
+              // docker.withRegistry( '', registryCredential ) {
+              //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
+              //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
+              // }
+            }
+          }
+        }
+
+        stage('ECVL Build') {
+          when {
+            allOf {
+              triggeredBy 'UpstreamCause' ;
+              expression { return "${UPSTREAM_GIT_REPO}" == "${EDDL_REPOSITORY}" }
+            }
+          }
+          steps {
+            script {
+              sh 'CONFIG_FILE="" make build_ecvl'
+              // docker.withRegistry( '', registryCredential ) {
+              //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
+              //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
+              // }
+            }
+          }
+        }
+
+        stage('PyECVL Build') {
+          when {
+            allOf {
+              triggeredBy 'UpstreamCause' ;
+              expression { return "${UPSTREAM_GIT_REPO}" == "${EDDL_REPOSITORY}" }
+            }
+          }
+          steps {
+            script {
+              sh 'CONFIG_FILE="" make build_pyecvl'
+              // docker.withRegistry( '', registryCredential ) {
+              //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
+              //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
+              // }
+            }
+          }
+        }
+
+
+        
+
       }
     }
 
