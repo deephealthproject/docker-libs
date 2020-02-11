@@ -80,17 +80,24 @@ pipeline {
             test = "git@github.com:kikkomep/dtests.git"
             // TODO: set revisions
             switch(UPSTREAM_GIT_REPO){
+              case EDDL_REPOSITORY:
+                EDDL_BRANCH = UPSTREAM_GIT_BRANCH
+                EDDL_REVISION = UPSTREAM_GIT_COMMIT
               case ECVL_REPOSITORY:
+                ECVL_BRANCH = UPSTREAM_GIT_BRANCH
                 ECVL_REVISION = UPSTREAM_GIT_COMMIT
-                echo "$ECVL_REVISION $UPSTREAM_GIT_COMMIT"
+              case PYEDDL_REPOSITORY:
+                PYEDDL_BRANCH = UPSTREAM_GIT_BRANCH
+                PYEDDL_REVISION = UPSTREAM_GIT_COMMIT
+              case PYECVL_REPOSITORY:
+                PYECVL_BRANCH = UPSTREAM_GIT_BRANCH
+                PYECVL_REVISION = UPSTREAM_GIT_COMMIT
               case test:
                 ECVL_REVISION = UPSTREAM_GIT_COMMIT
                 echo "Test REPOSITORY: $ECVL_REVISION $UPSTREAM_GIT_COMMIT"
               default:
                 echo "Default repo"
             }
-
-
             // overwrite repo tag using the upstream repo
             REPO_TAG = sh(returnStdout: true, script: "git ls-remote --tags ${UPSTREAM_GIT_REPO} | grep ${UPSTREAM_GIT_COMMIT} | awk '{print \$2}' | sed -e 's+refs/tags/++'").trim()
             NORMALIZED_BRANCH_NAME = sh(returnStdout: true, script: "echo ${UPSTREAM_GIT_BRANCH} | sed -e 's+origin/++; s+/+-+g'").trim()
