@@ -152,23 +152,23 @@ pipeline {
           }
         }
 
-        stage('Development Build') {
-          when {
-            allOf {
-              not { branch "master" } ;
-              triggeredBy 'UpstreamCause'
-            }
-          }
-          steps {
-            script {
-              sh 'CONFIG_FILE="" make build'
-              docker.withRegistry( '', registryCredential ) {
-                  sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
-                  sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
-              }
-            }
-          }
-        }
+        // stage('Development Build') {
+        //   when {
+        //     allOf {
+        //       not { branch "master" } ;
+        //       triggeredBy 'UpstreamCause'
+        //     }
+        //   }
+        //   steps {
+        //     script {
+        //       sh 'CONFIG_FILE="" make build'
+        //       docker.withRegistry( '', registryCredential ) {
+        //           sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
+        //           sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
+        //       }
+        //     }
+        //   }
+        // }
 
         stage('EDDL Build') {
           when {
