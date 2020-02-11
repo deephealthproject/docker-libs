@@ -192,7 +192,7 @@ pipeline {
           when {
             allOf {
               triggeredBy 'UpstreamCause' ;
-              expression { return "${UPSTREAM_GIT_REPO}" == "${EDDL_REPOSITORY}" }
+              expression { return "${UPSTREAM_GIT_REPO}" == "${PYEDDL_REPOSITORY}" }
             }
           }
           steps {
@@ -210,7 +210,7 @@ pipeline {
           when {
             allOf {
               triggeredBy 'UpstreamCause' ;
-              expression { return "${UPSTREAM_GIT_REPO}" == "${EDDL_REPOSITORY}" }
+              expression { return "${UPSTREAM_GIT_REPO}" == "${ECVL_REPOSITORY}" }
             }
           }
           steps {
@@ -228,7 +228,7 @@ pipeline {
           when {
             allOf {
               triggeredBy 'UpstreamCause' ;
-              expression { return "${UPSTREAM_GIT_REPO}" == "${EDDL_REPOSITORY}" }
+              expression { return "${UPSTREAM_GIT_REPO}" == "${PYECVL_REPOSITORY}" }
             }
           }
           steps {
