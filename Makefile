@@ -133,7 +133,7 @@ endef
 # 4 --> REVISION
 # 5 --> RECURSIVE SUBMODULE CLONE (true|false)
 define clone_repository
-	@if [ ! -d ${1} ]; then \
+	if [ ! -d ${1} ]; then \
 		git clone --branch "${3}" ${2} ${1} \
 		&& cd "${1}" \
 		&& if [ -n "${4}" ]; then git reset --hard ${4} -- ; fi \
@@ -185,37 +185,87 @@ libs_folder:
 	)
 
 eddl_folder: libs_folder	
-	$(if $(wildcard ${EDDL_LIB_PATH}),$(info Using existing '${EDDL_LIB_PATH}' repository), \
+	@$(if $(wildcard ${EDDL_LIB_PATH}),$(info Using existing '${EDDL_LIB_PATH}' repository), \
 		$(call clone_repository,${EDDL_LIB_PATH},${EDDL_REPOSITORY},${EDDL_BRANCH},${EDDL_REVISION},true) ; \
 	)
 
-ecvl_folder: libs_folder
+
+define clone_ecvl
 	$(if $(wildcard ${ECVL_LIB_PATH}),$(info Using existing '${ECVL_LIB_PATH}' repository), \
 		$(call clone_repository,${ECVL_LIB_PATH},${ECVL_REPOSITORY},${ECVL_BRANCH},${ECVL_REVISION},true) ; \
 	)
+endef
+
+ecvl_folder: libs_folder
+	$(call clone_ecvl)
 
 pylibs_folder:
 	@mkdir -p ${LOCAL_PYLIBS_PATH}
 
-pyeddl_folder: pylibs_folder eddl_folder
+define pyeddl_shallow_clone
 	$(if $(wildcard ${PYEDDL_LIB_PATH}),$(info Using existing '${PYEDDL_LIB_PATH}' repository), \
 		$(call clone_repository,${PYEDDL_LIB_PATH},${PYEDDL_REPOSITORY},${PYEDDL_BRANCH},${PYEDDL_REVISION},false) ; \
-		echo "Copying revision '${EDDL_REVISION}' of EDDL library..." ; \
-		if [ -n "${EDDL_REVISION}" ]; then \
-			rm -rf ${PYEDDL_LIB_PATH}/third_party/eddl ; \
-			cp -a ${EDDL_LIB_PATH} ${PYEDDL_LIB_PATH}/third_party/ ; \
-		fi \
 	)
+endef
 
-pyecvl_folder: pylibs_folder ecvl_folder
-	$(if $(wildcard ${PYECVL_LIB_PATH}),$(info Using existing '${PYECVL_LIB_PATH}' repository), \
+define pyeddl_clone_dependencies
+	$(eval EDDL_REVISION = $(shell if [[ ! -n "${EDDL_REVISION}" ]]; then cd ${CURRENT_PATH}/${PYEDDL_LIB_PATH} && git submodule status -- third_party/eddl | sed -E 's/-//; s/ .*//'; else echo ${EDDL_REVISION}; fi))
+	@echo "EDDL_REVISION: ${EDDL_REVISION}"
+	@if [[ -d ${EDDL_LIB_PATH} ]]; then \
+		echo "Using existing '${EDDL_LIB_PATH}' repository" ; \
+	else \
+		$(call clone_repository,${EDDL_LIB_PATH},${EDDL_REPOSITORY},${EDDL_BRANCH},${EDDL_REVISION},true) ; \
+		printf "Copying revision '${EDDL_REVISION}' of EDDL library... " ; \
+		rm -rf ${PYEDDL_LIB_PATH}/third_party/eddl && cp -a ${EDDL_LIB_PATH} ${PYEDDL_LIB_PATH}/third_party/eddl ; \
+		printf "DONE\n" ; \
+	fi	
+endef
+
+_pyeddl_shallow_clone: pylibs_folder
+	@$(call pyeddl_shallow_clone)
+
+pyeddl_folder: _pyeddl_shallow_clone
+	$(call pyeddl_clone_dependencies)
+
+define pyecvl_shallow_clone
+	@$(if $(wildcard ${PYECVL_LIB_PATH}),$(info Using existing '${PYECVL_LIB_PATH}' repository), \
 		$(call clone_repository,${PYECVL_LIB_PATH},${PYECVL_REPOSITORY},${PYECVL_BRANCH},${PYECVL_REVISION},false) ; \
-		echo "Copying revision '${ECVL_REVISION}' of ECVL library..."; \
-		if [ -n "${ECVL_REVISION}" ]; then \
-			rm -rf ${PYECVL_LIB_PATH}/third_party/ecvl ; \
-			cp -a ${ECVL_LIB_PATH} ${CURRENT_PATH}/${PYECVL_LIB_PATH}/third_party/ ; \
-		fi \
 	)
+endef
+
+define pyecvl_resolve_dependencies
+	$(eval PYEDDL_REVISION = $(shell if [[ ! -n "${PYEDDL_REVISION}" ]]; then cd ${CURRENT_PATH}/${PYECVL_LIB_PATH} && git submodule status -- third_party/pyeddl | sed -E 's/-//; s/ .*//'; else echo ${PYEDDL_REVISION}; fi))
+	$(eval ECVL_REVISION = $(shell if [[ ! -n "${ECVL_REVISION}" ]]; then cd ${CURRENT_PATH}/${PYECVL_LIB_PATH} && git submodule status -- third_party/ecvl | sed -E 's/-//; s/ .*//'; else echo ${ECVL_REVISION}; fi))
+	@if [[ -d ${PYEDDL_LIB_PATH} ]]; then \
+		echo "Using existing '${PYEDDL_LIB_PATH}' repository" ; \
+	else \
+		$(call pyeddl_shallow_clone) \
+		printf "Copying revision '${PYEDDL_REVISION}' of PYEDDL library... " ; \
+		rm -rf ${PYECVL_LIB_PATH}/third_party/pyeddl && cp -a ${PYEDDL_LIB_PATH} ${PYECVL_LIB_PATH}/third_party/pyeddl ; \
+		printf "DONE\n" ; \
+	fi
+	@if [[ -d ${ECVL_LIB_PATH} ]]; then \
+		echo "Using existing '${ECVL_LIB_PATH}' repository" ; \
+	else \
+		echo "Using ECVL revision '${ECVL_REVISION}'" ; \
+		$(call clone_ecvl) \
+		printf "Copying revision '${ECVL_REVISION}' of ECVL library... " ; \
+		rm -rf ${PYECVL_LIB_PATH}/third_party/ecvl && cp -a ${ECVL_LIB_PATH} ${PYECVL_LIB_PATH}/third_party/ecvl ; \
+		printf "DONE\n" ; \
+	fi
+endef
+
+_pyecvl_shallow_clone: pylibs_folder
+	$(call pyecvl_shallow_clone)
+
+_pyecvl_first_level_dependencies: _pyecvl_shallow_clone
+	$(call pyecvl_resolve_dependencies)
+
+_pyecvl_second_level_dependencies: _pyecvl_first_level_dependencies
+	$(call pyeddl_clone_dependencies)
+
+pyecvl_folder: _pyecvl_second_level_dependencies
+
 
 # TODO: remove this patch when not required
 apply_pyeddl_patches:	
@@ -591,7 +641,9 @@ clean: clean_images clean_sources
 
 
 .PHONY: help \
-	libs_folder eddl_folder ecvl_folder pylibs_folder pyeddl_folder pyecvl_folder \
+	libs_folder eddl_folder ecvl_folder pylibs_folder \
+	pyeddl_folder _pyeddl_shallow_clone \
+	pyecvl_folder _pyeddl_shallow_clone _pyecvl_first_level_dependencies _pyecvl_second_level_dependencies \
 	apply_pyeddl_patches apply_pyecvl_patches \
 	clean clean_libs clean_pylibs apply_libs_patches \
 	build _build \
