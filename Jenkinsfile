@@ -377,6 +377,89 @@ pipeline {
             }
           }
         }
+
+
+        stage('Publish EDDL Build') {
+          when {
+            allOf {
+              triggeredBy 'UpstreamCause' ;
+              expression { return "${UPSTREAM_GIT_REPO}" == "${EDDL_REPOSITORY}" }
+            }
+          }
+          steps {
+            script {
+              docker.withRegistry( '', registryCredential ) {
+                sh '''
+                  echo "Pushing tags: ${DOCKER_IMAGE_TAG_EXTRA}"
+                  CONFIG_FILE="" make push_eddl_toolkit
+                  CONFIG_FILE="" make push_eddl
+                '''
+              }
+            }
+          }
+        }
+
+        stage('Publish PyEDDL Build') {
+          when {
+            allOf {
+              triggeredBy 'UpstreamCause' ;
+              expression { return "${UPSTREAM_GIT_REPO}" == "${PYEDDL_REPOSITORY}" }
+            }
+          }
+          steps {
+            script {
+              docker.withRegistry( '', registryCredential ) {
+                sh '''
+                  echo "Pushing tags: ${DOCKER_IMAGE_TAG_EXTRA}"
+                  CONFIG_FILE="" make push_pyeddl_toolkit
+                  CONFIG_FILE="" make push_pyeddl
+                '''
+              }
+            }
+          }
+        }
+
+        stage('Publish ECVL Build') {
+          when {
+            allOf {
+              triggeredBy 'UpstreamCause' ;
+              expression { return "${UPSTREAM_GIT_REPO}" == "${ECVL_REPOSITORY}" }
+            }
+          }
+          steps {
+            script {
+              docker.withRegistry( '', registryCredential ) {
+                sh '''
+                  echo "Pushing tags: ${DOCKER_IMAGE_TAG_EXTRA}"
+                  CONFIG_FILE="" make push_ecvl_toolkit
+                  CONFIG_FILE="" make push_ecvl
+                '''
+              }
+            }
+          }
+        }
+
+        stage('Publish PyECVL Build') {
+          when {
+            allOf {
+              triggeredBy 'UpstreamCause' ;
+              expression { return "${UPSTREAM_GIT_REPO}" == "${PYECVL_REPOSITORY}" }
+            }
+          }
+          steps {
+            script {
+              docker.withRegistry( '', registryCredential ) {
+                sh '''
+                  echo "Pushing tags: ${DOCKER_IMAGE_TAG_EXTRA}"
+                  CONFIG_FILE="" make push_ecvl_toolkit
+                  CONFIG_FILE="" make push_ecvl
+                '''
+              }
+            }
+          }
+        }
+
+
       }
     }
   }
