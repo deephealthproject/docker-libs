@@ -27,7 +27,7 @@ DOCKER_IMAGE_LATEST = ""
 DOCKER_IMAGE_TAG = ""
 DOCKER_IMAGE_TAG_EXTRA = ""
 DOCKER_REPOSITORY_OWNER = "dhealth"
-DOCKER_BASE_IMAGE_VERSION_TAG = ""
+DOCKER_BASE_IMAGE_VERSION_TAG = "0.1.8"
 // Upstream project data
 UPSTREAM_GIT_REPO = ""
 UPSTREAM_GIT_BRANCH = ""
@@ -97,8 +97,7 @@ pipeline {
             TAG = sh(returnStdout: true, script: "if [ -n '${REPO_TAG}' ]; then echo ${REPO_TAG}; else echo ${UPSTREAM_GIT_COMMIT}; fi").trim()
             DOCKER_IMAGE_TAG = "${TAG}_build${BUILD_NUMBER}"
             DOCKER_IMAGE_TAG_EXTRA = "${TAG} ${NORMALIZED_BRANCH_NAME}_build${BUILD_NUMBER}"
-            DOCKER_BASE_IMAGE_VERSION_TAG = "0.1.8"
-
+            
             // TODO: set revisions
             switch(UPSTREAM_GIT_REPO){
               case EDDL_REPOSITORY:
