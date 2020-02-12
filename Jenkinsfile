@@ -295,8 +295,13 @@ pipeline {
               not { triggeredBy 'UpstreamCause' }
             }
           }
+          environment{
+            EDDL_BRANCH = "${UPSTREAM_GIT_BRANCH}"
+            EDDL_REVISION = "${UPSTREAM_GIT_COMMIT}"
+            EDDL_IMAGE_VERSION_TAG = "${DOCKER_IMAGE_TAG}"
+          }
           agent {
-            docker { image '${DOCKER_REPOSITORY_OWNER}/libs-toolkit:${DOCKER_IMAGE_TAG}' }
+            docker { image 'libs-toolkit:${EDDL_IMAGE_VERSION_TAG}' }
           }
           steps {
             sh 'cd ${EDDL_SRC}/build && ctest -C Debug -VV'
