@@ -321,15 +321,7 @@ _build: \
 ############# libs-toolkit #############
 
 _build_libs_base_toolkit:
-	$(eval base_image := libs-base-toolkit:${DOCKER_BASE_IMAGE_VERSION_TAG})
-	$(eval images := $(shell docker images -q ${base_image}))
-	$(if ${images},\
-		@echo "Using existing image '${base_image}'..."; \
-		if [ "${DOCKER_BASE_IMAGE_SKIP_PULL}" != "true" ]; then \
-		echo "Pulling the latest version of '${base_image}'..."; \
-		docker pull -q ${base_image} ; fi ; , \
-		$(call build_image,libs,libs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG},,$(DOCKER_NVIDIA_DEVELOP_IMAGE))\
-	)
+	$(call build_image,libs,libs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG},,$(DOCKER_NVIDIA_DEVELOP_IMAGE))
 
 build_eddl_toolkit: eddl_folder _build_libs_base_toolkit apply_pyeddl_patches ## Build 'eddl-toolkit' image
 	$(eval EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION}))
@@ -362,15 +354,7 @@ build_libs_toolkit: build_ecvl_toolkit ## Build 'libs-toolkit' image
 ############# libs #############
 
 _build_libs_base: 
-	$(eval base_image := libs-base:${DOCKER_BASE_IMAGE_VERSION_TAG})
-	$(eval images := $(shell docker images -q ${base_image}))
-	$(if ${images},\
-		@echo "Using existing image '${base_image}'..."; \
-		if [ "${DOCKER_BASE_IMAGE_SKIP_PULL}" != "true" ]; then \
-		echo "Pulling the latest version of '${base_image}'..."; \
-		docker pull -q ${base_image} ; fi ; , \
-		$(call build_image,libs,libs-base,${DOCKER_BASE_IMAGE_VERSION_TAG},,$(DOCKER_NVIDIA_RUNTIME_IMAGE)) \
-	)
+	$(call build_image,libs,libs-base,${DOCKER_BASE_IMAGE_VERSION_TAG},,$(DOCKER_NVIDIA_RUNTIME_IMAGE))
 
 build_eddl: _build_libs_base build_eddl_toolkit ## Build 'eddl' image
 	$(eval EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION}))
@@ -406,15 +390,7 @@ build_libs: build_ecvl ## Build 'libs' image
 ############# pylibs-toolkit #############
 
 _build_pylibs_base_toolkit: build_libs_toolkit	
-	$(eval base_image := pylibs-toolkit.base:${DOCKER_BASE_IMAGE_VERSION_TAG})
-	$(eval images := $(shell docker images -q ${base_image}))
-	$(if ${images},\
-		@echo "Using existing image '${base_image}'..."; \
-		if [ "${DOCKER_BASE_IMAGE_SKIP_PULL}" != "true" ]; then \
-		echo "Pulling the latest version of '${base_image}'..."; \
-		docker pull -q ${base_image} ; fi ; , \
-		$(call build_image,pylibs,pylibs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG},,libs-toolkit:$(DOCKER_IMAGE_TAG)) \
-	)
+	$(call build_image,pylibs,pylibs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG},,libs-toolkit:$(DOCKER_IMAGE_TAG))
 
 build_pyeddl_toolkit: pyeddl_folder _build_pylibs_base_toolkit ## Build 'pyeddl-toolkit' image
 	$(eval PYEDDL_IMAGE_VERSION_TAG := $(or ${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION}))
@@ -468,15 +444,7 @@ build_pylibs_toolkit: build_pyecvl_toolkit ## Build 'pylibs-toolkit' image
 ############# pylibs #############
 
 _build_pylibs_base: _build_libs_base
-	$(eval base_image := pylibs-base:${DOCKER_BASE_IMAGE_VERSION_TAG})
-	$(eval images := $(shell docker images -q ${base_image}))
-	$(if ${images},\
-		@echo "Using existing image '${base_image}'..."; \
-		if [ "${DOCKER_BASE_IMAGE_SKIP_PULL}" != "true" ]; then \
-		echo "Pulling the latest version of '${base_image}'..."; \
-		docker pull -q ${base_image} ; fi ; , \
-		$(call build_image,pylibs,pylibs-base,${DOCKER_BASE_IMAGE_VERSION_TAG},,libs-base:$(DOCKER_IMAGE_TAG)) \
-	)
+	$(call build_image,pylibs,pylibs-base,${DOCKER_BASE_IMAGE_VERSION_TAG},,libs-base:$(DOCKER_IMAGE_TAG))
 
 build_pyeddl: _build_pylibs_base build_pyeddl_toolkit ## Build 'pyeddl' image
 	$(eval PYEDDL_IMAGE_VERSION_TAG := $(or ${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION}))
