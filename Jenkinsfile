@@ -80,6 +80,8 @@ pipeline {
             test = "git@github.com:kikkomep/dtests.git"
           }
 
+          BUILD_NUMBER = "34"
+
           // overwrite repo tag using the upstream repo
           REPO_TAG = sh(returnStdout: true, script: "git ls-remote --tags ${UPSTREAM_GIT_REPO} | grep ${UPSTREAM_GIT_COMMIT} | awk '{print \$2}' | sed -e 's+refs/tags/++'").trim()
           NORMALIZED_BRANCH_NAME = sh(returnStdout: true, script: "echo ${UPSTREAM_GIT_BRANCH} | sed -e 's+origin/++; s+/+-+g'").trim()
