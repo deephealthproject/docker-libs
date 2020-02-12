@@ -110,7 +110,7 @@ define build_image
 	$(eval images := $(shell docker images -q ${tagged_image}))
 	$(eval exists := $(shell curl --silent -f -lSL https://index.docker.io/v1/repositories/${full_image_name}/tags/${tag}))
 	$(if ${images},\
-		echo "Docker image exists: ${images}", \
+		echo "Docker image '${tagged_image}' exists (id: ${images})", \
 		$(if ${exists}, \
 			echo "Pulling image '${full_image_name}:${tag}'..."; 
 			docker pull ${full_image_name}:${tag} && docker tag ${full_image_name}:${tag} ${tagged_image}, \
