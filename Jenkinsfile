@@ -95,7 +95,7 @@ pipeline {
 
             // Define Docker Image TAG
             DOCKER_IMAGE_TAG = "${NORMALIZED_BRANCH_NAME}_build${BUILD_NUMBER}"
-            DOCKER_IMAGE_TAG_EXTRA = sh(returnStdout: true, script: 'if [ -n "${REPO_TAG}" ]; then echo "${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"; fi').trim()
+            DOCKER_IMAGE_TAG_EXTRA = sh(returnStdout: true, script: "TAG=${REPO_TAG:-${UPSTREAM_GIT_COMMIT}}; echo \"${TAG} ${TAG}_build${BUILD_NUMBER}\"").trim()
             DOCKER_BASE_IMAGE_VERSION_TAG = "0.1.8"
 
             // TODO: set revisions
