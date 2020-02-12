@@ -92,6 +92,8 @@ pipeline {
           DOCKER_IMAGE_TAG_EXTRA = "${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"
           DOCKER_BASE_IMAGE_VERSION_TAG = "0.1.8"
 
+          DOCKER_IMAGE_TAG = "34"
+
           // TODO: set revisions
           switch(UPSTREAM_GIT_REPO){
             case EDDL_REPOSITORY:
