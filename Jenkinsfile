@@ -300,66 +300,67 @@ pipeline {
             EDDL_REVISION = "${UPSTREAM_GIT_COMMIT}"
             EDDL_IMAGE_VERSION_TAG = "${DOCKER_IMAGE_TAG}"
           }
-          agent {
-            docker { image '${DOCKER_REPOSITORY_OWNER}/libs-toolkit:${EDDL_IMAGE_VERSION_TAG}' }
-          }
+          // agent {
+          //   docker { image '${DOCKER_REPOSITORY_OWNER}/libs-toolkit:${EDDL_IMAGE_VERSION_TAG}' }
+          // }
           steps {
-            sh 'cd ${EDDL_SRC}/build && ctest -C Debug -VV'
+            sh 'docker run --rm libs-toolkit:${EDDL_IMAGE_VERSION_TAG} -- cd ${EDDL_SRC}/build && ctest -C Debug -VV'
           }
         }
 
-         stage('Test PyEDDL') {
-          when {
-            anyOf {
-              expression { return "${UPSTREAM_GIT_REPO}" == "${PYEDDL_REPOSITORY}" }
-              expression { return "${UPSTREAM_GIT_REPO}" == "" }
-            }
-          }
-          agent {
-            docker { image '${DOCKER_REPOSITORY_OWNER}/pylibs-toolkit:${DOCKER_IMAGE_TAG}' }
-          }
-          steps {
-            sh 'cd ${PYEDDL_SRC} && pytest tests'
-            sh 'cd ${PYEDDL_SRC}/examples && python3 Tensor/eddl_tensor.py'
-            sh 'cd ${PYEDDL_SRC}/examples && python3 NN/other/eddl_ae.py --epochs 1'
-          }
-        }
+        //  stage('Test PyEDDL') {
+        //   when {
+        //     anyOf {
+        //       expression { return "${UPSTREAM_GIT_REPO}" == "${PYEDDL_REPOSITORY}" }
+        //       expression { return "${UPSTREAM_GIT_REPO}" == "" }
+        //     }
+        //   }
+        //   agent {
+        //     docker { image '${DOCKER_REPOSITORY_OWNER}/pylibs-toolkit:${DOCKER_IMAGE_TAG}' }
+        //   }
+        //   steps {
+        //     sh 'cd ${PYEDDL_SRC} && pytest tests'
+        //     sh 'cd ${PYEDDL_SRC}/examples && python3 Tensor/eddl_tensor.py'
+        //     sh 'cd ${PYEDDL_SRC}/examples && python3 NN/other/eddl_ae.py --epochs 1'
+        //   }
+        // }
 
-        stage('Test ECVL') {
-          when {
-            anyOf {
-              expression { return "${UPSTREAM_GIT_REPO}" == "${ECVL_REPOSITORY}" }
-              expression { return "${UPSTREAM_GIT_REPO}" == "" }
-            }
-          }
-          agent {
-            docker { image '${DOCKER_REPOSITORY_OWNER}/libs-toolkit:${DOCKER_IMAGE_TAG}' }
-          }
-          steps {
-            sh 'cd ${ECVL_SRC}/build && ctest -C Debug -VV'
-          }
-        }
+        // stage('Test ECVL') {
+        //   when {
+        //     anyOf {
+        //       expression { return "${UPSTREAM_GIT_REPO}" == "${ECVL_REPOSITORY}" }
+        //       expression { return "${UPSTREAM_GIT_REPO}" == "" }
+        //     }
+        //   }
+        //   agent {
+        //     docker { image '${DOCKER_REPOSITORY_OWNER}/libs-toolkit:${DOCKER_IMAGE_TAG}' }
+        //   }
+        //   steps {
+        //     sh 'cd ${ECVL_SRC}/build && ctest -C Debug -VV'
+        //   }
+        // }
 
-        stage('Test PyECVL') {
-          when {
-            anyOf {
-              expression { return "${UPSTREAM_GIT_REPO}" == "${PYECVL_REPOSITORY}" }
-              expression { return "${UPSTREAM_GIT_REPO}" == "" }
-            }
-          }
-          agent {
-            docker { image '${DOCKER_REPOSITORY_OWNER}/pylibs-toolkit:${DOCKER_IMAGE_TAG}' }
-          }
-          steps {
-            sh 'cd ${PYECVL_SRC} && pytest tests'
-            sh 'cd ${PYECVL_SRC}/examples && python3 dataset.py "${ECVL_SRC}/examples/data/mnist/mnist.yml"'
-            sh 'cd ${PYECVL_SRC}/examples && python3 ecvl_eddl.py "${ECVL_SRC}/examples/data/test.jpg" "${ECVL_SRC}/examples/data/mnist/mnist.yml"'
-            sh 'cd ${PYECVL_SRC}/examples && python3 img_format.py "${ECVL_SRC}/examples/data/nifti/LR_nifti.nii" "${ECVL_SRC}/data/isic_dicom/ISIC_0000008.dcm"'
-            sh 'cd ${PYECVL_SRC}/examples && python3 imgproc.py "${ECVL_SRC}/examples/data/test.jpg"'
-            sh 'cd ${PYECVL_SRC}/examples && python3 openslide.py "${ECVL_SRC}/examples/data/hamamatsu/test3-DAPI 2 (387).ndpi"'
-            sh 'cd ${PYECVL_SRC}/examples && python3 read_write.py "${ECVL_SRC}/examples/data/test.jpg test_mod.jpg"'
-          }
-        }
+        // stage('Test PyECVL') {
+        //   when {
+        //     anyOf {
+        //       expression { return "${UPSTREAM_GIT_REPO}" == "${PYECVL_REPOSITORY}" }
+        //       expression { return "${UPSTREAM_GIT_REPO}" == "" }
+        //     }
+        //   }
+        //   agent {
+        //     docker { image '${DOCKER_REPOSITORY_OWNER}/pylibs-toolkit:${DOCKER_IMAGE_TAG}' }
+        //   }
+        //   steps {
+        //     sh 'cd ${PYECVL_SRC} && pytest tests'
+        //     sh 'cd ${PYECVL_SRC}/examples && python3 dataset.py "${ECVL_SRC}/examples/data/mnist/mnist.yml"'
+        //     sh 'cd ${PYECVL_SRC}/examples && python3 ecvl_eddl.py "${ECVL_SRC}/examples/data/test.jpg" "${ECVL_SRC}/examples/data/mnist/mnist.yml"'
+        //     sh 'cd ${PYECVL_SRC}/examples && python3 img_format.py "${ECVL_SRC}/examples/data/nifti/LR_nifti.nii" "${ECVL_SRC}/data/isic_dicom/ISIC_0000008.dcm"'
+        //     sh 'cd ${PYECVL_SRC}/examples && python3 imgproc.py "${ECVL_SRC}/examples/data/test.jpg"'
+        //     sh 'cd ${PYECVL_SRC}/examples && python3 openslide.py "${ECVL_SRC}/examples/data/hamamatsu/test3-DAPI 2 (387).ndpi"'
+        //     sh 'cd ${PYECVL_SRC}/examples && python3 read_write.py "${ECVL_SRC}/examples/data/test.jpg test_mod.jpg"'
+        //   }
+        // }
+
       }
     }
 
