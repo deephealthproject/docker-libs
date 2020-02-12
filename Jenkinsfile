@@ -89,15 +89,13 @@ pipeline {
             BUILD_NUMBER = "34"
 
             // overwrite repo tag using the upstream repo
-            REPO_TAG = sh(returnStdout: true, script: '''
-              git ls-remote --tags ${UPSTREAM_GIT_REPO} | grep ${UPSTREAM_GIT_COMMIT} | awk '{print \$2}' | sed -e 's+refs/tags/++'
-            ''').trim()
-            NORMALIZED_BRANCH_NAME = sh(returnStdout: true, script: "echo ${UPSTREAM_GIT_BRANCH} | sed -e 's+origin/++; s+/+-+g').trim()
+            REPO_TAG = sh(returnStdout: true, script: "git ls-remote --tags ${UPSTREAM_GIT_REPO} |  sed -nE  's+(${UPSTREAM_GIT_COMMIT})[[:space:]]*refs/tags/([[:alnum:]]{1,})+\2+p'").trim()
+            NORMALIZED_BRANCH_NAME = sh(returnStdout: true, script: "echo ${UPSTREAM_GIT_BRANCH} | sed -e 's+origin/++; s+/+-+g'").trim()
             DOCKER_IMAGE_LATEST = sh(returnStdout: true, script: "if [ '${UPSTREAM_GIT_BRANCH}' = 'master' ]; then echo 'true'; else echo 'false'; fi").trim()
 
             // Define Docker Image TAG
             DOCKER_IMAGE_TAG = "${NORMALIZED_BRANCH_NAME}_build${BUILD_NUMBER}"
-            DOCKER_IMAGE_TAG_EXTRA = "${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"
+            DOCKER_IMAGE_TAG_EXTRA = sh(returnStdout: true, script: 'if [ -n "${REPO_TAG}" ]; then echo "${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"; fi').trim()
             DOCKER_BASE_IMAGE_VERSION_TAG = "0.1.8"
 
             // TODO: set revisions
