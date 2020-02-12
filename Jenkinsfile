@@ -291,8 +291,8 @@ pipeline {
          stage('Test EDDL') {
           when {
             anyOf {
-              expression { return "${UPSTREAM_GIT_REPO}" == "${EDDL_REPOSITORY}" } ;
-              not { triggeredBy 'UpstreamCause' }
+              expression { return "${UPSTREAM_GIT_REPO}" == "${EDDL_REPOSITORY}" }
+              expression { return "${UPSTREAM_GIT_REPO}" == "" }
             }
           }
           environment{
@@ -301,7 +301,7 @@ pipeline {
             EDDL_IMAGE_VERSION_TAG = "${DOCKER_IMAGE_TAG}"
           }
           agent {
-            docker { image 'libs-toolkit:${EDDL_IMAGE_VERSION_TAG}' }
+            docker { image '${DOCKER_REPOSITORY_OWNER}/libs-toolkit:${EDDL_IMAGE_VERSION_TAG}' }
           }
           steps {
             sh 'cd ${EDDL_SRC}/build && ctest -C Debug -VV'
@@ -311,8 +311,8 @@ pipeline {
          stage('Test PyEDDL') {
           when {
             anyOf {
-              expression { return "${UPSTREAM_GIT_REPO}" == "${PYEDDL_REPOSITORY}" } ;
-              not { triggeredBy 'UpstreamCause' }
+              expression { return "${UPSTREAM_GIT_REPO}" == "${PYEDDL_REPOSITORY}" }
+              expression { return "${UPSTREAM_GIT_REPO}" == "" }
             }
           }
           agent {
@@ -328,8 +328,8 @@ pipeline {
         stage('Test ECVL') {
           when {
             anyOf {
-              expression { return "${UPSTREAM_GIT_REPO}" == "${ECVL_REPOSITORY}" } ;
-              not { triggeredBy 'UpstreamCause' }
+              expression { return "${UPSTREAM_GIT_REPO}" == "${ECVL_REPOSITORY}" }
+              expression { return "${UPSTREAM_GIT_REPO}" == "" }
             }
           }
           agent {
@@ -343,8 +343,8 @@ pipeline {
         stage('Test PyECVL') {
           when {
             anyOf {
-              expression { return "${UPSTREAM_GIT_REPO}" == "${PYECVL_REPOSITORY}" } ;
-              not { triggeredBy 'UpstreamCause' }
+              expression { return "${UPSTREAM_GIT_REPO}" == "${PYECVL_REPOSITORY}" }
+              expression { return "${UPSTREAM_GIT_REPO}" == "" }
             }
           }
           agent {
