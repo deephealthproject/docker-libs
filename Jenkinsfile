@@ -58,6 +58,7 @@ pipeline {
     // Skip DockerHub
     DOCKER_LOGIN_DONE = true
     DOCKER_USER = "deephealth"
+    DOCKER_BASE_IMAGE_VERSION_TAG = "0.1.8"
   }
   stages {
 
@@ -131,7 +132,7 @@ pipeline {
 
     stage('Use configured variable') {
       when {
-        expression { return "$UPSTREAM_PROJECT_DATA" != "" }
+        expression { return "${UPSTREAM_PROJECT_DATA}" != "" }
       }
 
       steps {
@@ -147,6 +148,7 @@ pipeline {
         sh "echo ${DOCKER_BASE_IMAGE_VERSION_TAG}"
       }
     }
+
 
     stage('Build') {
 
@@ -195,6 +197,11 @@ pipeline {
               expression { return "${UPSTREAM_GIT_REPO}" == "${EDDL_REPOSITORY}" }
             }
           }
+          environment{
+            EDDL_BRANCH = "${UPSTREAM_GIT_BRANCH}"
+            EDDL_REVISION = "${UPSTREAM_GIT_COMMIT}"
+            EDDL_IMAGE_VERSION_TAG = "${DOCKER_IMAGE_TAG}"
+          }
           steps {
             script {
               sh "echo ${UPSTREAM_GIT_REPO}"
@@ -215,6 +222,7 @@ pipeline {
             }
           }
         }
+        
 
         stage('PyEDDL Build') {
           when {
@@ -280,7 +288,7 @@ pipeline {
 
       parallel {
 
-        stage('Test EDDL') {
+         stage('Test EDDL') {
           when {
             anyOf {
               expression { return "${UPSTREAM_GIT_REPO}" == "${EDDL_REPOSITORY}" } ;
