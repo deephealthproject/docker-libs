@@ -1,3 +1,8 @@
+#
+DOCKER_NVIDIA_DEVELOP_IMAGE="nvidia/cuda:10.1-devel"
+DOCKER_NVIDIA_RUNTIME_IMAGE="nvidia/cuda:10.1-runtime"
+DOCKER_BASE_IMAGE_VERSION_TAG := $(or ${DOCKER_BASE_IMAGE_VERSION_TAG},${DOCKER_IMAGE_TAG})
+
 # set docker user credentials
 #DOCKER_USER=deephealth
 #DOCKER_PASSWORD=""
@@ -33,7 +38,7 @@ EDDL_REVISION=0.3
 # PyEDDL repository
 PYEDDL_REPOSITORY=https://github.com/deephealthproject/pyeddl.git
 PYEDDL_BRANCH=master
-PYEDDL_REVISION=0.2.0
+PYEDDL_REVISION=0.3.0
 
 # date.time as build number
 #DOCKER_IMAGE_TAG=0.1.2
