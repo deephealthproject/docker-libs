@@ -89,8 +89,10 @@ pipeline {
             BUILD_NUMBER = "34"
 
             // overwrite repo tag using the upstream repo
-            REPO_TAG = sh(returnStdout: true, script: "git ls-remote --tags ${UPSTREAM_GIT_REPO} | grep ${UPSTREAM_GIT_COMMIT} | awk '{print \$2}' | sed -e 's+refs/tags/++'").trim()
-            NORMALIZED_BRANCH_NAME = sh(returnStdout: true, script: "echo ${UPSTREAM_GIT_BRANCH} | sed -e 's+origin/++; s+/+-+g'").trim()
+            REPO_TAG = sh(returnStdout: true, script: '''
+              git ls-remote --tags ${UPSTREAM_GIT_REPO} | grep ${UPSTREAM_GIT_COMMIT} | awk '{print \$2}' | sed -e 's+refs/tags/++'
+            ''').trim()
+            NORMALIZED_BRANCH_NAME = sh(returnStdout: true, script: "echo ${UPSTREAM_GIT_BRANCH} | sed -e 's+origin/++; s+/+-+g').trim()
             DOCKER_IMAGE_LATEST = sh(returnStdout: true, script: "if [ '${UPSTREAM_GIT_BRANCH}' = 'master' ]; then echo 'true'; else echo 'false'; fi").trim()
 
             // Define Docker Image TAG
