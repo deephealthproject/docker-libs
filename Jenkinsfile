@@ -494,10 +494,5 @@ pipeline {
     failure {
       echo 'I failed :('
     }
-    cleanup {
-      sh 'make clean_sources'
-      sh 'make clean_images'
-      deleteDir() /* clean up our workspace */
-    }
   } 
 }
