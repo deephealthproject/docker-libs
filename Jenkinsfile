@@ -139,6 +139,7 @@ pipeline {
         sh "echo ${DOCKER_IMAGE_LATEST}"
         sh "echo ${DOCKER_IMAGE_TAG}"
         sh "echo ${DOCKER_IMAGE_TAG_EXTRA}"
+        sh "echo ${DOCKER_BASE_IMAGE_VERSION_TAG}"
       }
     }
 
@@ -200,6 +201,7 @@ pipeline {
               sh "echo ${DOCKER_IMAGE_LATEST}"
               sh "echo ${DOCKER_IMAGE_TAG}"
               sh "echo ${DOCKER_IMAGE_TAG_EXTRA}"
+              sh "echo ${DOCKER_BASE_IMAGE_VERSION_TAG}"
               sh 'CONFIG_FILE="" make build_eddl'
               // docker.withRegistry( '', registryCredential ) {
               //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
