@@ -88,6 +88,7 @@ pipeline {
           // Define Docker Image TAG
           DOCKER_IMAGE_TAG = "${NORMALIZED_BRANCH_NAME}_build${BUILD_NUMBER}"
           DOCKER_IMAGE_TAG_EXTRA = "${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"
+          DOCKER_BASE_IMAGE_VERSION_TAG = "0.1.8"
 
           // TODO: set revisions
           switch(UPSTREAM_GIT_REPO){
