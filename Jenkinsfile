@@ -81,7 +81,7 @@ pipeline {
             upstream_data = b.getBuildVariables()
             UPSTREAM_GIT_REPO = upstream_data["GIT_URL"]
             UPSTREAM_GIT_BRANCH = upstream_data["GIT_BRANCH"]
-            UPSTREAM_GIT_COMMIT = upstream_data["GIT_COMMIT"]
+            UPSTREAM_GIT_COMMIT = upstream_data["GIT_COMMIT"].substring(0,7)
             UPSTREAM_PROJECT_DATA = upstream_data
             test = "git@github.com:kikkomep/dtests.git"
           
@@ -94,8 +94,9 @@ pipeline {
             DOCKER_IMAGE_LATEST = sh(returnStdout: true, script: "if [ '${UPSTREAM_GIT_BRANCH}' = 'master' ]; then echo 'true'; else echo 'false'; fi").trim()
 
             // Define Docker Image TAG
-            DOCKER_IMAGE_TAG = "${NORMALIZED_BRANCH_NAME}_build${BUILD_NUMBER}"
-            DOCKER_IMAGE_TAG_EXTRA = sh(returnStdout: true, script: "TAG=${REPO_TAG:-${UPSTREAM_GIT_COMMIT}}; echo \"${TAG} ${TAG}_build${BUILD_NUMBER}\"").trim()
+            TAG = sh(returnStdout: true, script: "if [ -n '${REPO_TAG}' ]; then echo ${REPO_TAG}; else echo ${UPSTREAM_GIT_COMMIT}; fi").trim()
+            DOCKER_IMAGE_TAG = "${TAG}_build${BUILD_NUMBER}"
+            DOCKER_IMAGE_TAG_EXTRA = "${TAG} ${NORMALIZED_BRANCH_NAME}_build${BUILD_NUMBER}"
             DOCKER_BASE_IMAGE_VERSION_TAG = "0.1.8"
 
             // TODO: set revisions
