@@ -117,7 +117,7 @@ pipeline {
               echo "Test REPOSITORY: $ECVL_REVISION $UPSTREAM_GIT_COMMIT"
             default:
               echo "Default repo"
-          }          
+          }
         }
         // Print current environment (just for debug)
         sh 'printenv'
@@ -191,6 +191,15 @@ pipeline {
           }
           steps {
             script {
+              sh "echo ${UPSTREAM_GIT_REPO}"
+              sh "echo ${UPSTREAM_GIT_BRANCH}"
+              sh "echo ${UPSTREAM_GIT_COMMIT}"
+              sh "echo ${UPSTREAM_PROJECT_DATA}"
+              sh "echo ${REPO_TAG}"
+              sh "echo ${NORMALIZED_BRANCH_NAME}"
+              sh "echo ${DOCKER_IMAGE_LATEST}"
+              sh "echo ${DOCKER_IMAGE_TAG}"
+              sh "echo ${DOCKER_IMAGE_TAG_EXTRA}"
               sh 'CONFIG_FILE="" make build_eddl'
               // docker.withRegistry( '', registryCredential ) {
               //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
