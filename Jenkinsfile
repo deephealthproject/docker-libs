@@ -3,25 +3,31 @@
 ECVL_REPOSITORY = "https://github.com/deephealthproject/ecvl.git"
 ECVL_BRANCH = "master"
 ECVL_REVISION = ""
+ECVL_IMAGE_VERSION_TAG = ""
 // PyECVL Settings
 PYECVL_REPOSITORY = "https://github.com/deephealthproject/pyecvl.git"
 PYECVL_BRANCH = "master"
 PYECVL_REVISION = ""
+PYECVL_IMAGE_VERSION_TAG = ""
 // EDDL Settings    
 EDDL_REPOSITORY = "https://github.com/deephealthproject/eddl.git"
 EDDL_BRANCH = "master"
 EDDL_REVISION = ""
+EDDL_IMAGE_VERSION_TAG = ""
 // PyEDDL Settings
 PYEDDL_REPOSITORY = "https://github.com/deephealthproject/pyeddl.git"
 PYEDDL_BRANCH = "master"
 PYEDDL_REVISION = ""
+PYEDDL_IMAGE_VERSION_TAG = ""
 // Extract additional info
 REPO_TAG = ""
+NORMALIZED_BRANCH_NAME = ""
 // Docker Settings
 DOCKER_IMAGE_LATEST = ""
 DOCKER_IMAGE_TAG = ""
 DOCKER_IMAGE_TAG_EXTRA = ""
 DOCKER_REPOSITORY_OWNER = "dhealth"
+DOCKER_BASE_IMAGE_VERSION_TAG = ""
 // Upstream project data
 UPSTREAM_GIT_REPO = ""
 UPSTREAM_GIT_BRANCH = ""
