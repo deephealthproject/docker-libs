@@ -347,7 +347,7 @@ build_ecvl_toolkit: ecvl_folder build_eddl_toolkit ## Build 'ecvl-toolkit' image
 		--label ECVL_BRANCH=${ECVL_BRANCH} \
 		--label ECVL_REVISION=${ECVL_REVISION},eddl-toolkit:$(EDDL_IMAGE_VERSION_TAG))
 
-build_libs_toolkit: build_ecvl_toolkit ## Build 'libs-toolkit' image
+build_libs_toolkit: build_ecvl_toolkit apply_pyeddl_patches ## Build 'libs-toolkit' image
 	$(call build_image,libs,libs-toolkit,${DOCKER_IMAGE_TAG},\
 		--label CONTAINER_VERSION=${DOCKER_IMAGE_TAG} \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
