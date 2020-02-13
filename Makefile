@@ -205,7 +205,7 @@ libs_folder:
 		@mkdir -p ${LOCAL_LIBS_PATH} ; \
 	)
 
-_eddl_folder: libs_folder	
+_eddl_folder: libs_folder
 	@$(if $(wildcard ${EDDL_LIB_PATH}),$(info Using existing '${EDDL_LIB_PATH}' repository), \
 		$(call clone_repository,${EDDL_LIB_PATH},${EDDL_REPOSITORY},${EDDL_BRANCH},${EDDL_REVISION},true) ; \
 	)
