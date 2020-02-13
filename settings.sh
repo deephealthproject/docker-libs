@@ -11,7 +11,7 @@ DOCKER_BASE_IMAGE_VERSION_TAG=0.1.8
 DOCKER_REGISTRY=registry.hub.docker.com
 
 # set Docker repository
-#DOCKER_REPOSITORY_OWNER=dhealth
+DOCKER_REPOSITORY_OWNER=dhealth
 DOCKER_IMAGE_PREFIX=
 
 # latest tag settings
