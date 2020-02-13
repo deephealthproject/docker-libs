@@ -35,7 +35,7 @@ PYECVL_REVISION=0.1.0
 # EDDL repository 
 EDDL_REPOSITORY=https://github.com/deephealthproject/eddl.git
 EDDL_BRANCH=master
-EDDL_REVISION=0.3
+EDDL_REVISION=v0.3.1
 
 # PyEDDL repository
 PYEDDL_REPOSITORY=https://github.com/deephealthproject/pyeddl.git
