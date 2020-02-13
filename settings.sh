@@ -3,6 +3,8 @@ DOCKER_NVIDIA_DEVELOP_IMAGE="nvidia/cuda:10.1-devel"
 DOCKER_NVIDIA_RUNTIME_IMAGE="nvidia/cuda:10.1-runtime"
 DOCKER_BASE_IMAGE_VERSION_TAG=0.1.8
 
+DOCKER_LOGIN_DONE=true
+
 # set docker user credentials
 #DOCKER_USER=deephealth
 #DOCKER_PASSWORD=""
