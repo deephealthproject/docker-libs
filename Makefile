@@ -157,7 +157,7 @@ define clone_repository
 		&& cd "${1}" \
 		&& if [ -n "${4}" ]; then git reset --hard ${4} -- ; fi \
 		&& if [ ${5} == true ]; then git submodule update --init --recursive ; fi \
-		&& cd - \
+		&& cd - ; \
 	else \
 		echo "Using existing ${1} repository..." ;  \
 	fi
@@ -206,12 +206,12 @@ libs_folder:
 	)
 
 _eddl_folder: libs_folder
-	@$(if $(wildcard ${EDDL_LIB_PATH}),$(info Using existing '${EDDL_LIB_PATH}' repository), \
+	$(if $(wildcard ${EDDL_LIB_PATH}),$(info Using existing '${EDDL_LIB_PATH}' repository), \
 		$(call clone_repository,${EDDL_LIB_PATH},${EDDL_REPOSITORY},${EDDL_BRANCH},${EDDL_REVISION},true) ; \
 	)
 
 eddl_folder: _eddl_folder
-	$(eval EDDL_REVISION := $(call get_revision,libs/eddl,${EDDL_REVISION}))
+	#$(eval EDDL_REVISION := $(call get_revision,libs/eddl,${EDDL_REVISION}))
 
 
 define clone_ecvl
