@@ -8,7 +8,7 @@ DOCKER_BASE_IMAGE_VERSION_TAG=0.1.8
 #DOCKER_PASSWORD=""
 
 # use DockerHub as default registry
-DOCKER_REGISTRY=registry.hub.docker.com
+#DOCKER_REGISTRY=registry.hub.docker.com
 
 # set Docker repository
 DOCKER_REPOSITORY_OWNER=dhealth
