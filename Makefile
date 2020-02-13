@@ -12,7 +12,7 @@ DOCKER_USER := $(or ${DOCKER_USER},${USER})
 DOCKER_PASSWORD := ${DOCKER_PASSWORD}
 
 # use DockerHub as default registry
-DOCKER_REGISTRY := $(or ${DOCKER_REGISTRY},registry.hub.docker.com)
+DOCKER_REGISTRY := $(or ${DOCKER_REGISTRY},)
 
 # set Docker repository
 DOCKER_REPOSITORY_OWNER := $(or ${DOCKER_REPOSITORY_OWNER},${DOCKER_USER})
@@ -572,14 +572,17 @@ publish_pyeddl_toolkit: build_pyeddl_toolkit push_pyeddl_toolkit ## Publish 'pye
 publish_pyecvl_toolkit: build_pyecvl_toolkit push_pyecvl_toolkit ## Publish 'pyecvl-toolkit' images
 
 # login to the Docker HUB repository
-repo-login: ## Login to the Docker Registry
+_repo-login: ## Login to the Docker Registry
 	@if [[ ${DOCKER_LOGIN_DONE} == false ]]; then \
 		echo "Logging into Docker registry ${DOCKER_REGISTRY}..." ; \
-		docker login ${DOCKER_REGISTRY} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} ; \
-		DOCKER_LOGIN_DONE=true ;\
+		echo ${DOCKER_PASSWORD} | docker login ${DOCKER_REGISTRY} --username ${DOCKER_USER} --password-stdin \
 	else \
 		echo "Logging into Docker registry already done" ; \
 	fi
+
+repo-login: _repo-login ## Login to the Docker Registry
+	$(eval DOCKER_LOGIN_DONE := true)
+
 
 version: ## Output the current version of this Makefile
 	@echo $(VERSION)
