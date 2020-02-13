@@ -211,7 +211,7 @@ _eddl_folder: libs_folder
 	)
 
 eddl_folder: _eddl_folder
-	#$(eval EDDL_REVISION := $(call get_revision,libs/eddl,${EDDL_REVISION}))
+	$(eval EDDL_REVISION := $(call get_revision,libs/eddl,${EDDL_REVISION}))
 
 
 define clone_ecvl
