@@ -154,6 +154,11 @@ pipeline {
       parallel {
         
         stage("EDDL"){
+          environment{
+            EDDL_BRANCH = "${UPSTREAM_GIT_BRANCH}"
+            EDDL_REVISION = "${UPSTREAM_GIT_COMMIT}"
+            EDDL_IMAGE_VERSION_TAG = "${DOCKER_IMAGE_TAG}"
+          }
           stages {
             stage('EDDL Build') {
               when {
@@ -162,13 +167,9 @@ pipeline {
                   expression { return "${UPSTREAM_GIT_REPO}" == "${EDDL_REPOSITORY}" }
                 }
               }
-              environment{
-                EDDL_BRANCH = "${UPSTREAM_GIT_BRANCH}"
-                EDDL_REVISION = "${UPSTREAM_GIT_COMMIT}"
-                EDDL_IMAGE_VERSION_TAG = "${DOCKER_IMAGE_TAG}"
-              }
+              
               steps {
-                script {
+                
                   sh "echo ${UPSTREAM_GIT_REPO}"
                   sh "echo ${UPSTREAM_GIT_BRANCH}"
                   sh "echo ${UPSTREAM_GIT_COMMIT}"
@@ -184,27 +185,27 @@ pipeline {
                   //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
                   //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
                   // }
-                }
+                
               }
             }
             stage('Test EDDL') {
-              when {
-                anyOf {
-                  expression { return "${UPSTREAM_GIT_REPO}" == "${EDDL_REPOSITORY}" }
-                  expression { return "${UPSTREAM_GIT_REPO}" == "" }
-                }
-              }
-              environment{
-                EDDL_BRANCH = "${UPSTREAM_GIT_BRANCH}"
-                EDDL_REVISION = "${UPSTREAM_GIT_COMMIT}"
-                EDDL_IMAGE_VERSION_TAG = "${DOCKER_IMAGE_TAG}"
-              }
+              // when {
+              //   anyOf {
+              //     expression { return "${UPSTREAM_GIT_REPO}" == "${EDDL_REPOSITORY}" }
+              //     expression { return "${UPSTREAM_GIT_REPO}" == "" }
+              //   }
+              // }
+              // environment{
+              //   EDDL_BRANCH = "${UPSTREAM_GIT_BRANCH}"
+              //   EDDL_REVISION = "${UPSTREAM_GIT_COMMIT}"
+              //   EDDL_IMAGE_VERSION_TAG = "${DOCKER_IMAGE_TAG}"
+              // }
               // agent {
               //   docker { image '${DOCKER_REPOSITORY_OWNER}/libs-toolkit:${EDDL_IMAGE_VERSION_TAG}' }
               // }
               steps {
-                // sh 'docker run --rm libs-toolkit:${EDDL_IMAGE_VERSION_TAG} -- cd ${EDDL_SRC}/build && ctest -C Debug -VV'
-                sh "echo 'Testing libs-toolkit:${EDDL_IMAGE_VERSION_TAG}'"
+                sh "echo 'Testing eddl-toolkit:${EDDL_IMAGE_VERSION_TAG}'"
+                sh 'docker run --rm eddl-toolkit:${EDDL_IMAGE_VERSION_TAG} /bin/bash -c "cd ${EDDL_SRC}/build && ctest -C Debug -VV"'
               }
             }
           }
