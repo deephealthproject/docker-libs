@@ -149,361 +149,73 @@ pipeline {
       }
     }
 
-
-    stage('Build') {
-
+    stage("Docker images"){
+      
       parallel {
-
-        stage('Master Build') {
-          when {
-            allOf {
-              branch 'master' ;
-              not { triggeredBy 'UpstreamCause' }
-            }
-          }
-          steps {
-            script {
-              sh 'make build'
-              docker.withRegistry( '', registryCredential ) {
-                sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
-                sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
+        
+        stage("EDDL"){
+          stages {
+            stage('EDDL Build') {
+              when {
+                allOf {
+                  triggeredBy 'UpstreamCause' ;
+                  expression { return "${UPSTREAM_GIT_REPO}" == "${EDDL_REPOSITORY}" }
+                }
+              }
+              environment{
+                EDDL_BRANCH = "${UPSTREAM_GIT_BRANCH}"
+                EDDL_REVISION = "${UPSTREAM_GIT_COMMIT}"
+                EDDL_IMAGE_VERSION_TAG = "${DOCKER_IMAGE_TAG}"
+              }
+              steps {
+                script {
+                  sh "echo ${UPSTREAM_GIT_REPO}"
+                  sh "echo ${UPSTREAM_GIT_BRANCH}"
+                  sh "echo ${UPSTREAM_GIT_COMMIT}"
+                  sh "echo ${UPSTREAM_PROJECT_DATA}"
+                  sh "echo ${REPO_TAG}"
+                  sh "echo ${NORMALIZED_BRANCH_NAME}"
+                  sh "echo ${DOCKER_IMAGE_LATEST}"
+                  sh "echo ${DOCKER_IMAGE_TAG}"
+                  sh "echo ${DOCKER_IMAGE_TAG_EXTRA}"
+                  sh "echo ${DOCKER_BASE_IMAGE_VERSION_TAG}"
+                  sh "CONFIG_FILE='' make build_eddl"
+                  // docker.withRegistry( '', registryCredential ) {
+                  //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
+                  //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
+                  // }
+                }
               }
             }
-          }
-        }
-
-        // stage('Development Build') {
-        //   when {
-        //     allOf {
-        //       not { branch "master" } ;
-        //       triggeredBy 'UpstreamCause'
-        //     }
-        //   }
-        //   steps {
-        //     script {
-        //       sh 'CONFIG_FILE="" make build'
-        //       docker.withRegistry( '', registryCredential ) {
-        //           sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
-        //           sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
-        //       }
-        //     }
-        //   }
-        // }
-
-        stage('EDDL Build') {
-          when {
-            allOf {
-              triggeredBy 'UpstreamCause' ;
-              expression { return "${UPSTREAM_GIT_REPO}" == "${EDDL_REPOSITORY}" }
-            }
-          }
-          environment{
-            EDDL_BRANCH = "${UPSTREAM_GIT_BRANCH}"
-            EDDL_REVISION = "${UPSTREAM_GIT_COMMIT}"
-            EDDL_IMAGE_VERSION_TAG = "${DOCKER_IMAGE_TAG}"
-          }
-          steps {
-            script {
-              sh "echo ${UPSTREAM_GIT_REPO}"
-              sh "echo ${UPSTREAM_GIT_BRANCH}"
-              sh "echo ${UPSTREAM_GIT_COMMIT}"
-              sh "echo ${UPSTREAM_PROJECT_DATA}"
-              sh "echo ${REPO_TAG}"
-              sh "echo ${NORMALIZED_BRANCH_NAME}"
-              sh "echo ${DOCKER_IMAGE_LATEST}"
-              sh "echo ${DOCKER_IMAGE_TAG}"
-              sh "echo ${DOCKER_IMAGE_TAG_EXTRA}"
-              sh "echo ${DOCKER_BASE_IMAGE_VERSION_TAG}"
-              sh "CONFIG_FILE='' make build_eddl"
-              // docker.withRegistry( '', registryCredential ) {
-              //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
-              //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
+            stage('Test EDDL') {
+              when {
+                anyOf {
+                  expression { return "${UPSTREAM_GIT_REPO}" == "${EDDL_REPOSITORY}" }
+                  expression { return "${UPSTREAM_GIT_REPO}" == "" }
+                }
+              }
+              environment{
+                EDDL_BRANCH = "${UPSTREAM_GIT_BRANCH}"
+                EDDL_REVISION = "${UPSTREAM_GIT_COMMIT}"
+                EDDL_IMAGE_VERSION_TAG = "${DOCKER_IMAGE_TAG}"
+              }
+              // agent {
+              //   docker { image '${DOCKER_REPOSITORY_OWNER}/libs-toolkit:${EDDL_IMAGE_VERSION_TAG}' }
               // }
+              steps {
+                // sh 'docker run --rm libs-toolkit:${EDDL_IMAGE_VERSION_TAG} -- cd ${EDDL_SRC}/build && ctest -C Debug -VV'
+                sh "echo 'Testing libs-toolkit:${EDDL_IMAGE_VERSION_TAG}'"
+              }
             }
           }
         }
         
 
-        stage('PyEDDL Build') {
-          when {
-            allOf {
-              triggeredBy 'UpstreamCause' ;
-              expression { return "${UPSTREAM_GIT_REPO}" == "${PYEDDL_REPOSITORY}" }
-            }
-          }
-          steps {
-            script {
-              sh 'CONFIG_FILE="" make build_pyeddl'
-              // docker.withRegistry( '', registryCredential ) {
-              //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
-              //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
-              // }
-            }
-          }
-        }
-
-        stage('ECVL Build') {
-          when {
-            allOf {
-              triggeredBy 'UpstreamCause' ;
-              expression { return "${UPSTREAM_GIT_REPO}" == "${ECVL_REPOSITORY}" }
-            }
-          }
-          steps {
-            script {
-              sh 'CONFIG_FILE="" make build_ecvl'
-              // docker.withRegistry( '', registryCredential ) {
-              //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
-              //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
-              // }
-            }
-          }
-        }
-
-        stage('PyECVL Build') {
-          when {
-            allOf {
-              triggeredBy 'UpstreamCause' ;
-              expression { return "${UPSTREAM_GIT_REPO}" == "${PYECVL_REPOSITORY}" }
-            }
-          }
-          steps {
-            script {
-              sh 'CONFIG_FILE="" make build_pyecvl'
-              // docker.withRegistry( '', registryCredential ) {
-              //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_libs_toolkit'
-              //     sh 'CONFIG_FILE="" DOCKER_IMAGE_TAG_EXTRA="" make push_pylibs_toolkit'
-              // }
-            }
-          }
-        }
-
-
-        
-
       }
+
     }
+    
 
-    stage('Test') {
-
-      parallel {
-
-         stage('Test EDDL') {
-          when {
-            anyOf {
-              expression { return "${UPSTREAM_GIT_REPO}" == "${EDDL_REPOSITORY}" }
-              expression { return "${UPSTREAM_GIT_REPO}" == "" }
-            }
-          }
-          environment{
-            EDDL_BRANCH = "${UPSTREAM_GIT_BRANCH}"
-            EDDL_REVISION = "${UPSTREAM_GIT_COMMIT}"
-            EDDL_IMAGE_VERSION_TAG = "${DOCKER_IMAGE_TAG}"
-          }
-          // agent {
-          //   docker { image '${DOCKER_REPOSITORY_OWNER}/libs-toolkit:${EDDL_IMAGE_VERSION_TAG}' }
-          // }
-          steps {
-            sh 'docker run --rm libs-toolkit:${EDDL_IMAGE_VERSION_TAG} -- cd ${EDDL_SRC}/build && ctest -C Debug -VV'
-          }
-        }
-
-        //  stage('Test PyEDDL') {
-        //   when {
-        //     anyOf {
-        //       expression { return "${UPSTREAM_GIT_REPO}" == "${PYEDDL_REPOSITORY}" }
-        //       expression { return "${UPSTREAM_GIT_REPO}" == "" }
-        //     }
-        //   }
-        //   agent {
-        //     docker { image '${DOCKER_REPOSITORY_OWNER}/pylibs-toolkit:${DOCKER_IMAGE_TAG}' }
-        //   }
-        //   steps {
-        //     sh 'cd ${PYEDDL_SRC} && pytest tests'
-        //     sh 'cd ${PYEDDL_SRC}/examples && python3 Tensor/eddl_tensor.py'
-        //     sh 'cd ${PYEDDL_SRC}/examples && python3 NN/other/eddl_ae.py --epochs 1'
-        //   }
-        // }
-
-        // stage('Test ECVL') {
-        //   when {
-        //     anyOf {
-        //       expression { return "${UPSTREAM_GIT_REPO}" == "${ECVL_REPOSITORY}" }
-        //       expression { return "${UPSTREAM_GIT_REPO}" == "" }
-        //     }
-        //   }
-        //   agent {
-        //     docker { image '${DOCKER_REPOSITORY_OWNER}/libs-toolkit:${DOCKER_IMAGE_TAG}' }
-        //   }
-        //   steps {
-        //     sh 'cd ${ECVL_SRC}/build && ctest -C Debug -VV'
-        //   }
-        // }
-
-        // stage('Test PyECVL') {
-        //   when {
-        //     anyOf {
-        //       expression { return "${UPSTREAM_GIT_REPO}" == "${PYECVL_REPOSITORY}" }
-        //       expression { return "${UPSTREAM_GIT_REPO}" == "" }
-        //     }
-        //   }
-        //   agent {
-        //     docker { image '${DOCKER_REPOSITORY_OWNER}/pylibs-toolkit:${DOCKER_IMAGE_TAG}' }
-        //   }
-        //   steps {
-        //     sh 'cd ${PYECVL_SRC} && pytest tests'
-        //     sh 'cd ${PYECVL_SRC}/examples && python3 dataset.py "${ECVL_SRC}/examples/data/mnist/mnist.yml"'
-        //     sh 'cd ${PYECVL_SRC}/examples && python3 ecvl_eddl.py "${ECVL_SRC}/examples/data/test.jpg" "${ECVL_SRC}/examples/data/mnist/mnist.yml"'
-        //     sh 'cd ${PYECVL_SRC}/examples && python3 img_format.py "${ECVL_SRC}/examples/data/nifti/LR_nifti.nii" "${ECVL_SRC}/data/isic_dicom/ISIC_0000008.dcm"'
-        //     sh 'cd ${PYECVL_SRC}/examples && python3 imgproc.py "${ECVL_SRC}/examples/data/test.jpg"'
-        //     sh 'cd ${PYECVL_SRC}/examples && python3 openslide.py "${ECVL_SRC}/examples/data/hamamatsu/test3-DAPI 2 (387).ndpi"'
-        //     sh 'cd ${PYECVL_SRC}/examples && python3 read_write.py "${ECVL_SRC}/examples/data/test.jpg test_mod.jpg"'
-        //   }
-        // }
-
-      }
-    }
-
-    stage('Publish') {
-
-      parallel {
-
-        stage('Publish Master Build') {
-          when {
-            allOf {
-              branch 'master';
-              not { triggeredBy 'UpstreamCause' }
-            }
-          }
-          steps {
-            script {
-              docker.withRegistry( '', registryCredential ) {
-                sh '''
-                  tag=$(git tag -l --points-at HEAD);
-                  if [ -n "${tag}" ]; then
-                    REPO_TAG="${tag}"
-                  else
-                    REPO_TAG=$(git rev-parse --short HEAD --short)
-                  fi
-                  DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_TAG_EXTRA} ${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"
-                  echo "Pushing tags: ${DOCKER_IMAGE_TAG_EXTRA}"
-                  make push
-                '''
-              }
-            }
-          }
-        }
-
-        stage('Publish Development Build') {
-          when {
-            allOf {
-              not { branch "master" };
-              triggeredBy 'UpstreamCause'
-            }
-          }
-          steps {
-            script {
-              docker.withRegistry( '', registryCredential ) {
-                sh '''
-                  tag=$(git tag -l --points-at HEAD);
-                  if [ -n "${tag}" ]; then 
-                    REPO_TAG="${tag}"
-                  else 
-                    REPO_TAG=$(git rev-parse --short HEAD --short)
-                  fi
-                  DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_TAG_EXTRA} ${REPO_TAG} ${REPO_TAG}_build${BUILD_NUMBER}"
-                  echo "Pushing tags: ${DOCKER_IMAGE_TAG_EXTRA}"
-                  CONFIG_FILE="" make push
-                '''
-              }
-            }
-          }
-        }
-
-
-        stage('Publish EDDL Build') {
-          when {
-            allOf {
-              triggeredBy 'UpstreamCause' ;
-              expression { return "${UPSTREAM_GIT_REPO}" == "${EDDL_REPOSITORY}" }
-            }
-          }
-          steps {
-            script {
-              docker.withRegistry( '', registryCredential ) {
-                sh '''
-                  echo "Pushing tags: ${DOCKER_IMAGE_TAG_EXTRA}"
-                  CONFIG_FILE="" make push_eddl_toolkit
-                  CONFIG_FILE="" make push_eddl
-                '''
-              }
-            }
-          }
-        }
-
-        stage('Publish PyEDDL Build') {
-          when {
-            allOf {
-              triggeredBy 'UpstreamCause' ;
-              expression { return "${UPSTREAM_GIT_REPO}" == "${PYEDDL_REPOSITORY}" }
-            }
-          }
-          steps {
-            script {
-              docker.withRegistry( '', registryCredential ) {
-                sh '''
-                  echo "Pushing tags: ${DOCKER_IMAGE_TAG_EXTRA}"
-                  CONFIG_FILE="" make push_pyeddl_toolkit
-                  CONFIG_FILE="" make push_pyeddl
-                '''
-              }
-            }
-          }
-        }
-
-        stage('Publish ECVL Build') {
-          when {
-            allOf {
-              triggeredBy 'UpstreamCause' ;
-              expression { return "${UPSTREAM_GIT_REPO}" == "${ECVL_REPOSITORY}" }
-            }
-          }
-          steps {
-            script {
-              docker.withRegistry( '', registryCredential ) {
-                sh '''
-                  echo "Pushing tags: ${DOCKER_IMAGE_TAG_EXTRA}"
-                  CONFIG_FILE="" make push_ecvl_toolkit
-                  CONFIG_FILE="" make push_ecvl
-                '''
-              }
-            }
-          }
-        }
-
-        stage('Publish PyECVL Build') {
-          when {
-            allOf {
-              triggeredBy 'UpstreamCause' ;
-              expression { return "${UPSTREAM_GIT_REPO}" == "${PYECVL_REPOSITORY}" }
-            }
-          }
-          steps {
-            script {
-              docker.withRegistry( '', registryCredential ) {
-                sh '''
-                  echo "Pushing tags: ${DOCKER_IMAGE_TAG_EXTRA}"
-                  CONFIG_FILE="" make push_ecvl_toolkit
-                  CONFIG_FILE="" make push_ecvl
-                '''
-              }
-            }
-          }
-        }
-
-
-      }
-    }
   }
 
   post {
