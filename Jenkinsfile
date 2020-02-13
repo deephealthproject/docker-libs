@@ -43,7 +43,7 @@ pipeline {
   }
   triggers{
     upstream(
-      upstreamProjects: 'DeepHealth/eddl,DeepHealth/ecvl/master,DeepHealth/pyeddl/master,DeepHealth/pyecvl/master',
+      upstreamProjects: 'DeepHealth/prova/master,DeepHealth/eddl/master,DeepHealth/ecvl/master,DeepHealth/pyeddl/master,DeepHealth/pyecvl/master',
       threshold: hudson.model.Result.SUCCESS)
   }
   environment {
