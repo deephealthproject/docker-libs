@@ -1,6 +1,15 @@
 # set bash as default interpreter
 SHELL := /bin/bash
 
+# detect OS
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+	XARGS_OPT = --no-run-if-empty
+endif
+ifeq ($(UNAME_S),Darwin)
+	XARGS_OPT =
+endif
+
 # date.time as build number
 BUILD_NUMBER := $(or ${BUILD_NUMBER},$(shell date '+%Y%m%d.%H%M%S'))
 
@@ -199,10 +208,10 @@ endef
 define clean_image
 	$(eval image := $(1))
 	@printf "Stopping docker containers instances of image '$(image)'... "
-	@docker ps -a | grep -E "^$(image)\s" | awk '{print $$1}' | xargs docker rm -f  || true
+	@docker ps -a | grep -E "^$(image)\s" | awk '{print $$1}' | xargs ${XARGS_OPT} docker rm -f  || true
 	@printf "DONE\n"
 	@printf "Removing docker image '$(image)'... "
-	@docker images | grep -E "^$(image)\s" | awk '{print $$1 ":" $$2}' | xargs docker rmi -f  || true	
+	@docker images | grep -E "^$(image)\s" | awk '{print $$1 ":" $$2}' | xargs ${XARGS_OPT} docker rmi -f  || true	
 	@printf "DONE\n"
 	@printf "Removing unused docker image... "
 	@docker image prune -f
