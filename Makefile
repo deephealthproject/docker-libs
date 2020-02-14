@@ -211,7 +211,8 @@ define clean_image
 	@docker ps -a | grep -E "^$(image)\s" | awk '{print $$1}' | xargs ${XARGS_OPT} docker rm -f  || true
 	@printf "DONE\n"
 	@printf "Removing docker image '$(image)'... "
-	@docker images | grep -E "^$(image)\s" | awk '{print $$1 ":" $$2}' | xargs ${XARGS_OPT} docker rmi -f  || true	
+	@docker images | grep -E "^$(image)\s" | awk '{print $$1 ":" $$2}' | xargs ${XARGS_OPT} docker rmi -f  || true
+	@docker images | grep -E "^${DOCKER_REPOSITORY_OWNER}/$(image)\s" | awk '{print $$1 ":" $$2}' | xargs ${XARGS_OPT} docker rmi -f  || true
 	@printf "DONE\n"
 	@printf "Removing unused docker image... "
 	@docker image prune -f
