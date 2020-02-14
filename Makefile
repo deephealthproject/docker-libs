@@ -378,7 +378,7 @@ build_eddl: _build_libs_base build_eddl_toolkit ## Build 'eddl' image
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
 		--label EDDL_REVISION=${EDDL_REVISION},libs-base:$(DOCKER_BASE_IMAGE_VERSION_TAG),eddl-toolkit:$(EDDL_IMAGE_VERSION_TAG))
 
-build_ecvl: _build_libs_base build_ecvl_toolkit## Build 'ecvl' image
+build_ecvl: _build_libs_base build_eddl build_ecvl_toolkit## Build 'ecvl' image
 	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
 	$(call build_image,libs,ecvl,${ECVL_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=${DOCKER_IMAGE_TAG} \
