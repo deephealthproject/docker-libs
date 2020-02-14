@@ -78,8 +78,8 @@ include $(CONFIG_FILE)
 endif
 
 # set no cache option
-DISABLE_CACHE ?= 
-BUILD_CACHE_OPT ?= 
+DISABLE_CACHE ?=
+BUILD_CACHE_OPT ?=
 ifneq ("$(DISABLE_CACHE)", "")
 BUILD_CACHE_OPT = --no-cache
 endif
@@ -92,6 +92,21 @@ endif
 
 # auxiliary flag 
 DOCKER_LOGIN_DONE := $(or ${DOCKER_LOGIN_DONE},false)
+
+# Arguments to execute tests with Docker
+DOCKER_RUN := docker run -i --rm #-u 1000:1000
+ifeq (${GPU}, true)
+	DOCKER_RUN := ${DOCKER_RUN} --gpus 1
+endif
+
+define build_new_image
+	echo "Building Docker image '${image_name}'..." ; \
+	cd ${image} \
+	&& docker build ${BUILD_CACHE_OPT} \
+		-f ${target}.Dockerfile \
+		${base} ${toolkit} \
+		-t ${image_name}:${tag} ${extra_tags} ${latest_tags} ${labels} . 
+endef
 
 #$(if docker images -q ${image_name}:${tag} > /dev/null || docker images -q ${full_tag} > /dev/null, 
 define build_image
@@ -109,17 +124,16 @@ define build_image
 	@echo "Building Docker image '${image_name}'..."
 	$(eval images := $(shell docker images -q ${tagged_image}))
 	$(eval exists := $(shell curl --silent -f -lSL https://index.docker.io/v1/repositories/${full_image_name}/tags/${tag}))
-	$(if ${images},\
-		echo "Docker image '${tagged_image}' exists (id: ${images})", \
-		$(if ${exists}, \
-			echo "Pulling image '${full_image_name}:${tag}'..."; 
-			docker pull ${full_image_name}:${tag} && docker tag ${full_image_name}:${tag} ${tagged_image}, \
-			echo "Building Docker image '${image_name}'..." ; \
-			cd ${image} \
-			&& docker build ${BUILD_CACHE_OPT} \
-				-f ${target}.Dockerfile \
-				${base} ${toolkit} \
-				-t ${image_name}:${tag} ${extra_tags} ${latest_tags} ${labels} . \
+	$(if ${DISABLE_CACHE},\
+		echo "Cache disabled..." ; \
+		$(call build_new_image),
+		$(if ${images},\
+			echo "Docker image '${tagged_image}' exists (id: ${images})", \
+			$(if ${exists}, \
+				echo "Pulling image '${full_image_name}:${tag}'..."; 
+				docker pull ${full_image_name}:${tag} && docker tag ${full_image_name}:${tag} ${tagged_image}, \
+				$(call build_new_image)
+			)
 		)
 	)
 endef
