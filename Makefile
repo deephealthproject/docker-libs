@@ -1,6 +1,3 @@
-# version
-VERSION := 0.1
-
 # set bash as default interpreter
 SHELL := /bin/bash
 
@@ -89,6 +86,19 @@ push_latest_tags = false
 ifeq ("${DOCKER_IMAGE_LATEST}", "true")
 	push_latest_tags = true
 endif
+
+# 1: library path
+# 2: actual revision
+define get_version	
+	$(eval tag := $(shell cd ${1} && git tag -l --points-at HEAD)) \
+	$(eval rev := $(shell cd ${1} && git rev-parse --short HEAD | sed -E 's/-//; s/ .*//')) \
+	$(eval branch := $(shell git rev-parse --abbrev-ref HEAD | sed -E 's+/+-+g; s/ .*//'))
+	if [[ -n "${tag}" ]]; then echo ${tag}; else echo ${branch}-${rev}; fi
+endef
+
+# version
+version: ## Output the current version of this Makefile
+	@$(call get_version,$(PWD))
 
 # auxiliary flag 
 DOCKER_LOGIN_DONE := $(or ${DOCKER_LOGIN_DONE},false)
@@ -662,10 +672,6 @@ _repo-login: ## Login to the Docker Registry
 
 repo-login: _repo-login ## Login to the Docker Registry
 	$(eval DOCKER_LOGIN_DONE := true)
-
-
-version: ## Output the current version of this Makefile
-	@echo $(VERSION)
 
 
 ############################################################################################################################
