@@ -83,6 +83,9 @@ ifneq ($(wildcard $(CONFIG_FILE)),)
 include $(CONFIG_FILE)
 endif
 
+# disable image pull
+DISABLE_PULL ?= 0
+
 # set no cache option
 DISABLE_CACHE ?=
 BUILD_CACHE_OPT ?=
@@ -127,7 +130,6 @@ define build_new_image
 		-t ${image_name}:${tag} ${extra_tags} ${latest_tags} ${labels} . 
 endef
 
-#$(if docker images -q ${image_name}:${tag} > /dev/null || docker images -q ${full_tag} > /dev/null, 
 define build_image
 	$(eval image := $(1))
 	$(eval target := $(2))
@@ -144,13 +146,14 @@ define build_image
 	$(eval images := $(shell docker images -q ${tagged_image}))
 	$(eval exists := $(shell curl --silent -f -lSL https://index.docker.io/v1/repositories/${full_image_name}/tags/${tag}))
 	$(if ${DISABLE_CACHE},\
-		echo "Cache disabled..." ; \
+		@echo "Cache disabled..." ; \
 		$(call build_new_image),
 		$(if ${images},\
-			echo "Docker image '${tagged_image}' exists (id: ${images})", \
-			$(if ${exists}, \
-				echo "Pulling image '${full_image_name}:${tag}'..."; 
+			@echo "Docker image '${tagged_image}' exists (id: ${images})", \
+			$(if $(and ${exists},$(or $(findstring 0,${DISABLE_PULL}),$(findstring false,${DISABLE_PULL}))), \
+				@echo "Pulling image '${full_image_name}:${tag}'..."; 
 				docker pull ${full_image_name}:${tag} && docker tag ${full_image_name}:${tag} ${tagged_image}, \
+				@echo "Image pull disabled..." ; \
 				$(call build_new_image)
 			)
 		)
