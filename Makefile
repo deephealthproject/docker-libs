@@ -754,7 +754,10 @@ clean_pylibs_images: clean_pyecvl_images clean_pyeddl_images
 	$(call clean_image,pylibs)
 	$(call clean_image,pylibs-toolkit)
 
-clean_images: clean_pylibs_images clean_libs_images clean_base_images
+clean_images: \
+	clean_pylibs_images clean_libs_images clean_base_images \
+	clean_ecvl_images clean_eddl_images \
+	clean_pyecvl_images clean_pylibs_images
 
 
 ############################################################################################################################
