@@ -537,6 +537,12 @@ define test_image
 
 endef
 
+tests: \
+	test_eddl test_eddl_toolkit \
+	test_ecvl test_ecvl_toolkit \
+	test_pyeddl test_pyeddl_toolkit \
+	test_pyecvl test_pyecvl_toolkit
+
 test_eddl: eddl_folder ## Test 'eddl' images
 	$(eval EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION}))
 	@echo "No test available yet"
