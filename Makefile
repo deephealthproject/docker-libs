@@ -72,7 +72,7 @@ PYEDDL_BRANCH := $(or ${PYEDDL_BRANCH},master)
 PYEDDL_REVISION := ${PYEDDL_REVISION}
 
 # config file
-CONFIG_FILE ?= settings.sh
+CONFIG_FILE ?= release.conf
 ifneq ($(wildcard $(CONFIG_FILE)),)
 include $(CONFIG_FILE)
 endif
