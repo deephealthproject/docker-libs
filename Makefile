@@ -591,80 +591,88 @@ _push: \
 	push_pylibs push_pylibs_toolkit \
 	push_pyeddl push_pyeddl_toolkit \
 	push_pyecvcl push_pyecvl_toolkit
+
+push_libs: docker_login ## Push 'libs' image
 	$(call push_image,libs)
 
-push_eddl: repo-login eddl_folder ## Push 'eddl' images
+push_libs_base: docker_login ## Push 'lib-base' image
+	$(call push_image,libs-base,${DOCKER_BASE_IMAGE_VERSION_TAG})
+
+push_eddl: docker_login eddl_folder ## Push 'eddl' image
 	$(eval EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION}))
 	$(call push_image,eddl,${EDDL_IMAGE_VERSION_TAG})
 
-push_ecvl: repo-login ecvl_folder ## Push 'ecvl' images
+push_ecvl: docker_login ecvl_folder ## Push 'ecvl' image
 	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
 	$(call push_image,ecvl,${ECVL_IMAGE_VERSION_TAG})
 
-push_libs_toolkit: repo-login ## Push 'libs-toolkit' images
+push_libs_toolkit: docker_login ## Push 'libs-toolkit' image
 	$(call push_image,libs-toolkit)
 
-push_eddl_toolkit: repo-login eddl_folder ## Push 'eddl-toolkit' images
+push_libs_base_toolkit: docker_login ## Push 'libs-base-toolkit' image
+	$(call push_image,libs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG})
+
+push_eddl_toolkit: docker_login eddl_folder ## Push 'eddl-toolkit' images
 	$(eval EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION}))
 	$(call push_image,eddl-toolkit,${EDDL_IMAGE_VERSION_TAG})
 
-push_ecvl_toolkit: repo-login ecvl_folder ## Push 'ecvl-toolkit' images
+push_ecvl_toolkit: docker_login ecvl_folder ## Push 'ecvl-toolkit' images
 	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
 	$(call push_image,ecvl-toolkit,${ECVL_IMAGE_VERSION_TAG})
 
-push_pylibs: repo-login ## Push 'pylibs' images
+push_pylibs: docker_login ## Push 'pylibs' images
 	$(call push_image,pylibs)
 
-push_pyeddl: repo-login pyeddl_folder ## Push 'pyeddl' images
+push_pyeddl: docker_login pyeddl_folder ## Push 'pyeddl' images
 	$(eval PYEDDL_IMAGE_VERSION_TAG := $(or ${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION}))
 	$(call push_image,pyeddl,${PYEDDL_IMAGE_VERSION_TAG})
 
-push_pyecvl: repo-login pyecvl_folder ## Push 'pyecvl' images
+push_pyecvl: docker_login pyecvl_folder ## Push 'pyecvl' images
 	$(eval PYECVL_IMAGE_VERSION_TAG := $(or ${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION}))
 	$(call push_image,pyecvl,${PYECVL_IMAGE_VERSION_TAG})
 
-push_pylibs_toolkit: repo-login ## Push 'pylibs-toolkit' images
+push_pylibs_toolkit: docker_login ## Push 'pylibs-toolkit' images
 	$(call push_image,pylibs-toolkit)
 
-push_pyeddl_toolkit: repo-login pyeddl_folder ## Push 'pyeddl-toolkit' images
+push_pyeddl_toolkit: docker_login pyeddl_folder ## Push 'pyeddl-toolkit' images
 	$(eval PYEDDL_IMAGE_VERSION_TAG := $(or ${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION}))
 	$(call push_image,pyeddl-toolkit,${PYEDDL_IMAGE_VERSION_TAG})
 
-push_pyecvl_toolkit: repo-login pyecvl_folder ## Push 'pyeddl-toolkit' images
+push_pyecvl_toolkit: docker_login pyecvl_folder ## Push 'pyeddl-toolkit' images
 	$(eval PYECVL_IMAGE_VERSION_TAG := $(or ${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION}))
 	$(call push_image,pyecvl-toolkit,${PYECVL_IMAGE_VERSION_TAG})
 
 ############################################################################################################################
 ### Piblish Docker images
 ############################################################################################################################
-publish: build push ## Publish all built images to a Docker Registry (e.g., DockerHub)
+publish: build push ## Publish all images to a Docker Registry (e.g., DockerHub)
 
-publish_libs: build_libs push_libs ## Publish 'libs' images
+publish_libs: build_libs push_libs ## Publish 'libs' image
 
-publish_eddl: build_eddl push_eddl ## Publish 'eddl' images
+publish_eddl: build_eddl push_eddl ## Publish 'eddl' image
 
-publish_ecvl: build_ecvl push_ecvl ## Publish 'ecvl' images
+publish_ecvl: build_ecvl push_ecvl ## Publish 'ecvl' image
 
-publish_libs_toolkit: build_libs_toolkit push_libs_toolkit ## Publish 'libs-toolkit' images
+publish_libs_toolkit: build_libs_toolkit push_libs_toolkit ## Publish 'libs-toolkit' image
 
-publish_eddl_toolkit: build_eddl_toolkit push_eddl_toolkit ## Publish 'eddl-toolkit' images
+publish_eddl_toolkit: build_eddl_toolkit push_eddl_toolkit ## Publish 'eddl-toolkit' image
 
-publish_ecvl_toolkit: build_ecvl_toolkit push_ecvl_toolkit ## Publish 'ecvl-toolkit' images
+publish_ecvl_toolkit: build_ecvl_toolkit push_ecvl_toolkit ## Publish 'ecvl-toolkit' image
 
-publish_pylibs: build_pylibs push_pylibs ## Publish 'pylibs' images
+publish_pylibs: build_pylibs push_pylibs ## Publish 'pylibs' image
 
-publish_pyeddl: build_pyeddl push_pyeddl ## Publish 'pyeddl' images
+publish_pyeddl: build_pyeddl push_pyeddl ## Publish 'pyeddl' image
 
-publish_pyecvl: build_pyecvl push_pyecvl ## Publish 'pyecvl' images
+publish_pyecvl: build_pyecvl push_pyecvl ## Publish 'pyecvl' image
 
-publish_pylibs_toolkit: build_pylibs_toolkit push_pylibs_toolkit ## Publish 'pylibs-toolkit' images
+publish_pylibs_toolkit: build_pylibs_toolkit push_pylibs_toolkit ## Publish 'pylibs-toolkit' image
 
-publish_pyeddl_toolkit: build_pyeddl_toolkit push_pyeddl_toolkit ## Publish 'pyeddl-toolkit' images
+publish_pyeddl_toolkit: build_pyeddl_toolkit push_pyeddl_toolkit ## Publish 'pyeddl-toolkit' image
 
-publish_pyecvl_toolkit: build_pyecvl_toolkit push_pyecvl_toolkit ## Publish 'pyecvl-toolkit' images
+publish_pyecvl_toolkit: build_pyecvl_toolkit push_pyecvl_toolkit ## Publish 'pyecvl-toolkit' image
 
 # login to the Docker HUB repository
-_repo-login: ## Login to the Docker Registry
+_docker_login: 
 	@if [[ ${DOCKER_LOGIN_DONE} == false ]]; then \
 		echo "Logging into Docker registry ${DOCKER_REGISTRY}..." ; \
 		echo ${DOCKER_PASSWORD} | docker login ${DOCKER_REGISTRY} --username ${DOCKER_USER} --password-stdin \
@@ -672,30 +680,30 @@ _repo-login: ## Login to the Docker Registry
 		echo "Logging into Docker registry already done" ; \
 	fi
 
-repo-login: _repo-login ## Login to the Docker Registry
+docker-login: _docker-login ## Login to the Docker Registry
 	$(eval DOCKER_LOGIN_DONE := true)
 
 
 ############################################################################################################################
 ### Clean sources
 ############################################################################################################################
-clean_eddl_sources:
+clean_eddl_sources: ## clean repository containing EDDL source code
 	$(call clean_sources,libs/eddl)
 
-clean_ecvl_sources:
+clean_ecvl_sources: ## clean repository containing ECVL source code
 	$(call clean_sources,libs/ecvl)
 
-clean_pyeddl_sources:
+clean_pyeddl_sources: ## clean repository containing PyEDDL source code
 	$(call clean_sources,pylibs/pyeddl)
 
-clean_pyecvl_sources:
+clean_pyecvl_sources: ## clean repository containing PyECVL source code
 	$(call clean_sources,pylibs/pyecvl)
 
-clean_libs_sources: clean_eddl_sources clean_ecvl_sources
+clean_libs_sources: clean_eddl_sources clean_ecvl_sources ## clean repository containing libs source code
 
-clean_pylibs_sources: clean_pyeddl_sources clean_pyecvl_sources
+clean_pylibs_sources: clean_pyeddl_sources clean_pyecvl_sources ## clean repository containing pylibs source code
 
-clean_sources: clean_pylibs_sources clean_libs_sources
+clean_sources: clean_pylibs_sources clean_libs_sources ## clean repository containing source code
 
 
 ############################################################################################################################
@@ -754,7 +762,7 @@ clean: clean_images clean_sources
 	_build_pylibs_base_toolkit _build_pylibs_base \
 	build_pyeddl_toolkit build_pyecvl_toolkit build_pylibs_toolkit\
 	_build_pylibs_base build_pyeddl build_pyecvl build_pylibs \
-	repo-login \
+	_docker_login docker_login \
 	push _push \
 	push_libs push_eddl push_ecvl \
 	push_libs_toolkit push_eddl_toolkit push_ecvl_toolkit \
