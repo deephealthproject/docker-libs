@@ -757,6 +757,8 @@ clean: clean_images clean_sources
 	publish_libs_toolkit publish_eddl_toolkit publish_ecvl_toolkit \
 	publish_pylibs publish_pyeddl publish_pyecvl \
 	publish_pylibs_toolkit publish_pyeddl_toolkit publish_pyecvl_toolkit \
+	test_eddl test_eddl_toolkit test_ecvl test_ecvl_toolkit test_pyeddl \
+	test_pyeddl_toolkit test_pyecvl test_pyecvl_toolkit \
 	clean_sources \
 	clean_eddl_sources clean_ecvl_sources \
 	clean_pyeddl_sources clean_pyecvl_sources \
