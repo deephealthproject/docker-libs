@@ -334,13 +334,12 @@ apply_pyecvl_patches:
 ############# Build Docker images #############
 #####################################################################################################################################
 # Targets to build container images
-build: _build ## Build libs+pylibs Docker images
+build: _build ## Build all Docker images
 _build: \
-	build_libs \
-	build_libs_toolkit \
-	build_pylibs \
-	build_pylibs_toolkit
-
+	build_eddl build_ecvl build_libs \
+	build_eddl_toolkit build_ecvl_toolkit build_libs_toolkit \
+	build_pyeddl build_pycvl build_pylibs \
+	build_pyeddl_toolkit build_pyecvl_toolkit build_pylibs_toolkit
 
 ############# libs-toolkit #############
 
@@ -583,12 +582,15 @@ test_pyecvl_toolkit: pyecvl_folder ## Test 'ecvl' images
 ############################################################################################################################
 ### Push Docker images
 ############################################################################################################################
-push: _push ## Push all built images
+push: _push ## Push all images
 _push: \
-	push_libs_toolkit push_libs \
-	push_pylibs_toolkit push_pylibs 
-
-push_libs: repo-login ## Push 'libs' images
+	push_libs_base push_libs_base_toolkit \
+	push_libs push_libs_toolkit\
+	push_eddl push_eddl_toolkit \
+	push_ecvl push_ecvl_toolkit \	 
+	push_pylibs push_pylibs_toolkit \
+	push_pyeddl push_pyeddl_toolkit \
+	push_pyecvcl push_pyecvl_toolkit
 	$(call push_image,libs)
 
 push_eddl: repo-login eddl_folder ## Push 'eddl' images
