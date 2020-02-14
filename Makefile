@@ -348,7 +348,7 @@ build: _build ## Build all Docker images
 _build: \
 	build_eddl build_ecvl build_libs \
 	build_eddl_toolkit build_ecvl_toolkit build_libs_toolkit \
-	build_pyeddl build_pycvl build_pylibs \
+	build_pyeddl build_pyecvl build_pylibs \
 	build_pyeddl_toolkit build_pyecvl_toolkit build_pylibs_toolkit
 
 ############# libs-toolkit #############
