@@ -85,17 +85,24 @@ endif
 
 # disable image pull
 DISABLE_PULL ?= 0
+_DO_NOT_PULL_DOCKER_IMAGES = 0
+ifeq ($(DISABLE_PULL),$(filter $(DISABLE_PULL),1 true TRUE))
+$(info Docker image pull disabled)
+_DO_NOT_PULL_DOCKER_IMAGES = 1
+endif
 
 # set no cache option
-DISABLE_CACHE ?=
+DISABLE_CACHE ?= 0
 BUILD_CACHE_OPT ?=
-ifneq ("$(DISABLE_CACHE)", "")
+ifeq ($(DISABLE_CACHE),$(filter $(DISABLE_CACHE),1 true TRUE))
+$(info Docker cache disabled)
 BUILD_CACHE_OPT = --no-cache
+_DO_NOT_USE_DOCKER_CACHE = 1
 endif
 
 # enable latest tags
 push_latest_tags = false
-ifeq ("${DOCKER_IMAGE_LATEST}", "true")
+ifeq ($(DOCKER_IMAGE_LATEST),$(filter $(DOCKER_IMAGE_LATEST),1 true TRUE))
 	push_latest_tags = true
 endif
 
@@ -142,15 +149,13 @@ define build_image
 	$(eval full_image_name := $(shell prefix=""; if [ -n "${DOCKER_REGISTRY}" ]; then prefix="${DOCKER_REGISTRY}/"; fi; echo "${prefix}${DOCKER_REPOSITORY_OWNER}/${image_name}"))
 	$(eval latest_tags := $(shell if [ "${push_latest_tags}" == "true" ]; then echo "-t ${image_name}:latest"; fi))
 	$(eval tagged_image := ${image_name}:${tag})
-	@echo "Building Docker image '${image_name}'..."
 	$(eval images := $(shell docker images -q ${tagged_image}))
 	$(eval exists := $(shell curl --silent -f -lSL https://index.docker.io/v1/repositories/${full_image_name}/tags/${tag}))
-	$(if ${DISABLE_CACHE},\
-		@echo "Cache disabled..." ; \
+	$(if $(findstring ${_DO_NOT_PULL_DOCKER_IMAGES},1),\
 		$(call build_new_image),
 		$(if ${images},\
 			@echo "Docker image '${tagged_image}' exists (id: ${images})", \
-			$(if $(and ${exists},$(or $(findstring 0,${DISABLE_PULL}),$(findstring false,${DISABLE_PULL}))), \
+			$(if $(and ${exists},$(findstring ${_DO_NOT_PULL_DOCKER_IMAGES},0)), \
 				@echo "Pulling image '${full_image_name}:${tag}'..."; 
 				docker pull ${full_image_name}:${tag} && docker tag ${full_image_name}:${tag} ${tagged_image}, \
 				@echo "Image pull disabled..." ; \
