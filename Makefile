@@ -248,7 +248,7 @@ libs_folder:
 	)
 
 _eddl_folder: libs_folder
-	$(if $(wildcard ${EDDL_LIB_PATH}),$(info Using existing '${EDDL_LIB_PATH}' repository), \
+	@$(if $(wildcard ${EDDL_LIB_PATH}),$(info Using existing '${EDDL_LIB_PATH}' repository), \
 		$(call clone_repository,${EDDL_LIB_PATH},${EDDL_REPOSITORY},${EDDL_BRANCH},${EDDL_REVISION},true) ; \
 	)
 
@@ -257,7 +257,7 @@ eddl_folder: _eddl_folder
 
 
 define clone_ecvl
-	$(if $(wildcard ${ECVL_LIB_PATH}),$(info Using existing '${ECVL_LIB_PATH}' repository), \
+	@$(if $(wildcard ${ECVL_LIB_PATH}),$(info Using existing '${ECVL_LIB_PATH}' repository), \
 		$(call clone_repository,${ECVL_LIB_PATH},${ECVL_REPOSITORY},${ECVL_BRANCH},${ECVL_REVISION},true) ; \
 	)
 endef
@@ -272,7 +272,7 @@ pylibs_folder:
 	@mkdir -p ${LOCAL_PYLIBS_PATH}
 
 define pyeddl_shallow_clone
-	$(if $(wildcard ${PYEDDL_LIB_PATH}),$(info Using existing '${PYEDDL_LIB_PATH}' repository), \
+	@$(if $(wildcard ${PYEDDL_LIB_PATH}),$(info Using existing '${PYEDDL_LIB_PATH}' repository), \
 		$(call clone_repository,${PYEDDL_LIB_PATH},${PYEDDL_REPOSITORY},${PYEDDL_BRANCH},${PYEDDL_REVISION},false) ; \
 	)
 endef
@@ -341,7 +341,7 @@ pyecvl_folder: _pyecvl_second_level_dependencies
 # TODO: remove this patch when not required
 apply_pyeddl_patches:
 	@echo "Applying patches to the EDDL repository..."
-	$(call clone_repository,${PYEDDL_LIB_PATH},${PYEDDL_REPOSITORY},${PYEDDL_BRANCH},${PYEDDL_REVISION},false)
+	@$(call clone_repository,${PYEDDL_LIB_PATH},${PYEDDL_REPOSITORY},${PYEDDL_BRANCH},${PYEDDL_REVISION},false)
 	cd ${EDDL_LIB_PATH} && git apply ../../${PYEDDL_LIB_PATH}/eddl_0.3.patch || true
 
 # # TODO: remove this patch when not required
@@ -607,8 +607,7 @@ test_pyecvl_toolkit: pyecvl_folder ## Test 'ecvl' images
 ### Push Docker images
 ############################################################################################################################
 push: _push ## Push all images
-_push: \
-	push_libs_base push_libs_base_toolkit \
+_push: push_libs_base push_libs_base_toolkit \
 	push_libs push_libs_toolkit\
 	push_eddl push_eddl_toolkit \
 	push_ecvl push_ecvl_toolkit \	 
