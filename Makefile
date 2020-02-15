@@ -615,7 +615,7 @@ _push: \
 	push_ecvl push_ecvl_toolkit \
 	push_pylibs push_pylibs_toolkit \
 	push_pyeddl push_pyeddl_toolkit \
-	push_pyecvcl push_pyecvl_toolkit
+	push_pyecvl push_pyecvl_toolkit
 
 push_libs: docker_login ## Push 'libs' image
 	$(call push_image,libs)
