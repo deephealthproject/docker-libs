@@ -607,10 +607,12 @@ test_pyecvl_toolkit: pyecvl_folder ## Test 'ecvl' images
 ### Push Docker images
 ############################################################################################################################
 push: _push ## Push all images
-_push: push_libs_base push_libs_base_toolkit \
+
+_push: \
+	push_libs_base push_libs_base_toolkit \
 	push_libs push_libs_toolkit\
 	push_eddl push_eddl_toolkit \
-	push_ecvl push_ecvl_toolkit \	 
+	push_ecvl push_ecvl_toolkit \
 	push_pylibs push_pylibs_toolkit \
 	push_pyeddl push_pyeddl_toolkit \
 	push_pyecvcl push_pyecvl_toolkit
