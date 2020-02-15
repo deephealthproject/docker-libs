@@ -106,18 +106,14 @@ ifeq ($(DOCKER_IMAGE_LATEST),$(filter $(DOCKER_IMAGE_LATEST),1 true TRUE))
 	push_latest_tags = true
 endif
 
-# 1: library path
-# 2: actual revision
-define get_version	
-	$(eval tag := $(shell cd ${1} && git tag -l --points-at HEAD)) \
-	$(eval rev := $(shell cd ${1} && git rev-parse --short HEAD | sed -E 's/-//; s/ .*//')) \
-	$(eval branch := $(shell git rev-parse --abbrev-ref HEAD | sed -E 's+/+-+g; s/ .*//'))
-	if [[ -n "${tag}" ]]; then echo ${tag}; else echo ${branch}-${rev}; fi
-endef
+# extract info about repository revision 
+REPO_TAG := $(shell git tag -l --points-at HEAD)
+REPO_REVISION := $(shell git rev-parse --short HEAD | sed -E 's/-//; s/ .*//')
+REPO_BRANCH := $(shell git name-rev --name-only HEAD | sed -E 's+(remotes/|origin/)++g; s+/+-+g; s/ .*//')
+REPO_VERSION := $(shell if [[ -n "${REPO_TAG}" ]]; then echo ${REPO_TAG}; else echo ${REPO_BRANCH}-${REPO_REVISION}; fi)
 
-# version
-version: ## Output the current version of this Makefile
-	@$(call get_version,$(PWD))
+# set container version equal to the repository version
+CONTAINER_VERSION := $(REPO_VERSION)
 
 # auxiliary flag 
 DOCKER_LOGIN_DONE := $(or ${DOCKER_LOGIN_DONE},false)
@@ -237,6 +233,10 @@ define get_revision
 endef
 
 .DEFAULT_GOAL := help
+
+# version
+version: ## Output the current version of this Makefile
+	@echo $(REPO_VERSION)
 
 help: ## Show help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -362,12 +362,13 @@ _build: \
 ############# libs-toolkit #############
 
 _build_libs_base_toolkit:
-	$(call build_image,libs,libs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG},,$(DOCKER_NVIDIA_DEVELOP_IMAGE))
+	$(call build_image,libs,libs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG},\
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_NVIDIA_DEVELOP_IMAGE))
 
 build_eddl_toolkit: eddl_folder _build_libs_base_toolkit apply_pyeddl_patches ## Build 'eddl-toolkit' image
 	$(eval EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION}))
 	$(call build_image,libs,eddl-toolkit,${EDDL_IMAGE_VERSION_TAG},\
-		--label CONTAINER_VERSION=${DOCKER_IMAGE_TAG} \
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
 		--label EDDL_REVISION=${EDDL_REVISION},libs-base-toolkit:$(DOCKER_BASE_IMAGE_VERSION_TAG))
@@ -375,14 +376,14 @@ build_eddl_toolkit: eddl_folder _build_libs_base_toolkit apply_pyeddl_patches ##
 build_ecvl_toolkit: ecvl_folder build_eddl_toolkit ## Build 'ecvl-toolkit' image
 	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
 	$(call build_image,libs,ecvl-toolkit,${ECVL_IMAGE_VERSION_TAG},\
-		--label CONTAINER_VERSION=${DOCKER_IMAGE_TAG} \
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
 		--label ECVL_BRANCH=${ECVL_BRANCH} \
 		--label ECVL_REVISION=${ECVL_REVISION},eddl-toolkit:$(EDDL_IMAGE_VERSION_TAG))
 
 build_libs_toolkit: build_ecvl_toolkit ## Build 'libs-toolkit' image
 	$(call build_image,libs,libs-toolkit,${DOCKER_IMAGE_TAG},\
-		--label CONTAINER_VERSION=${DOCKER_IMAGE_TAG} \
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
 		--label EDDL_REVISION=${EDDL_REVISION} \
@@ -395,12 +396,13 @@ build_libs_toolkit: build_ecvl_toolkit ## Build 'libs-toolkit' image
 ############# libs #############
 
 _build_libs_base: 
-	$(call build_image,libs,libs-base,${DOCKER_BASE_IMAGE_VERSION_TAG},,$(DOCKER_NVIDIA_RUNTIME_IMAGE))
+	$(call build_image,libs,libs-base,${DOCKER_BASE_IMAGE_VERSION_TAG},\
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_NVIDIA_RUNTIME_IMAGE))
 
 build_eddl: _build_libs_base build_eddl_toolkit ## Build 'eddl' image
 	$(eval EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION}))
 	$(call build_image,libs,eddl,${EDDL_IMAGE_VERSION_TAG},\
-		--label CONTAINER_VERSION=${DOCKER_IMAGE_TAG} \
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
 		--label EDDL_REVISION=${EDDL_REVISION},libs-base:$(DOCKER_BASE_IMAGE_VERSION_TAG),eddl-toolkit:$(EDDL_IMAGE_VERSION_TAG))
@@ -408,7 +410,7 @@ build_eddl: _build_libs_base build_eddl_toolkit ## Build 'eddl' image
 build_ecvl: _build_libs_base build_eddl build_ecvl_toolkit## Build 'ecvl' image
 	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
 	$(call build_image,libs,ecvl,${ECVL_IMAGE_VERSION_TAG},\
-		--label CONTAINER_VERSION=${DOCKER_IMAGE_TAG} \
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
 		--label EDDL_REVISION=${EDDL_REVISION} \
@@ -418,7 +420,7 @@ build_ecvl: _build_libs_base build_eddl build_ecvl_toolkit## Build 'ecvl' image
 
 build_libs: build_ecvl ## Build 'libs' image
 	$(call build_image,libs,libs,${DOCKER_IMAGE_TAG},\
-		--label CONTAINER_VERSION=${DOCKER_IMAGE_TAG} \
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
 		--label EDDL_REVISION=${EDDL_REVISION} \
@@ -431,12 +433,13 @@ build_libs: build_ecvl ## Build 'libs' image
 ############# pylibs-toolkit #############
 
 _build_pylibs_base_toolkit: build_ecvl_toolkit	
-	$(call build_image,pylibs,pylibs-base-toolkit,${ECVL_IMAGE_VERSION_TAG},,ecvl-toolkit:$(ECVL_IMAGE_VERSION_TAG))
+	$(call build_image,pylibs,pylibs-base-toolkit,${ECVL_IMAGE_VERSION_TAG},\
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION),ecvl-toolkit:$(ECVL_IMAGE_VERSION_TAG))
 
 build_pyeddl_toolkit: pyeddl_folder _build_pylibs_base_toolkit apply_pyeddl_patches ## Build 'pyeddl-toolkit' image
 	$(eval PYEDDL_IMAGE_VERSION_TAG := $(or ${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION}))
 	$(call build_image,pylibs,pyeddl-toolkit,${PYEDDL_IMAGE_VERSION_TAG},\
-		--label CONTAINER_VERSION=${DOCKER_IMAGE_TAG} \
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
 		--label EDDL_REVISION=${EDDL_REVISION} \
@@ -450,7 +453,7 @@ build_pyeddl_toolkit: pyeddl_folder _build_pylibs_base_toolkit apply_pyeddl_patc
 build_pyecvl_toolkit: pyecvl_folder build_pyeddl_toolkit ## Build 'pyecvl-toolkit' image
 	$(eval PYECVL_IMAGE_VERSION_TAG := $(or ${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION}))
 	$(call build_image,pylibs,pyecvl-toolkit,${PYECVL_IMAGE_VERSION_TAG},\
-		--label CONTAINER_VERSION=${DOCKER_IMAGE_TAG} \
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
 		--label EDDL_REVISION=${EDDL_REVISION} \
@@ -466,7 +469,7 @@ build_pyecvl_toolkit: pyecvl_folder build_pyeddl_toolkit ## Build 'pyecvl-toolki
 
 build_pylibs_toolkit: build_pyecvl_toolkit ## Build 'pylibs-toolkit' image
 	$(call build_image,pylibs,pylibs-toolkit,${DOCKER_IMAGE_TAG},\
-		--label CONTAINER_VERSION=${DOCKER_IMAGE_TAG} \
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
 		--label EDDL_REVISION=${EDDL_REVISION} \
@@ -485,11 +488,13 @@ build_pylibs_toolkit: build_pyecvl_toolkit ## Build 'pylibs-toolkit' image
 ############# pylibs #############
 
 _build_pylibs_base: build_ecvl
-	$(call build_image,pylibs,pylibs-base,${DOCKER_BASE_IMAGE_VERSION_TAG},,ecvl:$(ECVL_IMAGE_VERSION_TAG))
+	$(call build_image,pylibs,pylibs-base,${DOCKER_BASE_IMAGE_VERSION_TAG},\
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION),ecvl:$(ECVL_IMAGE_VERSION_TAG))
 
 build_pyeddl: _build_pylibs_base build_pyeddl_toolkit ## Build 'pyeddl' image
 	$(eval PYEDDL_IMAGE_VERSION_TAG := $(or ${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION}))
 	$(call build_image,pylibs,pyeddl,${PYEDDL_IMAGE_VERSION_TAG},\
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
 		--label EDDL_REVISION=${EDDL_REVISION} \
@@ -503,6 +508,7 @@ build_pyeddl: _build_pylibs_base build_pyeddl_toolkit ## Build 'pyeddl' image
 build_pyecvl: build_pyeddl build_pyecvl_toolkit ## Build 'pyecvl' image
 	$(eval PYECVL_IMAGE_VERSION_TAG := $(or ${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION}))
 	$(call build_image,pylibs,pyecvl,${PYECVL_IMAGE_VERSION_TAG},\
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
 		--label EDDL_REVISION=${EDDL_REVISION} \
@@ -518,6 +524,7 @@ build_pyecvl: build_pyeddl build_pyecvl_toolkit ## Build 'pyecvl' image
 
 build_pylibs: build_pyecvl ## Build 'pylibs' image
 	$(call build_image,pylibs,pylibs,${DOCKER_IMAGE_TAG},\
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
 		--label EDDL_REVISION=${EDDL_REVISION} \
