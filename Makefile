@@ -165,18 +165,18 @@ endef
 define push_image
 	$(eval image := $(1))
 	$(eval tag := $(or $(2),${DOCKER_IMAGE_TAG}))
+	$(eval extra_tags := $(filter-out $(tag),$(foreach t,$(3) ${DOCKER_IMAGE_TAG_EXTRA},$(t))))
 	$(eval image_name := ${DOCKER_IMAGE_PREFIX}${image})
 	$(eval full_image_name := $(shell prefix=""; if [ -n "${DOCKER_REGISTRY}" ]; then prefix="${DOCKER_REGISTRY}/"; fi; echo "${prefix}${DOCKER_REPOSITORY_OWNER}/${image_name}"))
 	$(eval full_tag := ${full_image_name}:$(tag))
 	$(eval latest_tag := ${full_image_name}:latest)
-	$(eval tags := ${DOCKER_IMAGE_TAG_EXTRA})
 	@echo "Tagging images... "
 	docker tag ${image_name}:$(tag) ${full_tag}
 	@if [ ${push_latest_tags} == true ]; then docker tag ${image_name}:$(tag) ${latest_tag}; fi
 	@echo "Pushing Docker image '${image_name}'..."	
 	docker push ${full_tag}
 	@if [ ${push_latest_tags} == true ]; then docker push ${latest_tag}; fi
-	@for tag in $(tags); \
+	@for tag in $(extra_tags); \
 	do \
 	img_tag=${full_image_name}:$$tag ; \
 	docker tag ${full_tag} $$img_tag ; \
@@ -632,11 +632,11 @@ push_libs_base: docker_login ## Push 'lib-base' image
 
 push_eddl: docker_login eddl_folder ## Push 'eddl' image
 	$(eval EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION}))
-	$(call push_image,eddl,${EDDL_IMAGE_VERSION_TAG})
+	$(call push_image,eddl,${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION})
 
 push_ecvl: docker_login ecvl_folder ## Push 'ecvl' image
 	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
-	$(call push_image,ecvl,${ECVL_IMAGE_VERSION_TAG})
+	$(call push_image,ecvl,${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION})
 
 push_libs_toolkit: docker_login ## Push 'libs-toolkit' image
 	$(call push_image,libs-toolkit)
@@ -646,33 +646,33 @@ push_libs_base_toolkit: docker_login ## Push 'libs-base-toolkit' image
 
 push_eddl_toolkit: docker_login eddl_folder ## Push 'eddl-toolkit' images
 	$(eval EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION}))
-	$(call push_image,eddl-toolkit,${EDDL_IMAGE_VERSION_TAG})
+	$(call push_image,eddl-toolkit,${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION})
 
 push_ecvl_toolkit: docker_login ecvl_folder ## Push 'ecvl-toolkit' images
 	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
-	$(call push_image,ecvl-toolkit,${ECVL_IMAGE_VERSION_TAG})
+	$(call push_image,ecvl-toolkit,${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION})
 
 push_pylibs: docker_login ## Push 'pylibs' images
 	$(call push_image,pylibs)
 
 push_pyeddl: docker_login pyeddl_folder ## Push 'pyeddl' images
 	$(eval PYEDDL_IMAGE_VERSION_TAG := $(or ${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION}))
-	$(call push_image,pyeddl,${PYEDDL_IMAGE_VERSION_TAG})
+	$(call push_image,pyeddl,${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION})
 
 push_pyecvl: docker_login pyecvl_folder ## Push 'pyecvl' images
 	$(eval PYECVL_IMAGE_VERSION_TAG := $(or ${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION}))
-	$(call push_image,pyecvl,${PYECVL_IMAGE_VERSION_TAG})
+	$(call push_image,pyecvl,${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION})
 
 push_pylibs_toolkit: docker_login ## Push 'pylibs-toolkit' images
 	$(call push_image,pylibs-toolkit)
 
 push_pyeddl_toolkit: docker_login pyeddl_folder ## Push 'pyeddl-toolkit' images
 	$(eval PYEDDL_IMAGE_VERSION_TAG := $(or ${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION}))
-	$(call push_image,pyeddl-toolkit,${PYEDDL_IMAGE_VERSION_TAG})
+	$(call push_image,pyeddl-toolkit,${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION})
 
 push_pyecvl_toolkit: docker_login pyecvl_folder ## Push 'pyeddl-toolkit' images
 	$(eval PYECVL_IMAGE_VERSION_TAG := $(or ${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION}))
-	$(call push_image,pyecvl-toolkit,${PYECVL_IMAGE_VERSION_TAG})
+	$(call push_image,pyecvl-toolkit,${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION})
 
 ############################################################################################################################
 ### Piblish Docker images
