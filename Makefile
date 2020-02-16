@@ -111,7 +111,7 @@ ifeq ($(DOCKER_IMAGE_LATEST),$(filter $(DOCKER_IMAGE_LATEST),1 true TRUE))
 endif
 
 # extract info about repository revision 
-REPO_TAG := $(shell git tag -l --points-at HEAD)
+REPO_TAG := $(shell git tag -l --points-at HEAD | tail -n 1)
 REPO_REVISION := $(shell git rev-parse --short HEAD | sed -E 's/-//; s/ .*//')
 REPO_BRANCH := $(shell git name-rev --name-only HEAD | sed -E 's+(remotes/|origin/)++g; s+/+-+g; s/ .*//')
 REPO_VERSION := $(shell if [[ -n "${REPO_TAG}" ]]; then echo ${REPO_TAG}; else echo ${REPO_BRANCH}-${REPO_REVISION}; fi)
@@ -129,7 +129,7 @@ ifeq (${GPU}, true)
 endif
 
 define build_new_image
-	echo "Building Docker image '${image_name}' (tags: ${tag} ${extra_tags})..." ; \
+	echo "Building Docker image '${image_name}' ( tags: ${tag} ${extra_tags})..." ; \
 	$(eval tags := $(filter-out undefined,$(foreach tag,$(extra_tags),-t $(image_name):$(tag))))
 	cd ${image} \
 	&& docker build ${BUILD_CACHE_OPT} \
@@ -231,7 +231,7 @@ endef
 
 # 1: library path
 define get_tag
-	$(eval tag := $(shell cd ${1} && git tag -l --points-at HEAD)) \
+	$(eval tag := $(shell cd ${1} && git tag -l --points-at HEAD | tail -n 1)) \
 	$(strip $(shell echo ${tag};))
 endef
 
