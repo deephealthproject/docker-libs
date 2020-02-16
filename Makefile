@@ -126,11 +126,12 @@ endif
 
 define build_new_image
 	echo "Building Docker image '${image_name}'..." ; \
+	$(eval tags := $(filter-out undefined,$(foreach tag,$(extra_tags),-t $(image_name):$(tag))))
 	cd ${image} \
 	&& docker build ${BUILD_CACHE_OPT} \
 		-f ${target}.Dockerfile \
 		${base} ${toolkit} \
-		-t ${image_name}:${tag} ${extra_tags} ${latest_tags} ${labels} . 
+		-t ${image_name}:${tag} ${tags} ${latest_tags} ${labels} . 
 endef
 
 define build_image
@@ -140,7 +141,7 @@ define build_image
 	$(eval labels := $(4))
 	$(eval base := $(if $(5), --build-arg BASE_IMAGE=$(5)))
 	$(eval toolkit := $(if $(6), --build-arg TOOLKIT_IMAGE=$(6)))
-	$(eval extra_tags := $(if $(7), -t ${image_name}:${7}))
+	$(eval extra_tags := $(7))
 	$(eval image_name := ${DOCKER_IMAGE_PREFIX}${target}${${target}_suffix})
 	$(eval full_image_name := $(shell prefix=""; if [ -n "${DOCKER_REGISTRY}" ]; then prefix="${DOCKER_REGISTRY}/"; fi; echo "${prefix}${DOCKER_REPOSITORY_OWNER}/${image_name}"))
 	$(eval latest_tags := $(shell if [ "${push_latest_tags}" == "true" ]; then echo "-t ${image_name}:latest"; fi))
