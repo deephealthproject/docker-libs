@@ -340,9 +340,8 @@ pyecvl_folder: _pyecvl_second_level_dependencies
 
 
 # TODO: remove this patch when not required
-apply_pyeddl_patches:
+apply_pyeddl_patches: pyeddl_folder
 	@echo "Applying patches to the EDDL repository..."
-	@$(call clone_repository,${PYEDDL_LIB_PATH},${PYEDDL_REPOSITORY},${PYEDDL_BRANCH},${PYEDDL_REVISION},false)
 	cd ${EDDL_LIB_PATH} && git apply ../../${PYEDDL_LIB_PATH}/eddl_0.3.patch || true
 
 # # TODO: remove this patch when not required
@@ -492,7 +491,7 @@ _build_pylibs_base: build_ecvl
 	$(call build_image,pylibs,pylibs-base,${DOCKER_BASE_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION),ecvl:$(ECVL_IMAGE_VERSION_TAG))
 
-build_pyeddl: _build_pylibs_base build_pyeddl_toolkit ## Build 'pyeddl' image
+build_pyeddl: build_pyeddl_toolkit _build_pylibs_base ## Build 'pyeddl' image
 	$(eval PYEDDL_IMAGE_VERSION_TAG := $(or ${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION}))
 	$(call build_image,pylibs,pyeddl,${PYEDDL_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
@@ -506,7 +505,7 @@ build_pyeddl: _build_pylibs_base build_pyeddl_toolkit ## Build 'pyeddl' image
 		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
 		--label PYEDDL_REVISION=${PYEDDL_REVISION},pylibs-base:$(DOCKER_BASE_IMAGE_VERSION_TAG),pyeddl-toolkit:$(PYEDDL_IMAGE_VERSION_TAG))
 
-build_pyecvl: build_pyeddl build_pyecvl_toolkit ## Build 'pyecvl' image
+build_pyecvl: build_pyecvl_toolkit build_pyeddl ## Build 'pyecvl' image
 	$(eval PYECVL_IMAGE_VERSION_TAG := $(or ${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION}))
 	$(call build_image,pylibs,pyecvl,${PYECVL_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
