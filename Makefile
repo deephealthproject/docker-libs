@@ -125,7 +125,7 @@ ifeq (${GPU}, true)
 endif
 
 define build_new_image
-	echo "Building Docker image '${image_name}'..." ; \
+	echo "Building Docker image '${image_name}' (tags: ${tag} ${extra_tags})..." ; \
 	$(eval tags := $(filter-out undefined,$(foreach tag,$(extra_tags),-t $(image_name):$(tag))))
 	cd ${image} \
 	&& docker build ${BUILD_CACHE_OPT} \
@@ -372,7 +372,7 @@ build_eddl_toolkit: eddl_folder _build_libs_base_toolkit apply_pyeddl_patches ##
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
-		--label EDDL_REVISION=${EDDL_REVISION},libs-base-toolkit:$(DOCKER_BASE_IMAGE_VERSION_TAG))
+		--label EDDL_REVISION=${EDDL_REVISION},libs-base-toolkit:$(DOCKER_BASE_IMAGE_VERSION_TAG),,${EDDL_REVISION})
 
 build_ecvl_toolkit: ecvl_folder build_eddl_toolkit ## Build 'ecvl-toolkit' image
 	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
