@@ -249,7 +249,7 @@ libs_folder:
 	)
 
 _eddl_folder: libs_folder
-	@$(if $(wildcard ${EDDL_LIB_PATH}),$(info Using existing '${EDDL_LIB_PATH}' repository), \
+	$(if $(wildcard ${EDDL_LIB_PATH}),$(info Using existing '${EDDL_LIB_PATH}' repository), \
 		$(call clone_repository,${EDDL_LIB_PATH},${EDDL_REPOSITORY},${EDDL_BRANCH},${EDDL_REVISION},true) ; \
 	)
 
@@ -258,7 +258,7 @@ eddl_folder: _eddl_folder
 
 
 define clone_ecvl
-	@$(if $(wildcard ${ECVL_LIB_PATH}),$(info Using existing '${ECVL_LIB_PATH}' repository), \
+	$(if $(wildcard ${ECVL_LIB_PATH}),$(info Using existing '${ECVL_LIB_PATH}' repository), \
 		$(call clone_repository,${ECVL_LIB_PATH},${ECVL_REPOSITORY},${ECVL_BRANCH},${ECVL_REVISION},true) ; \
 	)
 endef
@@ -273,15 +273,15 @@ pylibs_folder:
 	@mkdir -p ${LOCAL_PYLIBS_PATH}
 
 define pyeddl_shallow_clone
-	@$(if $(wildcard ${PYEDDL_LIB_PATH}),$(info Using existing '${PYEDDL_LIB_PATH}' repository), \
+	$(if $(wildcard ${PYEDDL_LIB_PATH}),$(info Using existing '${PYEDDL_LIB_PATH}' repository), \
 		$(call clone_repository,${PYEDDL_LIB_PATH},${PYEDDL_REPOSITORY},${PYEDDL_BRANCH},${PYEDDL_REVISION},false) ; \
 	)
 endef
 
 define pyeddl_clone_dependencies
 	$(eval EDDL_REVISION = $(shell if [[ ! -n "${EDDL_REVISION}" ]]; then cd ${CURRENT_PATH}/${PYEDDL_LIB_PATH} && git submodule status -- third_party/eddl | sed -E 's/-//; s/ .*//' | cut -c1-7; else echo ${EDDL_REVISION}; fi))
-	@echo "EDDL_REVISION: ${EDDL_REVISION}"
-	@if [[ -d ${EDDL_LIB_PATH} ]]; then \
+	echo "EDDL_REVISION: ${EDDL_REVISION}"
+	if [[ -d ${EDDL_LIB_PATH} ]]; then \
 		echo "Using existing '${EDDL_LIB_PATH}' repository" ; \
 	else \
 		$(call clone_repository,${EDDL_LIB_PATH},${EDDL_REPOSITORY},${EDDL_BRANCH},${EDDL_REVISION},true) ; \
@@ -292,14 +292,14 @@ define pyeddl_clone_dependencies
 endef
 
 _pyeddl_shallow_clone: pylibs_folder
-	@$(call pyeddl_shallow_clone)
+	$(call pyeddl_shallow_clone)
 
 pyeddl_folder: _pyeddl_shallow_clone
 	$(call pyeddl_clone_dependencies)
 	$(eval PYEDDL_REVISION := $(call get_revision,pylibs/pyeddl,${PYEDDL_REVISION}))
 
 define pyecvl_shallow_clone
-	@$(if $(wildcard ${PYECVL_LIB_PATH}),$(info Using existing '${PYECVL_LIB_PATH}' repository), \
+	$(if $(wildcard ${PYECVL_LIB_PATH}),$(info Using existing '${PYECVL_LIB_PATH}' repository), \
 		$(call clone_repository,${PYECVL_LIB_PATH},${PYECVL_REPOSITORY},${PYECVL_BRANCH},${PYECVL_REVISION},false) ; \
 	)
 endef
@@ -307,7 +307,7 @@ endef
 define pyecvl_resolve_dependencies
 	$(eval PYEDDL_REVISION = $(shell if [[ ! -n "${PYEDDL_REVISION}" ]]; then cd ${CURRENT_PATH}/${PYECVL_LIB_PATH} && git submodule status -- third_party/pyeddl | sed -E 's/-//; s/ .*//' | cut -c1-7; else echo ${PYEDDL_REVISION}; fi))
 	$(eval ECVL_REVISION = $(shell if [[ ! -n "${ECVL_REVISION}" ]]; then cd ${CURRENT_PATH}/${PYECVL_LIB_PATH} && git submodule status -- third_party/ecvl | sed -E 's/-//; s/ .*//' | cut -c1-7; else echo ${ECVL_REVISION}; fi))
-	@if [[ -d ${PYEDDL_LIB_PATH} ]]; then \
+	if [[ -d ${PYEDDL_LIB_PATH} ]]; then \
 		echo "Using existing '${PYEDDL_LIB_PATH}' repository" ; \
 	else \
 		$(call pyeddl_shallow_clone) \
@@ -315,7 +315,7 @@ define pyecvl_resolve_dependencies
 		rm -rf ${PYECVL_LIB_PATH}/third_party/pyeddl && cp -a ${PYEDDL_LIB_PATH} ${PYECVL_LIB_PATH}/third_party/pyeddl ; \
 		printf "DONE\n" ; \
 	fi
-	@if [[ -d ${ECVL_LIB_PATH} ]]; then \
+	if [[ -d ${ECVL_LIB_PATH} ]]; then \
 		echo "Using existing '${ECVL_LIB_PATH}' repository" ; \
 	else \
 		echo "Using ECVL revision '${ECVL_REVISION}'" ; \
@@ -371,7 +371,7 @@ build_eddl_toolkit: eddl_folder _build_libs_base_toolkit apply_pyeddl_patches ##
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
-		--label EDDL_REVISION=${EDDL_REVISION},libs-base-toolkit:$(DOCKER_BASE_IMAGE_VERSION_TAG),,${EDDL_REVISION})
+		--label EDDL_REVISION=${EDDL_REVISION},libs-base-toolkit:$(DOCKER_BASE_IMAGE_VERSION_TAG))
 
 build_ecvl_toolkit: ecvl_folder build_eddl_toolkit ## Build 'ecvl-toolkit' image
 	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
