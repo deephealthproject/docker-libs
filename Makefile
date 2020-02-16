@@ -153,7 +153,7 @@ define build_image
 	$(eval latest_tags := $(shell if [ "${push_latest_tags}" == "true" ]; then echo "-t ${image_name}:latest"; fi))
 	$(eval tagged_image := ${image_name}:${tag})
 	$(eval images := $(shell docker images -q ${tagged_image}))
-	$(eval exists := $(shell curl --silent -f -lSL https://index.docker.io/v1/repositories/${full_image_name}/tags/${tag}))
+	$(eval exists := $(shell curl --silent -f -lSL https://index.docker.io/v1/repositories/${full_image_name}/tags/${tag} 2>/dev/null))
 	$(if $(findstring ${_DO_NOT_PULL_DOCKER_IMAGES},1),\
 		$(call build_new_image),
 		$(if ${images},\
