@@ -61,21 +61,25 @@ PYEDDL_LIB_PATH = ${LOCAL_PYLIBS_PATH}/pyeddl
 ECVL_REPOSITORY := $(or ${ECVL_REPOSITORY},https://github.com/deephealthproject/ecvl.git)
 ECVL_BRANCH := $(or ${ECVL_BRANCH},master)
 ECVL_REVISION := ${ECVL_REVISION}
+ECVL_TAG :=
 
 # PyECVL repository
 PYECVL_REPOSITORY := $(or ${PYECVL_REPOSITORY},https://github.com/deephealthproject/pyecvl.git)
 PYECVL_BRANCH := $(or ${PYECVL_BRANCH},master)
 PYECVL_REVISION := ${PYECVL_REVISION}
+PYECVL_TAG :=
 
 # EDDL repository
 EDDL_REPOSITORY := $(or ${EDDL_REPOSITORY},https://github.com/deephealthproject/eddl.git)
 EDDL_BRANCH := $(or ${EDDL_BRANCH},master)
 EDDL_REVISION := ${EDDL_REVISION}
+EDDL_TAG :=
 
 # PyEDDL repository
 PYEDDL_REPOSITORY := $(or ${PYEDDL_REPOSITORY},https://github.com/deephealthproject/pyeddl.git)
 PYEDDL_BRANCH := $(or ${PYEDDL_BRANCH},master)
 PYEDDL_REVISION := ${PYEDDL_REVISION}
+PYEDDL_TAG :=
 
 # config file
 CONFIG_FILE ?= release.conf
@@ -226,11 +230,33 @@ endef
 
 
 # 1: library path
-# 2: actual revision
-define get_revision	
+define get_tag
 	$(eval tag := $(shell cd ${1} && git tag -l --points-at HEAD)) \
+	$(strip $(shell echo ${tag};))
+endef
+
+# 1: library path
+define get_revision
 	$(eval head := $(shell cd ${1} && git rev-parse --short HEAD | sed -E 's/-//; s/ .*//')) \
-	$(strip $(shell if [[ -n "${2}" ]]; then echo ${2}; elif [[ -n "${tag}" ]]; then echo ${tag}; else echo ${head}; fi))
+	$(strip $(shell echo ${head};))
+endef
+
+# 1: submodule path
+# 2: library name
+# 3: revision
+define submodule_revision
+	$(eval rev = $(shell cd $(1) && git submodule status -- $(2) | sed -E 's/-//; s/ .*//' | cut -c1-7;)) \
+	$(shell if [[ -n "$(3)" ]]; then echo $(3); else echo $(rev); fi)
+endef
+
+# 1: library path
+# 2: library name
+define set_library_revision
+	$(eval lib := $(shell echo $(2) | tr a-z A-Z))
+	$(eval ${lib}_REVISION := $(call get_revision,$(1)/$(2)))
+	$(eval $(lib)_TAG = $(call get_tag,$(1)/$(2)))
+	$(eval ${lib}_IMAGE_VERSION_TAG = $(or ${${lib}_IMAGE_VERSION_TAG},${${lib}_TAG},${${lib}_REVISION}))
+	@echo "${lib} rev: ${${lib}_REVISION} ${$(lib)_TAG} ${${lib}_IMAGE_VERSION_TAG}"
 endef
 
 .DEFAULT_GOAL := help
@@ -254,7 +280,7 @@ _eddl_folder: libs_folder
 	)
 
 eddl_folder: _eddl_folder
-	$(eval EDDL_REVISION := $(call get_revision,libs/eddl,${EDDL_REVISION}))
+	$(call set_library_revision,libs,eddl)
 
 
 define clone_ecvl
@@ -267,7 +293,7 @@ _ecvl_folder: libs_folder
 	$(call clone_ecvl)
 
 ecvl_folder: _ecvl_folder
-	$(eval ECVL_REVISION := $(call get_revision,libs/ecvl,${ECVL_REVISION}))
+	$(call set_library_revision,libs,ecvl)
 
 pylibs_folder:
 	@mkdir -p ${LOCAL_PYLIBS_PATH}
@@ -279,8 +305,7 @@ define pyeddl_shallow_clone
 endef
 
 define pyeddl_clone_dependencies
-	$(eval EDDL_REVISION = $(shell if [[ ! -n "${EDDL_REVISION}" ]]; then cd ${CURRENT_PATH}/${PYEDDL_LIB_PATH} && git submodule status -- third_party/eddl | sed -E 's/-//; s/ .*//' | cut -c1-7; else echo ${EDDL_REVISION}; fi))
-	echo "EDDL_REVISION: ${EDDL_REVISION}"
+	$(eval EDDL_REVISION = $(call submodule_revision,${PYEDDL_LIB_PATH}/third_party,eddl,${EDDL_REVISION}))
 	if [[ -d ${EDDL_LIB_PATH} ]]; then \
 		echo "Using existing '${EDDL_LIB_PATH}' repository" ; \
 	else \
@@ -294,9 +319,12 @@ endef
 _pyeddl_shallow_clone: pylibs_folder
 	$(call pyeddl_shallow_clone)
 
-pyeddl_folder: _pyeddl_shallow_clone
+_pyeddl_dependencies: _pyeddl_shallow_clone
 	$(call pyeddl_clone_dependencies)
-	$(eval PYEDDL_REVISION := $(call get_revision,pylibs/pyeddl,${PYEDDL_REVISION}))
+
+pyeddl_folder: _pyeddl_dependencies
+	$(call set_library_revision,libs,eddl) \
+	$(call set_library_revision,pylibs,pyeddl)
 
 define pyecvl_shallow_clone
 	$(if $(wildcard ${PYECVL_LIB_PATH}),$(info Using existing '${PYECVL_LIB_PATH}' repository), \
@@ -305,8 +333,8 @@ define pyecvl_shallow_clone
 endef
 
 define pyecvl_resolve_dependencies
-	$(eval PYEDDL_REVISION = $(shell if [[ ! -n "${PYEDDL_REVISION}" ]]; then cd ${CURRENT_PATH}/${PYECVL_LIB_PATH} && git submodule status -- third_party/pyeddl | sed -E 's/-//; s/ .*//' | cut -c1-7; else echo ${PYEDDL_REVISION}; fi))
-	$(eval ECVL_REVISION = $(shell if [[ ! -n "${ECVL_REVISION}" ]]; then cd ${CURRENT_PATH}/${PYECVL_LIB_PATH} && git submodule status -- third_party/ecvl | sed -E 's/-//; s/ .*//' | cut -c1-7; else echo ${ECVL_REVISION}; fi))
+	$(eval PYEDDL_REVISION = $(call submodule_revision,${PYECVL_LIB_PATH}/third_party,pyeddl,${PYEDDL_REVISION}))
+	$(eval ECVL_REVISION = $(call submodule_revision,${PYECVL_LIB_PATH}/third_party,ecvl,${ECVL_REVISION}))
 	if [[ -d ${PYEDDL_LIB_PATH} ]]; then \
 		echo "Using existing '${PYEDDL_LIB_PATH}' repository" ; \
 	else \
@@ -333,10 +361,12 @@ _pyecvl_first_level_dependencies: _pyecvl_shallow_clone
 	$(call pyecvl_resolve_dependencies)
 
 _pyecvl_second_level_dependencies: _pyecvl_first_level_dependencies
+	$(call set_library_revision,libs,ecvl) \
+	$(call set_library_revision,pylibs,pyeddl) \
 	$(call pyeddl_clone_dependencies)
 
 pyecvl_folder: _pyecvl_second_level_dependencies
-	$(eval PYECVL_REVISION := $(call get_revision,pylibs/pyecvl,${PYECVL_REVISION}))
+	$(call set_library_revision,pylibs,pyecvl)
 
 
 # TODO: remove this patch when not required
@@ -366,7 +396,6 @@ _build_libs_base_toolkit:
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_NVIDIA_DEVELOP_IMAGE))
 
 build_eddl_toolkit: eddl_folder _build_libs_base_toolkit apply_pyeddl_patches ## Build 'eddl-toolkit' image
-	$(eval EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION}))
 	$(call build_image,libs,eddl-toolkit,${EDDL_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
@@ -374,7 +403,6 @@ build_eddl_toolkit: eddl_folder _build_libs_base_toolkit apply_pyeddl_patches ##
 		--label EDDL_REVISION=${EDDL_REVISION},libs-base-toolkit:$(DOCKER_BASE_IMAGE_VERSION_TAG))
 
 build_ecvl_toolkit: ecvl_folder build_eddl_toolkit ## Build 'ecvl-toolkit' image
-	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
 	$(call build_image,libs,ecvl-toolkit,${ECVL_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
@@ -400,7 +428,6 @@ _build_libs_base:
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_NVIDIA_RUNTIME_IMAGE))
 
 build_eddl: _build_libs_base build_eddl_toolkit ## Build 'eddl' image
-	$(eval EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION}))
 	$(call build_image,libs,eddl,${EDDL_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
@@ -408,7 +435,6 @@ build_eddl: _build_libs_base build_eddl_toolkit ## Build 'eddl' image
 		--label EDDL_REVISION=${EDDL_REVISION},libs-base:$(DOCKER_BASE_IMAGE_VERSION_TAG),eddl-toolkit:$(EDDL_IMAGE_VERSION_TAG))
 
 build_ecvl: _build_libs_base build_eddl build_ecvl_toolkit## Build 'ecvl' image
-	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
 	$(call build_image,libs,ecvl,${ECVL_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
@@ -437,7 +463,6 @@ _build_pylibs_base_toolkit: build_ecvl_toolkit
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION),ecvl-toolkit:$(ECVL_IMAGE_VERSION_TAG))
 
 build_pyeddl_toolkit: pyeddl_folder _build_pylibs_base_toolkit apply_pyeddl_patches ## Build 'pyeddl-toolkit' image
-	$(eval PYEDDL_IMAGE_VERSION_TAG := $(or ${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION}))
 	$(call build_image,pylibs,pyeddl-toolkit,${PYEDDL_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
@@ -451,7 +476,6 @@ build_pyeddl_toolkit: pyeddl_folder _build_pylibs_base_toolkit apply_pyeddl_patc
 		--label PYEDDL_REVISION=${PYEDDL_REVISION},pylibs-base-toolkit:$(ECVL_IMAGE_VERSION_TAG))
 
 build_pyecvl_toolkit: pyecvl_folder build_pyeddl_toolkit ## Build 'pyecvl-toolkit' image
-	$(eval PYECVL_IMAGE_VERSION_TAG := $(or ${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION}))
 	$(call build_image,pylibs,pyecvl-toolkit,${PYECVL_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
@@ -492,7 +516,6 @@ _build_pylibs_base: build_ecvl
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION),ecvl:$(ECVL_IMAGE_VERSION_TAG))
 
 build_pyeddl: build_pyeddl_toolkit _build_pylibs_base ## Build 'pyeddl' image
-	$(eval PYEDDL_IMAGE_VERSION_TAG := $(or ${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION}))
 	$(call build_image,pylibs,pyeddl,${PYEDDL_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
@@ -506,7 +529,6 @@ build_pyeddl: build_pyeddl_toolkit _build_pylibs_base ## Build 'pyeddl' image
 		--label PYEDDL_REVISION=${PYEDDL_REVISION},pylibs-base:$(DOCKER_BASE_IMAGE_VERSION_TAG),pyeddl-toolkit:$(PYEDDL_IMAGE_VERSION_TAG))
 
 build_pyecvl: build_pyecvl_toolkit build_pyeddl ## Build 'pyecvl' image
-	$(eval PYECVL_IMAGE_VERSION_TAG := $(or ${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION}))
 	$(call build_image,pylibs,pyecvl,${PYECVL_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
@@ -631,12 +653,10 @@ push_libs_base: docker_login ## Push 'lib-base' image
 	$(call push_image,libs-base,${DOCKER_BASE_IMAGE_VERSION_TAG})
 
 push_eddl: docker_login eddl_folder ## Push 'eddl' image
-	$(eval EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION}))
-	$(call push_image,eddl,${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION})
+	$(call push_image,eddl,${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION} ${EDDL_TAG})
 
 push_ecvl: docker_login ecvl_folder ## Push 'ecvl' image
-	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
-	$(call push_image,ecvl,${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION})
+	$(call push_image,ecvl,${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION} ${ECVL_TAG})
 
 push_libs_toolkit: docker_login ## Push 'libs-toolkit' image
 	$(call push_image,libs-toolkit)
@@ -645,34 +665,28 @@ push_libs_base_toolkit: docker_login ## Push 'libs-base-toolkit' image
 	$(call push_image,libs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG})
 
 push_eddl_toolkit: docker_login eddl_folder ## Push 'eddl-toolkit' images
-	$(eval EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION}))
-	$(call push_image,eddl-toolkit,${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION})
+	$(call push_image,eddl-toolkit,${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION} ${EDDL_TAG})
 
 push_ecvl_toolkit: docker_login ecvl_folder ## Push 'ecvl-toolkit' images
-	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
-	$(call push_image,ecvl-toolkit,${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION})
+	$(call push_image,ecvl-toolkit,${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION} ${ECVL_TAG})
 
 push_pylibs: docker_login ## Push 'pylibs' images
 	$(call push_image,pylibs)
 
 push_pyeddl: docker_login pyeddl_folder ## Push 'pyeddl' images
-	$(eval PYEDDL_IMAGE_VERSION_TAG := $(or ${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION}))
-	$(call push_image,pyeddl,${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION})
+	$(call push_image,pyeddl,${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION} ${PYEDDL_TAG})
 
 push_pyecvl: docker_login pyecvl_folder ## Push 'pyecvl' images
-	$(eval PYECVL_IMAGE_VERSION_TAG := $(or ${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION}))
-	$(call push_image,pyecvl,${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION})
+	$(call push_image,pyecvl,${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION} ${PYECVL_TAG})
 
 push_pylibs_toolkit: docker_login ## Push 'pylibs-toolkit' images
 	$(call push_image,pylibs-toolkit)
 
 push_pyeddl_toolkit: docker_login pyeddl_folder ## Push 'pyeddl-toolkit' images
-	$(eval PYEDDL_IMAGE_VERSION_TAG := $(or ${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION}))
-	$(call push_image,pyeddl-toolkit,${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION})
+	$(call push_image,pyeddl-toolkit,${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION} ${PYEDDL_TAG})
 
 push_pyecvl_toolkit: docker_login pyecvl_folder ## Push 'pyeddl-toolkit' images
-	$(eval PYECVL_IMAGE_VERSION_TAG := $(or ${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION}))
-	$(call push_image,pyecvl-toolkit,${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION})
+	$(call push_image,pyecvl-toolkit,${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION} ${PYECVL_TAG})
 
 ############################################################################################################################
 ### Piblish Docker images
@@ -786,7 +800,7 @@ clean: clean_images clean_sources
 
 .PHONY: help \
 	libs_folder eddl_folder ecvl_folder pylibs_folder \
-	pyeddl_folder _pyeddl_shallow_clone \
+	pyeddl_folder _pyeddl_shallow_clone _pyecvl_second_level_dependencies \
 	pyecvl_folder _pyeddl_shallow_clone _pyecvl_first_level_dependencies _pyecvl_second_level_dependencies \
 	apply_pyeddl_patches apply_pyecvl_patches \
 	clean clean_libs clean_pylibs apply_libs_patches \
