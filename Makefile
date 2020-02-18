@@ -425,9 +425,9 @@ build_libs_toolkit: build_ecvl_toolkit ## Build 'libs-toolkit' image
 
 ############# libs #############
 
-_build_libs_base: 
+_build_libs_base: _build_libs_base_toolkit
 	$(call build_image,libs,libs-base,${DOCKER_BASE_IMAGE_VERSION_TAG},\
-		--label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_NVIDIA_RUNTIME_IMAGE))
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_NVIDIA_RUNTIME_IMAGE),libs-base-toolkit:$(DOCKER_BASE_IMAGE_VERSION_TAG))
 
 build_eddl: _build_libs_base build_eddl_toolkit ## Build 'eddl' image
 	$(call build_image,libs,eddl,${EDDL_IMAGE_VERSION_TAG},\
