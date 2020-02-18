@@ -18,11 +18,10 @@ COPY --from=toolkit /usr/local/etc /tmp/local/etc
 COPY --from=toolkit /usr/local/include /tmp/local/include
 COPY --from=toolkit /usr/local/lib /tmp/local/lib
 COPY --from=toolkit /usr/local/share /tmp/local/share
-#COPY --from=toolkit /usr/local/src/ecvl/build/install_manifest.txt /tmp/local/ecvl_manifest.txt
 COPY --from=toolkit /usr/local/src/eddl/build/install_manifest.txt /tmp/local/install_manifest.txt
 
 # merge existing system directories with those containing libraries
-RUN sed -e 's+/usr/local/++g' install_manifest.txt | \
+RUN cd /tmp/local && sed -e 's+/usr/local/++g' /tmp/local/install_manifest.txt | \
     while IFS= read -r line; do echo ">>> $line" ; rsync --relative "${line}" "/usr/local/" || exit ; done
 
 ######################
