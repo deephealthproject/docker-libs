@@ -1,4 +1,32 @@
 ARG BASE_IMAGE
+ARG TOOLKIT_IMAGE
+ARG OPENV_INSTALL_MANIFEST="/usr/local/opencv/install_manifest.txt"
+
+# set toolkit image
+FROM ${TOOLKIT_IMAGE} as toolkit
+
+############################
+#### INTERMEDIATE Stage ####
+############################
+FROM ${BASE_IMAGE} AS prepare_install
+
+RUN apt-get update -y -q \
+    && apt-get install -y --no-install-recommends wget rsync \
+    && apt-get clean
+
+# make a temporary copy of libraries
+COPY --from=toolkit /usr/local/bin /tmp/local/bin
+COPY --from=toolkit /usr/local/etc /tmp/local/etc
+COPY --from=toolkit /usr/local/include /tmp/local/include
+COPY --from=toolkit /usr/local/lib /tmp/local/lib
+COPY --from=toolkit /usr/local/share /tmp/local/share
+COPY --from=toolkit /usr/local/opencv/install_manifest.txt /tmp/local/install_manifest.txt
+
+# merge existing system directories with those containing libraries
+RUN cd /tmp/local && sed -e 's+/usr/local/++g' install_manifest.txt | \
+    while IFS= read -r line; do echo ">>> $line" ; rsync --relative "${line}" "/usr/local/" || exit ; done
+
+
 ####################
 #### BASE image ####
 ####################
@@ -15,15 +43,14 @@ RUN \
     && apt-get install -y --no-install-recommends \
         wget \
         rsync \
-        libopencv-core-dev \
-        libopencv-imgproc-dev \
-        libopencv-imgcodecs-dev \
+        libavcodec-dev libavformat-dev libswscale-dev \
+        libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev \
         libopenslide-dev \
         libgomp1 \
     && apt-get clean
 
-# create a temp directory
-RUN mkdir /tmp/local
-
-# change working directory
-WORKDIR /tmp/local
+# copy libraries to the target paths
+COPY --from=prepare_install /usr/local/etc /usr/local/etc
+COPY --from=prepare_install /usr/local/include /usr/local/include
+COPY --from=prepare_install /usr/local/lib /usr/local/lib
+COPY --from=prepare_install /usr/local/share /usr/local/share

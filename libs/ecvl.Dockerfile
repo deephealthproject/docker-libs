@@ -22,7 +22,7 @@ COPY --from=toolkit /usr/local/src/ecvl/build/install_manifest.txt /tmp/local/in
 
 
 # merge existing system directories with those containing libraries
-RUN sed -e 's+/usr/local/++g' install_manifest.txt | \
+RUN cd /tmp/local && sed -e 's+/usr/local/++g' /tmp/local/install_manifest.txt | \
     while IFS= read -r line; do echo ">>> $line" ; rsync --relative "${line}" "/usr/local/" || exit ; done
 
 ######################
