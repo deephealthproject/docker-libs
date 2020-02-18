@@ -566,27 +566,20 @@ build_pylibs: build_pyecvl ## Build 'pylibs' image
 ############################################################################################################################
 ### Tests
 ############################################################################################################################
-
 define test_image
 	$(eval image := $(1))
 	$(eval test_script := $(2))
-	$(eval toolkit_image := $(3))
-	$(eval host_path := $(shell echo ${CURRENT_PATH}/$(4) | sed -e 's+[[:space:]]++g'))
-	$(eval container_path := $(5))
-	$(eval container := $(shell if [[ -n "${toolkit_image}" ]]; then docker run -d ${toolkit_image} /bin/bash ; fi))
+	$(eval containers := $(3))
+	$(eval volumes := $(shell if [ -n "${containers}" ]; then for cname in ${containers}; do echo "--volumes-from $${cname}"; done; fi))
 	echo "Test: ${test_script}' @ '${image}'..." ; \
-	if [[ -n "${container}" ]]; then \
-		docker cp ${container}:${container_path} ${host_path} ; \
-		cat ${test_script} | ${DOCKER_RUN} -v ${host_path}:${container_path} ${image} /bin/sh ; \
-	else \
-		cat ${test_script} | ${DOCKER_RUN} ${image} /bin/sh ; \
-	fi ; \
+	cat ${test_script} | ${DOCKER_RUN} ${volumes} ${image} /bin/sh ; \
 	docker container prune -f ; \
 	echo "DONE"
-
 endef
 
-tests: \
+tests: _tests ## Test all docker images
+
+_tests: \
 	test_eddl test_eddl_toolkit \
 	test_ecvl test_ecvl_toolkit \
 	test_pyeddl test_pyeddl_toolkit \
@@ -594,45 +587,57 @@ tests: \
 
 test_eddl: eddl_folder ## Test 'eddl' images
 	$(eval EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION}))
-	@echo "No test available yet"
+	@docker run --name eddl-toolkit -v "/usr/local/src/eddl" eddl-toolkit:${EDDL_IMAGE_VERSION_TAG}
+	@$(call test_image,\
+		eddl:${EDDL_IMAGE_VERSION_TAG},\
+		tests/test_eddl.sh,\
+		eddl-toolkit \
+	)
 	
 test_eddl_toolkit: eddl_folder ## Test 'eddl' images
 	$(eval EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION}))
-	$(call test_image,eddl-toolkit:${EDDL_IMAGE_VERSION_TAG},tests/test_eddl.sh)
+	@$(call test_image,eddl-toolkit:${EDDL_IMAGE_VERSION_TAG},tests/test_eddl.sh)
 
 test_ecvl: ecvl_folder ## Test 'ecvl' images
 	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
-	echo "No test available yet"
+	@docker run --name ecvl-toolkit -v "/usr/local/src/eddl" ecvl-toolkit:${ECVL_IMAGE_VERSION_TAG}
+	@$(call test_image,\
+		ecvl:${ECVL_IMAGE_VERSION_TAG},\
+		tests/test_ecvl.sh,\
+		ecvl-toolkit\
+	)
 
 test_ecvl_toolkit: ecvl_folder ## Test 'ecvl' images
 	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
-	$(call test_image,ecvl-toolkit:${ECVL_IMAGE_VERSION_TAG},tests/test_ecvl.sh)
+	@$(call test_image,ecvl-toolkit:${ECVL_IMAGE_VERSION_TAG},tests/test_ecvl.sh)
 
 test_pyeddl: pyeddl_folder ## Test 'ecvl' images
 	$(eval PYEDDL_IMAGE_VERSION_TAG := $(or ${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION}))
-	$(call test_image,\
+	@docker run --name pyeddl-toolkit -v "/usr/local/src/pyeddl" pyeddl-toolkit:${PYEDDL_IMAGE_VERSION_TAG}
+	@$(call test_image,\
 		pyeddl:${PYEDDL_IMAGE_VERSION_TAG},\
 		tests/test_pyeddl.sh,\
-		pyeddl-toolkit:${PYEDDL_IMAGE_VERSION_TAG},\
-		tests/pyeddl,/usr/local/src/pyeddl \
+		pyeddl-toolkit\
 	)
 
 test_pyeddl_toolkit: pyeddl_folder ## Test 'ecvl' images
 	$(eval PYEDDL_IMAGE_VERSION_TAG := $(or ${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION}))
-	$(call test_image,pyeddl-toolkit:${PYEDDL_IMAGE_VERSION_TAG},tests/test_pyeddl.sh)
+	@$(call test_image,pyeddl-toolkit:${PYEDDL_IMAGE_VERSION_TAG},tests/test_pyeddl.sh)
 
 test_pyecvl: pyecvl_folder ## Test 'ecvl' images
+	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
 	$(eval PYECVL_IMAGE_VERSION_TAG := $(or ${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION}))
-	$(call test_image,\
+	@docker run --name ecvl-toolkit -v "/usr/local/src/ecvl" ecvl-toolkit:${ECVL_IMAGE_VERSION_TAG}
+	@docker run --name pyecvl-toolkit -v "/usr/local/src/pyecvl" pyecvl-toolkit:${PYECVL_IMAGE_VERSION_TAG}
+	@$(call test_image,\
 		pyecvl:${PYECVL_IMAGE_VERSION_TAG},\
 		tests/test_pyecvl.sh,\
-		pyecvl-toolkit:${PYECVL_IMAGE_VERSION_TAG},\
-		tests/pyecvl,/usr/local/src/pyecvl \
+		ecvl-toolkit pyecvl-toolkit\
 	)
 
 test_pyecvl_toolkit: pyecvl_folder ## Test 'ecvl' images
 	$(eval PYECVL_IMAGE_VERSION_TAG := $(or ${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION}))
-	$(call test_image,pyecvl-toolkit:${PYECVL_IMAGE_VERSION_TAG},tests/test_pyecvl.sh)
+	@@$(call test_image,pyecvl-toolkit:${PYECVL_IMAGE_VERSION_TAG},tests/test_pyecvl.sh)
 
 ############################################################################################################################
 ### Push Docker images
@@ -824,7 +829,7 @@ clean: clean_images clean_sources
 	publish_libs_toolkit publish_eddl_toolkit publish_ecvl_toolkit \
 	publish_pylibs publish_pyeddl publish_pyecvl \
 	publish_pylibs_toolkit publish_pyeddl_toolkit publish_pyecvl_toolkit \
-	test_eddl test_eddl_toolkit test_ecvl test_ecvl_toolkit test_pyeddl \
+	tests _tests test_eddl test_eddl_toolkit test_ecvl test_ecvl_toolkit test_pyeddl \
 	test_pyeddl_toolkit test_pyecvl test_pyecvl_toolkit \
 	clean_sources \
 	clean_eddl_sources clean_ecvl_sources \
