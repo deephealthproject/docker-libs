@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# set the path containing tests
+# set the path containing sources and tests
 EDDL_SRC=${EDDL_SRC:-"/usr/local/src/eddl"}
 
 # install cmake just to run ctest
