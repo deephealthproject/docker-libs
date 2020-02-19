@@ -603,7 +603,7 @@ test_eddl_toolkit: eddl_folder ## Test 'eddl' images
 
 test_ecvl: ecvl_folder ## Test 'ecvl' images
 	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
-	@docker run --name ecvl-toolkit -v "/usr/local/src/eddl" ecvl-toolkit:${ECVL_IMAGE_VERSION_TAG}
+	@docker run --name ecvl-toolkit -v "/usr/local/src/ecvl" ecvl-toolkit:${ECVL_IMAGE_VERSION_TAG}
 	@$(call test_image,\
 		ecvl:${ECVL_IMAGE_VERSION_TAG},\
 		tests/test_ecvl.sh,\
