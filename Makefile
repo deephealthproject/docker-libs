@@ -154,14 +154,15 @@ define build_image
 	$(eval tagged_image := ${image_name}:${tag})
 	$(eval images := $(shell docker images -q ${tagged_image}))
 	$(eval exists := $(shell curl --silent -f -lSL https://index.docker.io/v1/repositories/${full_image_name}/tags/${tag} 2>/dev/null))
-	$(if $(findstring ${_DO_NOT_PULL_DOCKER_IMAGES},1),\
+	$(if $(or $(findstring ${_DO_NOT_USE_DOCKER_CACHE},1),$(findstring ${_DO_NOT_PULL_DOCKER_IMAGES},1)),\
+		@echo "Not using ${_DO_NOT_USE_DOCKER_CACHE} ${_DO_NOT_PULL_DOCKER_IMAGES}"; \
 		$(call build_new_image),
 		$(if ${images},\
 			@echo "Docker image '${tagged_image}' exists (id: ${images})", \
 			$(if $(and ${exists},$(findstring ${_DO_NOT_PULL_DOCKER_IMAGES},0)), \
 				@echo "Pulling image '${full_image_name}:${tag}'..."; 
 				docker pull ${full_image_name}:${tag} && docker tag ${full_image_name}:${tag} ${tagged_image}, \
-				@echo "Image pull disabled..." ; \
+				@echo "Docker image '${full_image_name}:${tag}' doesn't exist", \
 				$(call build_new_image)
 			)
 		)
