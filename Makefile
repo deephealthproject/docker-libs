@@ -574,7 +574,9 @@ define test_image
 	$(eval volumes := $(shell if [ -n "${containers}" ]; then for cname in ${containers}; do echo "--volumes-from $${cname}"; done; fi))
 	echo "Test: ${test_script}' @ '${image}'..." ; \
 	cat ${test_script} | ${DOCKER_RUN} ${volumes} ${image} /bin/sh ; \
-	docker container prune -f ; \
+	exit_code=$$? \
+	&& docker container prune -f \
+	&& exit $${exit_code} ; \
 	echo "DONE"
 endef
 
