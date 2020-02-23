@@ -259,7 +259,7 @@ define set_library_revision
 	$(eval ${lib}_REVISION := $(call get_revision,$(1)/$(2)))
 	$(eval $(lib)_TAG = $(call get_tag,$(1)/$(2)))
 	$(eval ${lib}_IMAGE_VERSION_TAG = $(or ${${lib}_IMAGE_VERSION_TAG},${${lib}_TAG},${${lib}_REVISION}))
-	@echo "${lib} rev: ${${lib}_REVISION} ${$(lib)_TAG} ${${lib}_IMAGE_VERSION_TAG}"
+	@echo "${lib} rev: ${${lib}_REVISION} ${${lib}_TAG} (image-tag: ${${lib}_IMAGE_VERSION_TAG})"
 endef
 
 .DEFAULT_GOAL := help
@@ -570,19 +570,34 @@ build_pylibs: build_pyecvl ## Build 'pylibs' image
 define test_image
 	$(eval image := $(1))
 	$(eval test_script := $(2))
-	$(eval containers := $(3))
-	$(eval volumes := $(shell if [ -n "${containers}" ]; then for cname in ${containers}; do echo "--volumes-from $${cname}"; done; fi))
-	echo "Test: ${test_script}' @ '${image}'..." ; \
-	cat ${test_script} | ${DOCKER_RUN} ${volumes} ${image} /bin/sh ; \
-	exit_code=$$? \
-	&& docker container prune -f \
-	&& exit $${exit_code} ; \
-	echo "DONE"
+	$(eval container_paths := $(3))
+	$(eval rname := $(shell cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1))
+	echo -e "\n\n\n*************************************************************************************************************" >&2 ; \
+	echo -e "*** Test: '${test_script}' @ '${image}' image ***" >&2 ; \
+	echo -e "*************************************************************************************************************\n" >&2 ; \
+	cnames="" ; \
+	for cpath in ${container_paths}; do \
+	xcpath=($$(echo $${cpath} | tr "=" " ")) ; \
+	cname=$$(echo $${xcpath[0]} | sed -e +s+:.*++)-${rname} ; \
+	cnames="$${cnames} $${cname}" ; \
+	volumes="$${volumes} --volumes-from $${cname}" ; \
+	printf "\nCreating temp container instance of '$${xcpath[0]}' (name: $${cname})... " >&2; \
+	docker create --name $${cname} -v "$${xcpath[1]}" $${xcpath[0]} > /dev/null ; \
+	printf "DONE" >&2 ; \
+	done ; \
+	printf "\n\n" ; \
+	cat ${test_script} | ${DOCKER_RUN} $${volumes} ${image} /bin/sh ; \
+	exit_code=$$? ; \
+	for cname in $${cnames}; do \
+	printf "\nRemoving temp container instance '$${cname}'... " >&2; \
+	docker rm -f $${cname} > /dev/null ; printf "DONE" >&2 ; done ; \
+	echo -e "\n*************************************************************************************************************\n\n\n" >&2 ; \
+	exit $${exit_code}
 endef
 
-tests: _tests ## Test all docker images
+test: _test ## Test all docker images
 
-_tests: \
+_test: \
 	test_eddl test_eddl_toolkit \
 	test_ecvl test_ecvl_toolkit \
 	test_pyeddl test_pyeddl_toolkit \
@@ -590,11 +605,10 @@ _tests: \
 
 test_eddl: eddl_folder ## Test 'eddl' images
 	$(eval EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION}))
-	@docker run --name eddl-toolkit -v "/usr/local/src/eddl" eddl-toolkit:${EDDL_IMAGE_VERSION_TAG}
 	@$(call test_image,\
 		eddl:${EDDL_IMAGE_VERSION_TAG},\
 		tests/test_eddl.sh,\
-		eddl-toolkit \
+		eddl-toolkit:${EDDL_IMAGE_VERSION_TAG}=/usr/local/src/eddl \
 	)
 	
 test_eddl_toolkit: eddl_folder ## Test 'eddl' images
@@ -603,11 +617,10 @@ test_eddl_toolkit: eddl_folder ## Test 'eddl' images
 
 test_ecvl: ecvl_folder ## Test 'ecvl' images
 	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
-	@docker run --name ecvl-toolkit -v "/usr/local/src/ecvl" ecvl-toolkit:${ECVL_IMAGE_VERSION_TAG}
 	@$(call test_image,\
 		ecvl:${ECVL_IMAGE_VERSION_TAG},\
 		tests/test_ecvl.sh,\
-		ecvl-toolkit\
+		ecvl-toolkit:${ECVL_IMAGE_VERSION_TAG}=/usr/local/src/ecvl \
 	)
 
 test_ecvl_toolkit: ecvl_folder ## Test 'ecvl' images
@@ -616,11 +629,10 @@ test_ecvl_toolkit: ecvl_folder ## Test 'ecvl' images
 
 test_pyeddl: pyeddl_folder ## Test 'ecvl' images
 	$(eval PYEDDL_IMAGE_VERSION_TAG := $(or ${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION}))
-	@docker run --name pyeddl-toolkit -v "/usr/local/src/pyeddl" pyeddl-toolkit:${PYEDDL_IMAGE_VERSION_TAG}
 	@$(call test_image,\
 		pyeddl:${PYEDDL_IMAGE_VERSION_TAG},\
 		tests/test_pyeddl.sh,\
-		pyeddl-toolkit\
+		pyeddl-toolkit:${PYEDDL_IMAGE_VERSION_TAG}=/usr/local/src/pyeddl\
 	)
 
 test_pyeddl_toolkit: pyeddl_folder ## Test 'ecvl' images
@@ -630,15 +642,14 @@ test_pyeddl_toolkit: pyeddl_folder ## Test 'ecvl' images
 test_pyecvl: pyecvl_folder ## Test 'ecvl' images
 	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
 	$(eval PYECVL_IMAGE_VERSION_TAG := $(or ${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION}))
-	@docker run --name ecvl-toolkit -v "/usr/local/src/ecvl" ecvl-toolkit:${ECVL_IMAGE_VERSION_TAG}
-	@docker run --name pyecvl-toolkit -v "/usr/local/src/pyecvl" pyecvl-toolkit:${PYECVL_IMAGE_VERSION_TAG}
 	@$(call test_image,\
 		pyecvl:${PYECVL_IMAGE_VERSION_TAG},\
 		tests/test_pyecvl.sh,\
-		ecvl-toolkit pyecvl-toolkit\
+		'ecvl-toolkit:${ECVL_IMAGE_VERSION_TAG}=/usr/local/src/ecvl' \
+		'pyecvl-toolkit:${PYECVL_IMAGE_VERSION_TAG}=/usr/local/src/pyecvl' \
 	)
 
-test_pyecvl_toolkit: pyecvl_folder ## Test 'ecvl' images
+test_pyecvl_toolkit: #pyecvl_folder ## Test 'ecvl' images
 	$(eval PYECVL_IMAGE_VERSION_TAG := $(or ${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION}))
 	@@$(call test_image,pyecvl-toolkit:${PYECVL_IMAGE_VERSION_TAG},tests/test_pyecvl.sh)
 
