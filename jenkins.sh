@@ -70,7 +70,7 @@ function help() {
 # sw version
 LIBS_TAG=$(git tag -l --points-at HEAD | tail -n 1)
 LIBS_REVISION=$(git rev-parse --short HEAD | sed -E 's/-//; s/ .*//')
-LIBS_BRANCH=$(git name-rev --name-only HEAD | sed -E 's+(remotes/|origin/)++g; s+/+-+g; s/ .*//')
+LIBS_BRANCH=$(git rev-parse --abbrev-ref HEAD | sed -E 's+(remotes/|origin/)++g; s+/+-+g; s/ .*//')
 LIBS_VERSION=$(if [[ -n "${LIBS_TAG}" ]]; then echo ${LIBS_TAG}; else echo ${LIBS_BRANCH}-${LIBS_REVISION}; fi)
 
 # set base images
@@ -125,7 +125,7 @@ function run() {
   local LIB_NAME=$(echo "${REPOSITORY}" | tr a-z A-Z | sed 's+DOCKER-IMAGES+LIBS+')
   # set git tag & branch & image prefix
   # and define whether to push lates tag
-  GIT_BRANCH=${GIT_BRANCH:-$(git name-rev --name-only HEAD | sed -E 's+(remotes/|origin/|tags/)++g; s+/+-+g; s/ .*//')}
+  GIT_BRANCH=${GIT_BRANCH:-$(git rev-parse --abbrev-ref HEAD | sed -E 's+(remotes/|origin/|tags/)++g; s+/+-+g; s/ .*//')}
   BRANCH_NAME=$(echo "${GIT_BRANCH}" | sed 's+origin/++g; s+refs/tags/++g')
   NORMALIZED_BRANCH_NAME=$(echo "${BRANCH_NAME}" | sed 's+/+-+g; s+[[:space:]]++g')
   TAG=$(git tag -l --points-at HEAD | tail -n 1 | sed 's+[[:space:]]++g')
