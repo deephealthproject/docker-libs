@@ -13,6 +13,12 @@ endif
 # date.time as build number
 BUILD_NUMBER := $(or ${BUILD_NUMBER},$(shell date '+%Y%m%d.%H%M%S'))
 
+# log file with dependencies
+IMAGES_LOG := images.log
+LIBRARIES_LOG := libraries.log
+DEPENDENCIES_LOG := dependencies.log
+DEPENDENCY_GRAPH_FILE := graph.dot
+
 # set docker user credentials
 DOCKER_USER := $(or ${DOCKER_USER},${USER})
 DOCKER_PASSWORD := ${DOCKER_PASSWORD}
@@ -167,6 +173,8 @@ define build_image
 			)
 		)
 	)
+	$(call log_image_revision,$(target),$(tag),extend,$(shell echo $(5) | sed -e 's+:.*++'))
+	$(if $(6),$(call log_image_revision,$(target),$(tag),use,$(shell echo $(6) | sed -e 's+:.*++')))
 endef
 
 define push_image
@@ -262,6 +270,24 @@ define set_library_revision
 	@echo "${lib} rev: ${${lib}_REVISION} ${${lib}_TAG} (image-tag: ${${lib}_IMAGE_VERSION_TAG})"
 endef
 
+define log_library_revision
+	$(file >>${LIBRARIES_LOG},$(1) [label="$(1) (rev. ${$(1)_REVISION} ${$(1)_TAG})"];) \
+	$(if $(2),$(file >>${DEPENDENCIES_LOG},$(2) -> $(1) [label=" << depends on >> ",color="black:invis:black"];))
+endef
+
+define log_image_revision
+	$(eval A := $(shell echo $(1) | sed -e 's+[-:/\.]+_+g'))
+	$(eval B := $(shell echo $(4) | sed -e 's+[-:/\.]+_+g'))
+	$(eval relation_style := $(shell \
+	if [[ $(3) == "install" ]]; then echo 'style=dashed,color="black"' ; \
+	elif [[ $(3) == "extend" ]]; then echo 'color="black"' ; \
+	elif [[ $(3) == "use" ]]; then echo 'style=dotted,color="black"' ; \
+	else echo "style=dotted,color=gray" ; fi \
+	))
+	$(file >>${IMAGES_LOG},${A} [label="$(1) (tag. $(2))"];) \
+	$(if $(4),$(file >>${DEPENDENCIES_LOG},$(A) -> $(B) [label=" << $(3) >> ",$(relation_style)];))
+endef
+
 .DEFAULT_GOAL := help
 
 # version
@@ -271,7 +297,26 @@ version: ## Output the current version of this Makefile
 help: ## Show help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-libs_folder:
+_reset_log_file:
+	$(file >${IMAGES_LOG},)
+	$(file >${LIBRARIES_LOG},)
+	$(file >${DEPENDENCIES_LOG},)
+
+dependency_graph: ## make a dependency graph of the involved libraries
+	@echo "digraph {"  > ${DEPENDENCY_GRAPH_FILE} \
+	&& cat ${LIBRARIES_LOG} >> ${DEPENDENCY_GRAPH_FILE} \
+	&& cat ${IMAGES_LOG} >> ${DEPENDENCY_GRAPH_FILE} \
+	&& cat ${DEPENDENCIES_LOG} >> ${DEPENDENCY_GRAPH_FILE} \
+	&& echo "}" >> ${DEPENDENCY_GRAPH_FILE}  \
+	&& if [[ $$(command -v dot) ]]; then \
+	dot -Tpdf ${DEPENDENCY_GRAPH_FILE} -o ${DEPENDENCY_GRAPH_FILE}.pdf; \
+	fi
+
+#####################################################################################################################################
+############# Clone sources #############
+#####################################################################################################################################
+
+libs_folder: _reset_log_file
 	$(if $(wildcard ${LOCAL_LIBS_PATH}),, \
 		$(info Creating ${LOCAL_LIBS_PATH} folder...) ; \
 		@mkdir -p ${LOCAL_LIBS_PATH} ; \
@@ -283,7 +328,8 @@ _eddl_folder: libs_folder
 	)
 
 eddl_folder: _eddl_folder
-	$(call set_library_revision,libs,eddl)
+	$(call set_library_revision,libs,eddl) \
+	$(call log_library_revision,EDDL)
 
 
 define clone_ecvl
@@ -296,7 +342,8 @@ _ecvl_folder: libs_folder
 	$(call clone_ecvl)
 
 ecvl_folder: _ecvl_folder
-	$(call set_library_revision,libs,ecvl)
+	$(call set_library_revision,libs,ecvl) \
+	$(call log_library_revision,ECVL)
 
 pylibs_folder:
 	@mkdir -p ${LOCAL_PYLIBS_PATH}
@@ -327,7 +374,8 @@ _pyeddl_dependencies: _pyeddl_shallow_clone
 
 pyeddl_folder: _pyeddl_dependencies
 	$(call set_library_revision,libs,eddl) \
-	$(call set_library_revision,pylibs,pyeddl)
+	$(call set_library_revision,pylibs,pyeddl) \
+	$(call log_library_revision,PYEDDL)
 
 define pyecvl_shallow_clone
 	$(if $(wildcard ${PYECVL_LIB_PATH}),$(info Using existing '${PYECVL_LIB_PATH}' repository), \
@@ -338,6 +386,8 @@ endef
 define pyecvl_resolve_dependencies
 	$(eval PYEDDL_REVISION = $(call submodule_revision,${PYECVL_LIB_PATH}/third_party,pyeddl,${PYEDDL_REVISION}))
 	$(eval ECVL_REVISION = $(call submodule_revision,${PYECVL_LIB_PATH}/third_party,ecvl,${ECVL_REVISION}))
+	$(call log_library_revision,PYEDDL,PYECVL) \
+	$(call log_library_revision,ECVL,PYECVL) \
 	if [[ -d ${PYEDDL_LIB_PATH} ]]; then \
 		echo "Using existing '${PYEDDL_LIB_PATH}' repository" ; \
 	else \
@@ -370,7 +420,7 @@ _pyecvl_second_level_dependencies: _pyecvl_first_level_dependencies
 
 pyecvl_folder: _pyecvl_second_level_dependencies
 	$(call set_library_revision,pylibs,pyecvl)
-
+	$(call log_library_revision,PYECVL)
 
 # TODO: remove this patch when not required
 apply_pyeddl_patches: pyeddl_folder
@@ -404,6 +454,7 @@ build_eddl_toolkit: eddl_folder _build_libs_base_toolkit apply_pyeddl_patches ##
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
 		--label EDDL_REVISION=${EDDL_REVISION},libs-base-toolkit:$(DOCKER_BASE_IMAGE_VERSION_TAG))
+	$(call log_image_revision,eddl-toolkit,${ECVL_IMAGE_VERSION_TAG},install,EDDL)
 
 build_ecvl_toolkit: ecvl_folder build_eddl_toolkit ## Build 'ecvl-toolkit' image
 	$(call build_image,libs,ecvl-toolkit,${ECVL_IMAGE_VERSION_TAG},\
@@ -411,6 +462,7 @@ build_ecvl_toolkit: ecvl_folder build_eddl_toolkit ## Build 'ecvl-toolkit' image
 		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
 		--label ECVL_BRANCH=${ECVL_BRANCH} \
 		--label ECVL_REVISION=${ECVL_REVISION},eddl-toolkit:$(EDDL_IMAGE_VERSION_TAG))
+	$(call log_image_revision,ecvl-toolkit,${ECVL_IMAGE_VERSION_TAG},install,ECVL)
 
 build_libs_toolkit: build_ecvl_toolkit ## Build 'libs-toolkit' image
 	$(call build_image,libs,libs-toolkit,${LIBS_IMAGE_VERSION_TAG},\
@@ -421,7 +473,6 @@ build_libs_toolkit: build_ecvl_toolkit ## Build 'libs-toolkit' image
 		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
 		--label ECVL_BRANCH=${ECVL_BRANCH} \
 		--label ECVL_REVISION=${ECVL_REVISION},ecvl-toolkit:$(ECVL_IMAGE_VERSION_TAG),,${LIBS_REVISION})
-
 
 
 ############# libs #############
@@ -813,13 +864,13 @@ clean_images: \
 
 
 ############################################################################################################################
-### Clean Docker images
+### Clean Sources and Docker images
 ############################################################################################################################
 clean: clean_images clean_sources
 
 
 
-.PHONY: help \
+.PHONY: help _reset_log_file dependency_graph \
 	libs_folder eddl_folder ecvl_folder pylibs_folder \
 	pyeddl_folder _pyeddl_shallow_clone _pyecvl_second_level_dependencies \
 	pyecvl_folder _pyeddl_shallow_clone _pyecvl_first_level_dependencies _pyecvl_second_level_dependencies \
