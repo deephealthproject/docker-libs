@@ -284,9 +284,9 @@ define log_image_revision
 	$(eval A := $(shell echo $(1):$(2) | sed -e 's+[-:/\.]+_+g'))
 	$(eval B := $(shell echo $(4) | sed -e 's+[-:/\.]+_+g'))
 	$(eval relation_style := $(shell \
-	if [[ $(3) == "install" ]]; then echo 'style=dashed,color="black"' ; \
-	elif [[ $(3) == "extend" ]]; then echo 'color="black"' ; \
-	elif [[ $(3) == "use" ]]; then echo 'style=dotted,color="black"' ; \
+	if [[ "$(3)" == "install" ]]; then echo 'style=dashed,color="black"' ; \
+	elif [[ "$(3)" == "extend" ]]; then echo 'color="black"' ; \
+	elif [[ "$(3)" == "use" ]]; then echo 'style=dotted,color="black"' ; \
 	else echo "style=dotted,color=gray" ; fi \
 	))
 	$(file >>${IMAGES_LOG},${A} [label="$(1) (tag. $(2))"];) \
