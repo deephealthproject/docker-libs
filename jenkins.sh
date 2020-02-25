@@ -238,6 +238,14 @@ function run() {
       make push ;
     fi
   fi
+
+  # print images
+  log "List of Docker images..."
+  make images_list
+
+  # print libraries
+  log "List of Libraries..."
+  make libraries_list
 }
 
 # parse arguments
