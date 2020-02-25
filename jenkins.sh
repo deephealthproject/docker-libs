@@ -85,8 +85,11 @@ function help() {
   OPTIONS:
     --clean-sources                   Remove library sources
     --clean-images                    Remove local Docker images
-    --disable cache                   Disable Docker cache
-    --disable pull                    Disable pull of existing Docker images
+    --disable-cache                   Disable Docker cache
+    --disable-build                   Disable build of Docker images
+    --disable-pull                    Disable pull of existing Docker images
+    --disable-push                    Disable push of Docker images
+    --disable-tests                   Disable tests of Docker images
     --disable-docker-login            Disable login on Docker registry
 
   ENVIRONMENT requirements:
@@ -114,6 +117,9 @@ CLEAN_IMAGES=0
 CLEAN_SOURCES=0
 DISABLE_CACHE=0
 DISABLE_PULL=0
+DISABLE_BUILD=0
+DISABLE_PUSH=0
+DISABLE_TESTS=0
 DISABLE_DOCKER_LOGIN=0
 
 # get docker-libs repository
@@ -142,7 +148,7 @@ function run() {
   # set repository
   local REPOSITORY=$(basename $(git rev-parse --show-toplevel))
   # set library name
-  local LIB_NAME=$(echo "${REPOSITORY}" | tr a-z A-Z | sed 's+DOCKER-IMAGES+LIBS+')
+  local LIB_NAME=$(echo "${REPOSITORY}" | tr a-z A-Z | sed 's+DOCKER-LIBS+LIBS+')
   # set git tag & branch & image prefix
   # and define whether to push lates tag
   GIT_BRANCH=${GIT_BRANCH:-$(git rev-parse --abbrev-ref HEAD | sed -E 's+(remotes/|origin/|tags/)++g; s+/+-+g; s/ .*//')}
@@ -150,7 +156,7 @@ function run() {
   NORMALIZED_BRANCH_NAME=$(echo "${BRANCH_NAME}" | sed 's+/+-+g; s+[[:space:]]++g')
   TAG=$(git tag -l --points-at HEAD | tail -n 1 | sed 's+[[:space:]]++g')
   REVISION="$(git rev-parse --short HEAD --short | sed 's+[[:space:]]++g')"
-  if [ -n "${TAG}" ]; then 
+  if [ -n "${TAG}" ]; then
     DOCKER_IMAGE_PREFIX="${TAG}"
     # update latest if a tag exists and the branch is master
     if [ "${BRANCH_NAME}" == "master" ]; then
@@ -175,17 +181,10 @@ function run() {
   # log environment
   printenv
 
-  echo "${REPOSITORY}"
-  
-
   # detect repository 
   lib_suffix=""
-  if [[ "${REPOSITORY}" == "LIBS" ]]; then
-    
-    echo "SUFF: ${lib_suffix}"    
-  else # clone docker-libs
-    lib_suffix="_${REPOSITORY}"    
-    echo "SUFF ---: ${lib_suffix}"
+  if [[ "${LIB_NAME}" != "LIBS" ]]; then
+    lib_suffix="_${REPOSITORY}"
     export CONFIG_FILE=""
     clone_docker_libs
     cd docker-libs
@@ -202,13 +201,29 @@ function run() {
   fi
 
   # build images
-  make build${lib_suffix}
-  echo "Docker images after..."
-  docker images
+  if [[ ${DISABLE_BUILD} == 0 ]]; then
+    log "Docker images before..."
+    docker images
+    make build${lib_suffix} ;
+    log "Docker images after..."
+    docker images
+  fi
+
   # make tests
-  make test${lib_suffix}
+  if [[ ${DISABLE_TESTS} == 0 ]]; then make test${lib_suffix} ; fi
+
   # push images
-  #make push${lib_suffix}
+  if [[ ${DISABLE_PUSH} == 0 ]]; then
+    # login to DockerHub
+    if [[ ${DISABLE_DOCKER_LOGIN} == 0 ]]; then
+      if [[ -z ${DOCKER_USER} || -z ${DOCKER_PASSWORD} ]]; then
+        usage_error "You need to set DOCKER_USER and DOCKER_PASSWORD on your environment"
+      fi
+      docker_login
+      export DOCKER_LOGIN_DONE="true"
+    fi
+    make push${lib_suffix} ;
+  fi
 }
 
 # parse arguments
@@ -234,8 +249,20 @@ do
           DISABLE_CACHE=1
           shift ;;
 
+        --disable-build)
+          DISABLE_BUILD=1
+          shift ;;
+
         --disable-pull)
           DISABLE_PULL=1
+          shift ;;
+
+        --disable-push)
+          DISABLE_PUSH=1
+          shift ;;
+
+        --disable-tests)
+          DISABLE_TESTS=1
           shift ;;
 
         --disable-docker-login)
@@ -264,15 +291,6 @@ export CLEAN_IMAGES
 export CLEAN_SOURCES
 export DISABLE_CACHE
 export DISABLE_PULL
-
-# login to DockerHub
-if [[ ${DISABLE_DOCKER_LOGIN} == 0 ]]; then
-  if [[ -z ${DOCKER_USER} || -z ${DOCKER_PASSWORD} ]]; then
-    usage_error "You need to set DOCKER_USER and DOCKER_PASSWORD on your environment"
-  fi
-  docker_login
-  export DOCKER_LOGIN_DONE="true"
-fi
 
 # exec
 run
