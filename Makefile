@@ -93,7 +93,7 @@ PYEDDL_REVISION := ${PYEDDL_REVISION}
 PYEDDL_TAG :=
 
 # config file
-CONFIG_FILE ?= release.conf
+CONFIG_FILE ?= settings.conf
 ifneq ($(wildcard $(CONFIG_FILE)),)
 include $(CONFIG_FILE)
 endif
