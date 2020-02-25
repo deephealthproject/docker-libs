@@ -314,13 +314,13 @@ reset_log_file: _reset_log_file
 	$(eval RESET_LOG_FILE_DONE := 1)
 
 libraries_list:
-	sort -u ${LIBRARIES_LOG}
+	@sort -u ${LIBRARIES_LOG}
 
 images_list:
-	sort -u ${IMAGES_LOG}
+	@sort -u ${IMAGES_LOG}
 
 dependencies_list:
-	sort -u ${DEPENCIES_LOG}
+	@sort -u ${DEPENCIES_LOG}
 
 dependency_graph: ## make a dependency graph of the involved libraries
 	@echo "digraph {"  > ${DEPENDENCY_GRAPH_FILE} \
