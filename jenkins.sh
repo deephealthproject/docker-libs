@@ -7,6 +7,25 @@ set -o pipefail
 # without errtrace functions don't inherit the ERR trap
 set -o errtrace
 
+# set base images
+export DOCKER_NVIDIA_DEVELOP_IMAGE="${DOCKER_NVIDIA_DEVELOP_IMAGE:-nvidia/cuda:10.1-devel}"
+export DOCKER_NVIDIA_RUNTIME_IMAGE="${DOCKER_NVIDIA_RUNTIME_IMAGE:-nvidia/cuda:10.1-runtime}"
+export DOCKER_BASE_IMAGE_VERSION_TAG="${DOCKER_BASE_IMAGE_VERSION_TAG:-0.2.0}"
+
+# default libs version
+export DOCKER_LIBS_REPO="${DOCKER_LIBS_REPO:-https://github.com/deephealthproject/docker-libs.git}"
+export DOCKER_LIBS_BRANCH=${DOCKER_LIBS_BRANCH:-develop}
+export DOCKER_LIBS_VERSION=""
+
+# set Docker repository
+export DOCKER_REPOSITORY_OWNER="${DOCKER_REPOSITORY_OWNER:-dhealth}"
+
+# env requirements
+DOCKER_USER=${DOCKER_USER:-}
+DOCKER_PASSWORD=${DOCKER_PASSWORD:-}
+
+# set script version
+VERSION=0.2.0
 
 function abspath() {
   local path="${*}"
@@ -51,19 +70,36 @@ function usage_error() {
   exit 2
 }
 
+function print_version() {
+  echo ${VERSION}
+}
+
 function help() {
   local script_name=$(basename "$0")
   echo -e "\nUsage of '${script_name}'
+
   ${script_name} [options]
   ${script_name} -h        prints this help message
   ${script_name} -v        prints the '${script_name}' version
+
   OPTIONS:
     --clean-sources                   Remove library sources
     --clean-images                    Remove local Docker images
     --disable cache                   Disable Docker cache
     --disable pull                    Disable pull of existing Docker images
-    --docker-libs-revision <REV>   
-    --docker-libs-branch <BRANCH>
+    --disable-docker-login            Disable login on Docker registry
+
+  ENVIRONMENT requirements:
+    * DOCKER_USER
+    * DOCKER_PASSWORD
+
+  ENVIRONMENT defaults:
+    * DOCKER_NVIDIA_DEVELOP_IMAGE     => nvidia/cuda:10.1-devel
+    * DOCKER_NVIDIA_RUNTIME_IMAGE     => nvidia/cuda:10.1-runtime
+    * DOCKER_BASE_IMAGE_VERSION_TAG   => 0.2.0
+    * DOCKER_LIBS_REPO                => https://github.com/deephealthproject/docker-libs.git
+    * DOCKER_LIBS_BRANCH              => develop
+    * DOCKER_REPOSITORY_OWNER         => dhealth
   " >&2
 }
 
@@ -73,27 +109,12 @@ LIBS_REVISION=$(git rev-parse --short HEAD | sed -E 's/-//; s/ .*//')
 LIBS_BRANCH=$(git rev-parse --abbrev-ref HEAD | sed -E 's+(remotes/|origin/)++g; s+/+-+g; s/ .*//')
 LIBS_VERSION=$(if [[ -n "${LIBS_TAG}" ]]; then echo ${LIBS_TAG}; else echo ${LIBS_BRANCH}-${LIBS_REVISION}; fi)
 
-# set base images
-export DOCKER_NVIDIA_DEVELOP_IMAGE="nvidia/cuda:10.1-devel"
-export DOCKER_NVIDIA_RUNTIME_IMAGE="nvidia/cuda:10.1-runtime"
-export DOCKER_BASE_IMAGE_VERSION_TAG=0.2.0
-# set Docker repository
-export DOCKER_REPOSITORY_OWNER=dhealth
-
-# default libs version
-export DEFAULT_DOCKER_LIBS_BRANCH="develop"
-export DOCKER_LIBS_BRANCH=${DEFAULT_DOCKER_LIBS_BRANCH}
-export DOCKER_LIBS_VERSION=""
-
-# set Docker repository
-export DOCKER_REPOSITORY_OWNER="${DOCKER_REPOSITORY_OWNER:-dhealth}"
-
 # various settings
 CLEAN_IMAGES=0
 CLEAN_SOURCES=0
 DISABLE_CACHE=0
 DISABLE_PULL=0
-
+DISABLE_DOCKER_LOGIN=0
 
 # get docker-libs repository
 function clone_docker_libs() {
@@ -102,8 +123,7 @@ function clone_docker_libs() {
       if [[ -n "${DOCKER_LIBS_BRANCH}" ]]; then
         branch="-b ${DOCKER_LIBS_BRANCH}"
       fi
-      echo "git clone "${branch}" https://github.com/kikkomep/docker-libs.git"
-      git clone ${branch} https://github.com/kikkomep/docker-libs.git
+      git clone ${branch} ${DOCKER_LIBS_REPO}
     fi
     if [[ -n "${DOCKER_LIBS_VERSION}" ]]; then
       log "Cloning docker-libs (rev.${DOCKER_LIBS_VERSION})..."
@@ -210,20 +230,16 @@ do
           CLEAN_IMAGES=true
           shift ;;
 
-        --docker-libs-branch)
-          DOCKER_LIBS_BRANCH="${value}"
-          shift 2 ;;
-        
-        --docker-libs-version)
-          DOCKER_LIBS_VERSION="${value}"
-          shift 2 ;;
-
         --disable-cache)
           DISABLE_CACHE=1
           shift ;;
 
         --disable-pull)
           DISABLE_PULL=1
+          shift ;;
+
+        --disable-docker-login)
+          DISABLE_DOCKER_LOGIN=1
           shift ;;
 
         *) # unknown option
@@ -250,7 +266,13 @@ export DISABLE_CACHE
 export DISABLE_PULL
 
 # login to DockerHub
-#docker_login
+if [[ ${DISABLE_DOCKER_LOGIN} == 0 ]]; then
+  if [[ -z ${DOCKER_USER} || -z ${DOCKER_PASSWORD} ]]; then
+    usage_error "You need to set DOCKER_USER and DOCKER_PASSWORD on your environment"
+  fi
+  docker_login
+  export DOCKER_LOGIN_DONE="true"
+fi
 
 # exec
 run
