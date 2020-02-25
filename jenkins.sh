@@ -146,7 +146,9 @@ function docker_login() {
 
 function run() {
   # set repository
-  local REPOSITORY=$(basename $(git rev-parse --show-toplevel))
+  local REPOSITORY=$(if [[ -n "${GIT_URL}" ]]; then \
+    echo "${GIT_URL}" | sed -E 's+(.*)/([^/]*)\.git+\2+' ; \
+    else $(basename $(git rev-parse --show-toplevel)) ; fi)
   # set library name
   local LIB_NAME=$(echo "${REPOSITORY}" | tr a-z A-Z | sed 's+DOCKER-LIBS+LIBS+')
   # set git tag & branch & image prefix
