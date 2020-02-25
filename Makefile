@@ -45,6 +45,11 @@ DOCKER_IMAGE_TAG := $(or ${DOCKER_IMAGE_TAG},${BUILD_NUMBER})
 DOCKER_BASE_IMAGE_SKIP_PULL := $(or ${DOCKER_BASE_IMAGE_SKIP_PULL},true)
 DOCKER_NVIDIA_DEVELOP_IMAGE := $(or ${DOCKER_NVIDIA_DEVELOP_IMAGE},nvidia/cuda:10.1-devel)
 DOCKER_NVIDIA_RUNTIME_IMAGE := $(or ${DOCKER_NVIDIA_RUNTIME_IMAGE},nvidia/cuda:10.1-runtime)
+# extract name and tag of nvidia images
+DOCKER_NVIDIA_DEVELOP_IMAGE_NAME := $(shell echo ${DOCKER_NVIDIA_DEVELOP_IMAGE} | sed -e 's+:.*++')
+DOCKER_NVIDIA_DEVELOP_IMAGE_TAG := $(shell echo ${DOCKER_NVIDIA_DEVELOP_IMAGE} | sed -E 's@.+:(.+)@\1@')
+DOCKER_NVIDIA_RUNTIME_IMAGE_NAME := $(shell echo ${DOCKER_NVIDIA_RUNTIME_IMAGE} | sed -e 's+:.*++')
+DOCKER_NVIDIA_RUNTIME_IMAGE_TAG := $(shell echo ${DOCKER_NVIDIA_RUNTIME_IMAGE} | sed -E 's@.+:(.+)@\1@')
 
 DOCKER_BASE_IMAGE_VERSION_TAG := $(or ${DOCKER_BASE_IMAGE_VERSION_TAG},${DOCKER_IMAGE_TAG})
 EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION})
@@ -173,8 +178,8 @@ define build_image
 			)
 		)
 	)
-	$(call log_image_revision,$(target),$(tag),extend,$(shell echo $(5) | sed -e 's+:.*++'))
-	$(if $(6),$(call log_image_revision,$(target),$(tag),use,$(shell echo $(6) | sed -e 's+:.*++')))
+	$(call log_image_revision,$(target),$(tag),extend,$(shell echo $(5)))
+	$(if $(6),$(call log_image_revision,$(target),$(tag),use,$(shell echo $(6))))
 endef
 
 define push_image
@@ -276,7 +281,7 @@ define log_library_revision
 endef
 
 define log_image_revision
-	$(eval A := $(shell echo $(1) | sed -e 's+[-:/\.]+_+g'))
+	$(eval A := $(shell echo $(1):$(2) | sed -e 's+[-:/\.]+_+g'))
 	$(eval B := $(shell echo $(4) | sed -e 's+[-:/\.]+_+g'))
 	$(eval relation_style := $(shell \
 	if [[ $(3) == "install" ]]; then echo 'style=dashed,color="black"' ; \
@@ -465,6 +470,7 @@ _build: \
 _build_libs_base_toolkit:
 	$(call build_image,libs,libs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_NVIDIA_DEVELOP_IMAGE))
+	$(call log_image_revision,$(DOCKER_NVIDIA_DEVELOP_IMAGE_NAME),$(DOCKER_NVIDIA_DEVELOP_IMAGE_TAG))
 
 build_eddl_toolkit: eddl_folder _build_libs_base_toolkit apply_pyeddl_patches ## Build 'eddl-toolkit' image
 	$(call build_image,libs,eddl-toolkit,${EDDL_IMAGE_VERSION_TAG},\
@@ -498,6 +504,7 @@ build_libs_toolkit: build_ecvl_toolkit ## Build 'libs-toolkit' image
 _build_libs_base: _build_libs_base_toolkit
 	$(call build_image,libs,libs-base,${DOCKER_BASE_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_NVIDIA_RUNTIME_IMAGE),libs-base-toolkit:$(DOCKER_BASE_IMAGE_VERSION_TAG))
+	$(call log_image_revision,$(DOCKER_NVIDIA_RUNTIME_IMAGE_NAME),$(DOCKER_NVIDIA_RUNTIME_IMAGE_TAG))
 
 build_eddl: _build_libs_base build_eddl_toolkit ## Build 'eddl' image
 	$(call build_image,libs,eddl,${EDDL_IMAGE_VERSION_TAG},\
