@@ -210,7 +210,14 @@ function run() {
   fi
 
   # make tests
-  if [[ ${DISABLE_TESTS} == 0 ]]; then make test${lib_suffix} ; fi
+  if [[ ${DISABLE_TESTS} == 0 ]]; then 
+    if [[ -n ${lib_suffix} ]]; then
+      make test${lib_suffix} ;
+      make test${lib_suffix}_toolkit ;
+    else
+      make test ;
+    fi
+  fi
 
   # push images
   if [[ ${DISABLE_PUSH} == 0 ]]; then
@@ -222,7 +229,12 @@ function run() {
       docker_login
       export DOCKER_LOGIN_DONE="true"
     fi
-    make push${lib_suffix} ;
+    if [[ -n ${lib_suffix} ]]; then
+      make push${lib_suffix} ;
+      make push${lib_suffix}_toolkit ;
+    else
+      make push ;
+    fi
   fi
 }
 
