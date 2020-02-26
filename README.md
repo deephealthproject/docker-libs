@@ -10,18 +10,29 @@ Docker images to develop and run software based on the [EDDL](https://github.com
 
 ## Description
 
-The `docker-libs` repository allows users to build and publish on a registry (e.g., DockerHub) Docker images containing the [EDDL](https://github.com/deephealthproject/eddl) and [ECVL](https://github.com/deephealthproject/ecvl) libraries and their Python wrappers, [PyEDDL](https://github.com/deephealthproject/pyeddl) and [PyECVL](https://github.com/deephealthproject/pycvl). All the images are based on the [NVIDIA Container Toolkit](https://github.com/NVIDIA/nvidia-docker) and the EDDL and ECVL libraries are configured to leverage NVIDIA GPUs.
+The `docker-libs` repository allows users to build and publish on a registry (e.g., DockerHub) Docker images containing the DeepHealth libraries: [EDDL](https://github.com/deephealthproject/eddl), [ECVL](https://github.com/deephealthproject/ecvl) and their Python wrappers, [PyEDDL](https://github.com/deephealthproject/pyeddl) and [PyECVL](https://github.com/deephealthproject/pycvl). All the images are based on the [NVIDIA Container Toolkit](https://github.com/NVIDIA/nvidia-docker) and the EDDL and ECVL libraries are configured to leverage NVIDIA GPUs.
 
-Precompiled images are published on [DockerHub](https://hub.docker.com/u/dhealth). You can find an image for each DeepHealth library ( [EDDL](https://github.com/deephealthproject/eddl), [ECVL](https://github.com/deephealthproject/ecvl), [PyEDDL](https://github.com/deephealthproject/pyeddl) and [PyECVL](https://github.com/deephealthproject/pycvl)), available with also optional development tools (i.e., images named with the `-toolkit` suffix). Images are tagged accordingly with their revision on GitHub, identified by commit ID or TAG: e.g., `dhealth/ecvl:1512be8` and`dhealth/ecvl-toolkit:1512be8`, where `1512be8` is the ID of the last commit on the ECVL repository when the image was build. If that commit is also associated with a TAG, it will be used a Docker tag as well.
+Precompiled images for each DeepHealth library are published on [DockerHub](https://hub.docker.com/u/dhealth):
 
-In addition, the following images are periodically released on [DockerHub](https://hub.docker.com/u/dhealth) to provide compatible versions of the libraries above:
+* **[`dhealth/eddl`](https://hub.docker.com/r/dhealth/eddl)** contains an installation of the EDDL library
+* **[`dhealth/ecvl`](https://hub.docker.com/r/dhealth/ecvl)** contains an installation of the ECVL library with support for EDDL
+* **[`dhealth/pyeddl`](https://hub.docker.com/r/dhealth/pyeddl)** contains an installation of the PyEDDL and EDDL library
+* **[`dhealth/pyecvl`](https://hub.docker.com/r/dhealth/ecvl-toolkit)** contains an installation of the PyECVL library with support for PyEDDL
+
+They are available with the `-toolkit` variant, which provides optional development tools (sources, compilers, etc.). 
+
+In addition, to provide, under a common Docker tag, library revisions compatible with each other, the following images are periodically released on [DockerHub](https://hub.docker.com/u/dhealth) (see GitHub **[releases](https://github.com/deephealthproject/docker-libs/releases)**):
 
 * **[`dhealth/libs`](https://hub.docker.com/r/dhealth/libs)** contains an installation of the EDDL and ECVL libraries
 * **[`dhealth/libs-toolkit`](https://hub.docker.com/r/dhealth/libs-toolkit)** contains an installation of the EDDL and ECVL libraries, the source code of two libraries and all the development tools (compilers, libraries, etc.) you need to compile them
 * **[`dhealth/pylibs`](https://hub.docker.com/r/dhealth/pylibs)** extends the `libs` image with the PyEDDL and PyECVL libraries
 * **[`dhealth/pylibs-toolkit`](https://hub.docker.com/r/dhealth/pylibs-toolkit)** extends the `libs-toolkit` image with the PyEDDL and PyECVL libraries
 
-A *dependency graph* of the images published on [DockerHub](https://hub.docker.com/u/dhealth) can be found [here](docs/img/graph-latest.png?raw=true "Dependency Graph").
+
+
+##### Image TAGs
+
+All the images are tagged accordingly with the revision of the corresponding libraries on GitHub, identified by commit ID or TAG: e.g., `dhealth/ecvl:1512be8` and`dhealth/ecvl-toolkit:1512be8`  are built on the `1512be8` revision (commit ID) of the ECVL library. If that revision is also associated with a Git TAG, it will be used as a Docker tag as well.
 
 
 
