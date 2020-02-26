@@ -1,5 +1,6 @@
 .DS_Store
 .vscode
+.*.log
 libs/eddl
 libs/ecvl
 pylibs/pyeddl

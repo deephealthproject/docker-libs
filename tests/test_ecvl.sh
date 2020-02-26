@@ -4,7 +4,9 @@
 ECVL_SRC=${ECVL_SRC:-"/usr/local/src/ecvl"}
 
 # install cmake just to run ctest
-apt-get update -y -q && apt-get install -y -q cmake
+if [ ! $(command -v cmake) ]; then
+    apt-get update -y -q && apt-get install -y -q cmake
+fi
 
 # run all tests
 cd ${ECVL_SRC}/build && ctest -C Debug -VV
