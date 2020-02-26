@@ -304,7 +304,6 @@ help: ## Show help
 
 _reset_log_file:
 	$(if $(RESET_LOG_FILE_DONE),echo "Already reset",\
-		echo "Resetting";\
 		$(file >${IMAGES_LOG},)\
 		$(file >${LIBRARIES_LOG},)\
 		$(file >${DEPENDENCIES_LOG},)\

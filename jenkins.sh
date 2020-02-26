@@ -24,6 +24,8 @@ export DOCKER_REPOSITORY_OWNER="${DOCKER_REPOSITORY_OWNER:-dhealth}"
 DOCKER_USER=${DOCKER_USER:-}
 DOCKER_PASSWORD=${DOCKER_PASSWORD:-}
 
+GIT_URL=${GIT_URL:-}
+
 # set script version
 VERSION=0.2.0
 
@@ -145,12 +147,17 @@ function docker_login() {
 }
 
 function run() {
+  local REPOSITORY=""
+  local LIB_NAME=""
   # set repository
-  local REPOSITORY=$(if [[ -n "${GIT_URL}" ]]; then \
-    echo "${GIT_URL}" | sed -E 's+(.*)/([^/]*)\.git+\2+' ; \
-    else $(basename $(git rev-parse --show-toplevel)) ; fi)
+  if [[ -n "${GIT_URL}" ]]; then \
+    REPOSITORY=$(echo "${GIT_URL}" | sed -E 's+(.*)/([^/]*)\.git+\2+') ; \
+  else
+    REPOSITORY=$(basename $(git rev-parse --show-toplevel)) ;
+  fi
   # set library name
-  local LIB_NAME=$(echo "${REPOSITORY}" | tr a-z A-Z | sed 's+DOCKER-LIBS+LIBS+')
+  LIB_NAME=$(echo "${REPOSITORY}" | tr a-z A-Z | sed 's+DOCKER-LIBS+LIBS+')
+
   # set git tag & branch & image prefix
   # and define whether to push lates tag
   GIT_BRANCH=${GIT_BRANCH:-$(git rev-parse --abbrev-ref HEAD | sed -E 's+(remotes/|origin/|tags/)++g; s+/+-+g; s/ .*//')}
