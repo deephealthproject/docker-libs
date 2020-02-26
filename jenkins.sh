@@ -247,11 +247,13 @@ function run() {
   fi
 
   # print images
-  log "List of Docker images..."
+  log "\n\nList of Docker images..."
+  log "*************************************************************************************************************"
   make images_list
 
   # print libraries
-  log "List of Libraries..."
+  log "\n\nList of Libraries..."
+  log "*************************************************************************************************************"
   make libraries_list
 }
 

@@ -302,16 +302,6 @@ version: ## Output the current version of this Makefile
 help: ## Show help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-_reset_log_file:
-	$(if $(RESET_LOG_FILE_DONE),echo "Already reset",\
-		$(file >${IMAGES_LOG},)\
-		$(file >${LIBRARIES_LOG},)\
-		$(file >${DEPENDENCIES_LOG},)\
-	)
-
-reset_log_file: _reset_log_file
-	$(eval RESET_LOG_FILE_DONE := 1)
-
 libraries_list:
 	@sort -u ${LIBRARIES_LOG}
 
@@ -335,7 +325,7 @@ dependency_graph: ## make a dependency graph of the involved libraries
 ############# Clone sources #############
 #####################################################################################################################################
 
-libs_folder: reset_log_file
+libs_folder:
 	$(if $(wildcard ${LOCAL_LIBS_PATH}),, \
 		$(info Creating ${LOCAL_LIBS_PATH} folder...) ; \
 		@mkdir -p ${LOCAL_LIBS_PATH} ; \
@@ -357,14 +347,14 @@ define clone_ecvl
 	)
 endef
 
-_ecvl_folder: libs_folder
+_ecvl_folder:
 	$(call clone_ecvl)
 
 ecvl_folder: _ecvl_folder
 	$(call set_library_revision,libs,ecvl) \
 	$(call log_library_revision,ECVL)
 
-pylibs_folder: reset_log_file
+pylibs_folder:
 	@mkdir -p ${LOCAL_PYLIBS_PATH}
 
 define pyeddl_shallow_clone
@@ -851,7 +841,7 @@ clean_libs_sources: clean_eddl_sources clean_ecvl_sources ## clean repository co
 
 clean_pylibs_sources: clean_pyeddl_sources clean_pyecvl_sources ## clean repository containing pylibs source code
 
-clean_sources: clean_pylibs_sources clean_libs_sources ## clean repository containing source code
+clean_sources: clean_pylibs_sources clean_libs_sources _clean_libraries_logs ## clean repository containing source code
 
 
 ############################################################################################################################
@@ -890,17 +880,34 @@ clean_pylibs_images: clean_pyecvl_images clean_pyeddl_images
 clean_images: \
 	clean_pylibs_images clean_libs_images clean_base_images \
 	clean_ecvl_images clean_eddl_images \
-	clean_pyecvl_images clean_pylibs_images
+	clean_pyecvl_images clean_pylibs_images \
+	_clean_images_logs
+
+####################################################################
+
+_clean_dependencies_logs:
+	$(file >${DEPENDENCIES_LOG},)
+	@echo "Logs of dependencies deleted"
+
+_clean_images_logs: _clean_dependencies_logs
+	$(file >${IMAGES_LOG},)
+	@echo "Logs of images deleted"
+
+_clean_libraries_logs: _clean_dependencies_logs
+	$(file >${LIBRARIES_LOG},)
+	@echo "Logs of libraries deleted"
+
+clean_logs: _clean_images_logs _clean_libraries_logs ## clean logs
 
 
 ############################################################################################################################
 ### Clean Sources and Docker images
 ############################################################################################################################
-clean: clean_images clean_sources reset_log_file
+clean: clean_images clean_sources clean_logs
 
 
-
-.PHONY: help _reset_log_file reset_log_file \
+.PHONY: help \
+	clean_logs _clean_dependencies_logs _clean_libraries_logs _clean_images_logs \
 	libraries_list images_list dependencies_list dependency_graph \
 	libs_folder eddl_folder ecvl_folder pylibs_folder \
 	pyeddl_folder _pyeddl_shallow_clone _pyecvl_second_level_dependencies \
