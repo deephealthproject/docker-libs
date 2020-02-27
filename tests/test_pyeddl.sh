@@ -7,5 +7,10 @@ PYEDDL_SRC=${PYEDDL_SRC:-"/usr/local/src/pyeddl"}
 cd ${PYEDDL_SRC} && pytest tests 
 
 # run examples
-cd ${PYEDDL_SRC}/examples && python3 Tensor/eddl_tensor.py 
-cd ${PYEDDL_SRC}/examples && python3 NN/other/eddl_ae.py --epochs 1
+if [[ $(docker run --gpus 1 nvidia/cuda:10.0-base nvidia-smi) ]]; then
+    cd ${PYEDDL_SRC}/examples 
+    python3 Tensor/eddl_tensor.py
+    bash examples/NN/1_MNIST/run_all_fast.sh
+    bash examples/NN/py_loss_metric/run_all_fast.sh
+    bash examples/onnx/run_all_fast.sh
+fi
