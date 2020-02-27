@@ -25,6 +25,7 @@ RUN echo "\nBuilding EDDL library..." >&2 \
         -D BUILD_TARGET=GPU \
         -D BUILD_TESTS=ON \
         -D EDDL_SHARED=ON \
+        -D BUILD_PROTOBUF=ON \
         .. \
     && make -j$(grep -c ^processor /proc/cpuinfo) \
     && echo "\n Installing EDDL library..." >&2 \
