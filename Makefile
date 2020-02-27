@@ -165,8 +165,8 @@ define build_image
 	$(eval tagged_image := ${image_name}:${tag})
 	$(eval images := $(shell docker images -q ${tagged_image}))
 	$(eval exists := $(shell curl --silent -f -lSL https://index.docker.io/v1/repositories/${full_image_name}/tags/${tag} 2>/dev/null))
+	@printf "\n\n" ; \
 	$(if $(or $(findstring ${_DO_NOT_USE_DOCKER_CACHE},1),$(findstring ${_DO_NOT_PULL_DOCKER_IMAGES},1)),\
-		@echo "Not using ${_DO_NOT_USE_DOCKER_CACHE} ${_DO_NOT_PULL_DOCKER_IMAGES}"; \
 		$(call build_new_image),
 		$(if ${images},\
 			@echo "Docker image '${tagged_image}' exists (id: ${images})", \
@@ -226,7 +226,7 @@ define clean_sources
 	$(eval path := $(1))
 	@printf "Removing sources '$(path)'... "
 	@rm -rf $(path)
-	@printf "DONE\n"	
+	@printf "DONE\n"
 endef
 
 

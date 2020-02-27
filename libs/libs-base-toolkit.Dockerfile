@@ -14,6 +14,17 @@ ARG opencv_release="3.4.6"
 ENV OPENCV_RELEASE ${opencv_release}
 ENV OPENCV_INSTALL_MANIFEST "/usr/local/opencv/install_manifest.txt"
 
+# set Eigen version
+ARG eigen_release="3.3.7"
+ENV EIGEN_RELEASE ${eigen_release}
+ENV EIGEN_INSTALL_MANIFEST "/usr/local/eigen/install_manifest.txt"
+ENV CPATH="/usr/local/include/eigen3:${CPATH}"
+
+# set ProtoBuf version
+ARG protobuf_release="3.11.4"
+ENV PROTOBUF_RELEASE ${protobuf_release}
+ENV PROTOBUF_INSTALL_MANIFEST "/usr/local/protobuf/install_manifest.txt"
+
 # Install software requirements
 RUN \
     echo "\nInstalling software requirements..." >&2 \
@@ -21,7 +32,7 @@ RUN \
     && apt-get update -y -q \
     && apt-get install -y --no-install-recommends  \
         build-essential git gcc-8 g++-8 wget rsync graphviz \
-        libwxgtk3.0-dev libopenslide-dev \
+        libwxgtk3.0-dev libopenslide-dev zlib1g-dev libblas-dev \
         libavcodec-dev libavformat-dev libswscale-dev \
         libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 70 \
@@ -57,10 +68,30 @@ RUN \
     && make install \
     && mkdir -p $(dirname ${OPENCV_INSTALL_MANIFEST}) \
     && cp $(basename ${OPENCV_INSTALL_MANIFEST}) $(dirname ${OPENCV_INSTALL_MANIFEST})/ \
-    && rm -rf /tmp/opencv-${opencv_release}
-
-
-# && cmake -D CMAKE_BUILD_TYPE=RELEASE \
-#              -D INSTALL_C_EXAMPLES=ON \
-#              -D OPENCV_GENERATE_PKGCONFIG=ON \
-#              -D BUILD_EXAMPLES=ON .. \
+    && rm -rf /tmp/opencv-${opencv_release} \
+    # Eigen version installed by APT is too old to work properly with CUDA
+    # https://devtalk.nvidia.com/default/topic/1026622/nvcc-can-t-compile-code-that-uses-eigen/
+    && echo "\n > Installing Eigen (version '${eigen_release}')..." >&2 \
+    && cd /tmp \
+    && wget --quiet https://gitlab.com/libeigen/eigen/-/archive/${eigen_release}/eigen-${eigen_release}.tar.gz \
+    && tar xzf eigen-${eigen_release}.tar.gz \
+    && rm eigen-${eigen_release}.tar.gz \
+    && cd eigen-${eigen_release} \
+    && mkdir build \
+    && cd build \
+    && cmake -D OpenGL_GL_PREFERENCE=GLVND .. \
+    && make install \
+    && mkdir -p $(dirname ${EIGEN_INSTALL_MANIFEST}) \
+    && cp $(basename ${EIGEN_INSTALL_MANIFEST}) $(dirname ${EIGEN_INSTALL_MANIFEST})/ \
+    && rm -rf /tmp/eigen-${eigen_release} \
+    && echo "\n > Installing ProtoBuf (version '${protobuf_release}')..." >&2 \
+    && cd /tmp \
+    && wget --quiet https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_release}/protobuf-all-${protobuf_release}.tar.gz \
+    && tar xf protobuf-all-${protobuf_release}.tar.gz \
+    && rm protobuf-all-${protobuf_release}.tar.gz \
+    && cd protobuf-${protobuf_release}/ \
+    && ./configure \
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig \
+    && rm -rf /tmp/protobuf-${protobuf_release}
