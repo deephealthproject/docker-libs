@@ -79,7 +79,7 @@ RUN \
     && cd eigen-${eigen_release} \
     && mkdir build \
     && cd build \
-    && cmake .. \
+    && cmake -D OpenGL_GL_PREFERENCE=GLVND .. \
     && make install \
     && mkdir -p $(dirname ${EIGEN_INSTALL_MANIFEST}) \
     && cp $(basename ${EIGEN_INSTALL_MANIFEST}) $(dirname ${EIGEN_INSTALL_MANIFEST})/ \
