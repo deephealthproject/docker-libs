@@ -13,6 +13,9 @@ ARG eddl_src="/usr/local/src/eddl"
 ARG pyeddl_src_origin="pyeddl"
 ARG pyeddl_src_target="/usr/local/src/pyeddl"
 
+# enable CUDA support
+ENV EDDL_WITH_CUDA 'true'
+
 # Run git submodule update [--init] --recursive first
 COPY ${pyeddl_src_origin} ${pyeddl_src_target}
 
