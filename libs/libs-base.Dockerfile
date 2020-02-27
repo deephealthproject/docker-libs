@@ -20,12 +20,13 @@ COPY --from=toolkit /usr/local/etc /tmp/local/etc
 COPY --from=toolkit /usr/local/include /tmp/local/include
 COPY --from=toolkit /usr/local/lib /tmp/local/lib
 COPY --from=toolkit /usr/local/share /tmp/local/share
-COPY --from=toolkit /usr/local/opencv/install_manifest.txt /tmp/local/install_manifest.txt
+COPY --from=toolkit /usr/local/opencv/install_manifest.txt /tmp/local/opencv_manifest.txt
+COPY --from=toolkit /usr/local/eigen/install_manifest.txt /tmp/local/eigen_manifest.txt
 
 # merge existing system directories with those containing libraries
-RUN cd /tmp/local && sed -e 's+/usr/local/++g' install_manifest.txt | \
-    while IFS= read -r line; do echo ">>> $line" ; rsync --relative "${line}" "/usr/local/" || exit ; done
-
+RUN cd /tmp/local && sed -e 's+/usr/local/++g' *_manifest.txt | \
+    while IFS= read -r line; do echo ">>> $line" ; rsync --relative "${line}" "/usr/local/" || exit ; done \
+    && find /tmp/local/lib -not -type d -execdir cp "{}" /usr/local/lib ";"
 
 ####################
 #### BASE image ####
@@ -36,6 +37,7 @@ LABEL website="https://github.com/deephealthproject"
 LABEL description="DeepHealth European Distributed Deep Learning Library"
 LABEL software="deephealth-eddl,deephealth-ecvl"
 
+# Install software requirements
 RUN \
     echo "\nInstalling software requirements..." >&2 \
     && export DEBIAN_FRONTEND=noninteractive \
@@ -47,7 +49,8 @@ RUN \
         libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev \
         libopenslide-dev \
         libgomp1 \
-    && apt-get clean
+    && apt-get clean \
+    && ldconfig
 
 # copy libraries to the target paths
 COPY --from=prepare_install /usr/local/etc /usr/local/etc
