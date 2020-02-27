@@ -24,7 +24,7 @@ RUN echo "\nBuilding EDDL library..." >&2 \
     && cmake \
         -D BUILD_TARGET=GPU \
         -D BUILD_TESTS=ON \
-        -D EDDL_SHARED=ON \
+        -D BUILD_SHARED_LIB=ON \
         -D BUILD_PROTOBUF=ON \
         .. \
     && make -j$(grep -c ^processor /proc/cpuinfo) \
