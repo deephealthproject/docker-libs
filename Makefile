@@ -137,8 +137,8 @@ DOCKER_LOGIN_DONE := $(or ${DOCKER_LOGIN_DONE},false)
 
 # Arguments to execute tests with Docker
 DOCKER_RUN := docker run -i --rm #-u 1000:1000
-ifeq (${GPU}, true)
-	DOCKER_RUN := ${DOCKER_RUN} --gpus 1
+ifneq (${DOCKER_OPTS},)
+	DOCKER_RUN := ${DOCKER_RUN} ${DOCKER_OPTS}
 endif
 
 define build_new_image
