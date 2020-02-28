@@ -638,6 +638,16 @@ build_pylibs: build_pyecvl ## Build 'pylibs' image
 ############################################################################################################################
 ### Tests
 ############################################################################################################################
+define check_image
+	printf "\nSearching image $(1)... " ; \
+	images=$(docker images -q ${1}) ; \
+	if [ -z "$${images}" ]; then \
+		docker pull ${DOCKER_REPOSITORY_OWNER}/${1}; \
+		docker tag ${DOCKER_REPOSITORY_OWNER}/${1} ${1}; \
+	fi ; \
+	printf "\n"
+endef
+
 define test_image
 	$(eval image := $(1))
 	$(eval test_script := $(2))
@@ -653,10 +663,12 @@ define test_image
 	cnames="$${cnames} $${cname}" ; \
 	volumes="$${volumes} --volumes-from $${cname}" ; \
 	printf "\nCreating temp container instance of '$${xcpath[0]}' (name: $${cname})... " >&2; \
+	$(call check_image,$${xcpath[0]}) ; \
 	docker create --name $${cname} -v "$${xcpath[1]}" $${xcpath[0]} > /dev/null ; \
-	printf "DONE" >&2 ; \
+	printf "DONE\n" >&2 ; \
 	done ; \
 	printf "\n\n" ; \
+	$(call check_image,${image}) ; \
 	cat ${test_script} | ${DOCKER_RUN} $${volumes} ${image} /bin/bash ; \
 	exit_code=$$? ; \
 	for cname in $${cnames}; do \
