@@ -657,7 +657,7 @@ define test_image
 	printf "DONE" >&2 ; \
 	done ; \
 	printf "\n\n" ; \
-	cat ${test_script} | ${DOCKER_RUN} $${volumes} ${image} /bin/sh ; \
+	cat ${test_script} | ${DOCKER_RUN} $${volumes} ${image} /bin/bash ; \
 	exit_code=$$? ; \
 	for cname in $${cnames}; do \
 	printf "\nRemoving temp container instance '$${cname}'... " >&2; \
