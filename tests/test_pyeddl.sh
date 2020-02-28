@@ -6,11 +6,13 @@ PYEDDL_SRC=${PYEDDL_SRC:-"/usr/local/src/pyeddl"}
 # run tests
 cd ${PYEDDL_SRC} && pytest tests 
 
-# run examples
-gpus=$(docker run --runtime=nvidia nvidia/cuda:10.0-base nvidia-smi -L 2>&-)
+# check GPU availability
+gpu_check=".gpus_check"
+docker run --runtime=nvidia nvidia/cuda:10.0-base nvidia-smi -L > ${gpu_check} 2>&-
 
+# run examples
 cd ${PYEDDL_SRC}/examples
-if [ -z ${gpus} ]; then
+if [ -s ${gpu_check} ]; then
     echo 'INFO: No GPU available. Running tests with no GPU....'
     echo 'Downloading test dataset'
     wget -q  https://www.dropbox.com/s/khrb3th2z6owd9t/trX.bin
