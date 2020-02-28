@@ -10,7 +10,7 @@ cd ${PYEDDL_SRC} && pytest tests
 gpus=$(docker run --runtime=nvidia nvidia/cuda:10.0-base nvidia-smi -L 2>&-)
 
 cd ${PYEDDL_SRC}/examples
-if [[ -z ${gpus} ]]; then
+if [ -z ${gpus} ]; then
     log 'INFO: No GPU available. Running tests with no GPU....'
     log 'Downloading test dataset'
     wget -q  https://www.dropbox.com/s/khrb3th2z6owd9t/trX.bin
@@ -20,14 +20,14 @@ if [[ -z ${gpus} ]]; then
 	log 'Running tests....'
     pytest tests
     log 'Running examples....'
-	python3 examples/Tensor/array_tensor_save.py
-	python3 examples/NN/1_MNIST/mnist_auto_encoder.py --epochs 1
+	python3 Tensor/array_tensor_save.py
+	python3 NN/1_MNIST/mnist_auto_encoder.py --epochs 1
 else
     log "Available GPUs: \n ${gpus}"
     log "Running tests..."
-    python3 examples/Tensor/array_tensor_save.py
+    python3 Tensor/array_tensor_save.py
     log 'Running examples....'
-    bash examples/NN/1_MNIST/run_all_fast.sh
-    bash examples/NN/py_loss_metric/run_all_fast.sh
-    bash examples/onnx/run_all_fast.sh
+    bash NN/1_MNIST/run_all_fast.sh
+    bash NN/py_loss_metric/run_all_fast.sh
+    bash onnx/run_all_fast.sh
 fi
