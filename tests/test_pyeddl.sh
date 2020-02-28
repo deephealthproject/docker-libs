@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# exit on error
+set -e
+
 # set the path containing sources and tests
 PYEDDL_SRC=${PYEDDL_SRC:-"/usr/local/src/pyeddl"}
 
