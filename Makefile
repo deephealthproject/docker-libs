@@ -669,7 +669,7 @@ define test_image
 	done ; \
 	printf "\n\n" ; \
 	$(call check_image,${image}) ; \
-	cat ${test_script} | ${DOCKER_RUN} -e GPU_RUNTIME=${GPU_RUNTIME} $${volumes} ${image} /bin/bash ; \
+	cat ${test_script} | ${DOCKER_RUN} -e GPU_RUNTIME="${GPU_RUNTIME}" $${volumes} ${image} /bin/bash ; \
 	exit_code=$$? ; \
 	for cname in $${cnames}; do \
 	printf "\nRemoving temp container instance '$${cname}'... " >&2; \
