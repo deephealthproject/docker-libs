@@ -25,21 +25,14 @@ When you use the DeepHealth image for a library, the image also contains the lib
 * ECVL -> also contains EDDL
 * EDDL -> on its own
 
-If you want everything, use the PyECVL image.
+If you want everything, **use the PyECVL image**.
 
 ### Toolkit
 
-For all images, a toolkit version is also built that contains build requirements for software (compiler, headers, etc.).  You can use these to build your own software or rebuild the DeepHealth libraries from source.
-
-The toolkit images have the same name with an appended `-toolkit`:
-* `dhealth/eddl-toolkit`
-* `dhealth/ecvl-toolkit`
-* `dhealth/pyeddl-toolkit`
-* `dhealth/pyecvl-toolkit`
+For all images, a toolkit version is also built that contains build requirements for software (compiler, headers, etc.).  You can use these to build your own software or rebuild the DeepHealth libraries from source.  Keep reading the section below for details.
 
 
-
-## Description
+## Detailed description
 
 The `docker-libs` repository allows users to build and publish on a registry (e.g., DockerHub) Docker images containing the DeepHealth libraries: [EDDL](https://github.com/deephealthproject/eddl), [ECVL](https://github.com/deephealthproject/ecvl) and their Python wrappers, [PyEDDL](https://github.com/deephealthproject/pyeddl) and [PyECVL](https://github.com/deephealthproject/pycvl). All the images are based on the [NVIDIA Container Toolkit](https://github.com/NVIDIA/nvidia-docker) and the EDDL and ECVL libraries are configured to leverage NVIDIA GPUs.
 
