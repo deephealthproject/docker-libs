@@ -7,7 +7,7 @@ Docker images to develop and run software based on the [EDDL](https://github.com
 
 ## TL;DR
 
-    docker pull dhealth/pyecvl
+E.g., `docker pull dhealth/pyecvl:0.1.0`
 
 
 * Every library has a corresponding image repository:
