@@ -10,7 +10,7 @@ set -o errtrace
 # set base images
 export DOCKER_NVIDIA_DEVELOP_IMAGE="${DOCKER_NVIDIA_DEVELOP_IMAGE:-nvidia/cuda:10.1-devel}"
 export DOCKER_NVIDIA_RUNTIME_IMAGE="${DOCKER_NVIDIA_RUNTIME_IMAGE:-nvidia/cuda:10.1-runtime}"
-export DOCKER_BASE_IMAGE_VERSION_TAG="${DOCKER_BASE_IMAGE_VERSION_TAG:-0.2.0}"
+export DOCKER_BASE_IMAGE_VERSION_TAG="${DOCKER_BASE_IMAGE_VERSION_TAG:-0.2.1}"
 
 # default libs version
 export DOCKER_LIBS_REPO="${DOCKER_LIBS_REPO:-https://github.com/deephealthproject/docker-libs.git}"
@@ -27,7 +27,7 @@ DOCKER_PASSWORD=${DOCKER_PASSWORD:-}
 GIT_URL=${GIT_URL:-}
 
 # set script version
-VERSION=0.2.0
+VERSION=0.2.1
 
 function abspath() {
   local path="${*}"

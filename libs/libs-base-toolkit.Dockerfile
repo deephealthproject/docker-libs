@@ -43,7 +43,6 @@ RUN \
         --slave /usr/bin/g++ g++ /usr/bin/g++-8 \
         --slave /usr/bin/x86_64-linux-gnu-gcc x86_64-linux-gnu-gcc /usr/bin/x86_64-linux-gnu-gcc-8 \
         --slave /usr/bin/x86_64-linux-gnu-g++ x86_64-linux-gnu-g++ /usr/bin/x86_64-linux-gnu-g++-8 \
-    && apt-get clean \
     && echo "\n > Installing cmake (version '${cmake_release}')..." >&2 \
     && cd /tmp/ \
     && wget --quiet https://github.com/Kitware/CMake/releases/download/v3.14.6/cmake-${cmake_release}-Linux-x86_64.tar.gz \
@@ -94,4 +93,12 @@ RUN \
     && make -j$(nproc) \
     && make install \
     && ldconfig \
-    && rm -rf /tmp/protobuf-${protobuf_release}
+    && rm -rf /tmp/protobuf-${protobuf_release} \
+    && echo "\n > Installing GTest library..." >&2 \
+    && apt-get install -y --no-install-recommends libgtest-dev \
+    && cd /usr/src/gtest \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && make install \
+    && apt-get clean \
