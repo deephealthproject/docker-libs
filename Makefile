@@ -19,6 +19,10 @@ endif
 # date.time as build number
 BUILD_NUMBER := $(or ${BUILD_NUMBER},$(shell date '+%Y%m%d.%H%M%S'))
 
+# set build target: (CPU, GPU)
+BUILD_TARGET := $(or $(BUILD_TARGET),CPU)
+build_target_opts := --build-arg BUILD_TARGET=$(BUILD_TARGET)
+
 # log file with dependencies
 IMAGES_LOG := .images.log
 LIBRARIES_LOG := .libraries.log
@@ -153,7 +157,7 @@ define build_new_image
 	cd ${image} \
 	&& docker build ${BUILD_CACHE_OPT} \
 		-f ${target}.Dockerfile \
-		${base} ${toolkit} \
+		${base} ${toolkit} ${extra_args} \
 		-t ${image_name}:${tag} ${tags} ${latest_tags} ${labels} . 
 endef
 
@@ -165,6 +169,7 @@ define build_image
 	$(eval base := $(if $(5), --build-arg BASE_IMAGE=$(5)))
 	$(eval toolkit := $(if $(6), --build-arg TOOLKIT_IMAGE=$(6)))
 	$(eval extra_tags := $(7))
+	$(eval extra_args := $(8))
 	$(eval image_name := ${DOCKER_IMAGE_PREFIX}${target}${${target}_suffix})
 	$(eval full_image_name := $(shell prefix=""; if [ -n "${DOCKER_REGISTRY}" ]; then prefix="${DOCKER_REGISTRY}/"; fi; echo "${prefix}${DOCKER_REPOSITORY_OWNER}/${image_name}"))
 	$(eval latest_tags := $(shell if [ "${push_latest_tags}" == "true" ]; then echo "-t ${image_name}:latest"; fi))
@@ -463,9 +468,14 @@ _build: \
 ############# libs-toolkit #############
 
 _build_libs_base_toolkit:
-	$(call build_image,libs,libs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG},\
-		--label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_NVIDIA_DEVELOP_IMAGE))
-	$(call log_image_revision,$(DOCKER_NVIDIA_DEVELOP_IMAGE_NAME),$(DOCKER_NVIDIA_DEVELOP_IMAGE_TAG))
+	$(if $(findstring $(BUILD_TARGET), GPU),\
+		echo "Building for GPU"; \
+		$(call build_image,libs,libs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG}, --label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_NVIDIA_DEVELOP_IMAGE),,,${build_target_opts}) \
+		$(call log_image_revision,$(DOCKER_NVIDIA_DEVELOP_IMAGE_NAME),$(DOCKER_NVIDIA_DEVELOP_IMAGE_TAG)),\
+		echo "Building for CPU"; \
+		$(call build_image,libs,libs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG}, --label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_UBUNTU_IMAGE),,,${build_target_opts}) \
+		$(call log_image_revision,$(DOCKER_UBUNTU_IMAGE_NAME),$(DOCKER_UBUNTU_IMAGE_TAG)) \
+	)
 
 build_eddl_toolkit: eddl_folder _build_libs_base_toolkit apply_pyeddl_patches ## Build 'eddl-toolkit' image
 	$(call build_image,libs,eddl-toolkit,${EDDL_IMAGE_VERSION_TAG},\
@@ -498,8 +508,12 @@ build_libs_toolkit: build_ecvl_toolkit ## Build 'libs-toolkit' image
 
 _build_libs_base: _build_libs_base_toolkit
 	$(call build_image,libs,libs-base,${DOCKER_BASE_IMAGE_VERSION_TAG},\
-		--label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_NVIDIA_RUNTIME_IMAGE),libs-base-toolkit:$(DOCKER_BASE_IMAGE_VERSION_TAG))
-	$(call log_image_revision,$(DOCKER_NVIDIA_RUNTIME_IMAGE_NAME),$(DOCKER_NVIDIA_RUNTIME_IMAGE_TAG))
+			--label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_NVIDIA_RUNTIME_IMAGE),libs-base-toolkit:$(DOCKER_BASE_IMAGE_VERSION_TAG),,${build_target_opts})\
+		$(call log_image_revision,$(DOCKER_NVIDIA_RUNTIME_IMAGE_NAME),$(DOCKER_NVIDIA_RUNTIME_IMAGE_TAG)),\
+		$(call build_image,libs,libs-base,${DOCKER_BASE_IMAGE_VERSION_TAG},\
+			--label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_UBUNTU_IMAGE),libs-base-toolkit:$(DOCKER_BASE_IMAGE_VERSION_TAG),,${build_target_opts})\
+		$(call log_image_revision,$(DOCKER_UBUNTU_IMAGE_NAME),$(DOCKER_UBUNTU_IMAGE_TAG))\
+	)
 
 build_eddl: _build_libs_base build_eddl_toolkit ## Build 'eddl' image
 	$(call build_image,libs,eddl,${EDDL_IMAGE_VERSION_TAG},\

@@ -1,5 +1,6 @@
 ARG BASE_IMAGE
 ARG TOOLKIT_IMAGE
+ARG BUILD_TARGET="CPU"
 ARG OPENV_INSTALL_MANIFEST="/usr/local/opencv/install_manifest.txt"
 
 # set toolkit image
@@ -33,9 +34,13 @@ RUN cd /tmp/local && sed -e 's+/usr/local/++g' *_manifest.txt | \
 ####################
 FROM ${BASE_IMAGE} AS base
 
-LABEL website="https://github.com/deephealthproject"
-LABEL description="DeepHealth European Distributed Deep Learning Library"
-LABEL software="deephealth-eddl,deephealth-ecvl"
+LABEL website="https://github.com/deephealthproject" \
+      description="DeepHealth European Distributed Deep Learning Library" \
+      software="deephealth-eddl,deephealth-ecvl"
+
+# set build target
+ARG BUILD_TARGET
+ENV BUILD_TARGET ${BUILD_TARGET}
 
 # Install software requirements
 RUN \

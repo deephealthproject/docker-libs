@@ -25,6 +25,10 @@ ARG protobuf_release="3.11.4"
 ENV PROTOBUF_RELEASE ${protobuf_release}
 ENV PROTOBUF_INSTALL_MANIFEST "/usr/local/protobuf/install_manifest.txt"
 
+# set build target
+ARG BUILD_TARGET="CPU"
+ENV BUILD_TARGET=${BUILD_TARGET}
+
 # Install software requirements
 RUN \
     echo "\nInstalling software requirements..." >&2 \
