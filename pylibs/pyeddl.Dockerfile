@@ -17,9 +17,9 @@ RUN sed -e 's+/usr/local/++g' install.log | \
 FROM ${BASE_IMAGE} as base
 
 # set metadata
-LABEL website="https://github.com/deephealthproject/"
-LABEL description="DeepHealth European Distributed Deep Learning Library"
-LABEL software="deephealth-eddl,deephealth-ecvl,deephealth-pyeddl"
+LABEL website="https://github.com/deephealthproject/" \
+      description="DeepHealth European Distributed Deep Learning Library" \
+      software="deephealth-eddl,deephealth-ecvl,deephealth-pyeddl"
 
 # link the cudart, cublas and curand libraries on "standard" system locations
 RUN /bin/bash -c "if [[ \"${BUILD_TARGET}\" == \"GPU\" ]]; then \

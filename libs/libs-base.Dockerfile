@@ -13,7 +13,8 @@ FROM ${BASE_IMAGE} AS prepare_install
 
 RUN apt-get update -y -q \
     && apt-get install -y --no-install-recommends wget rsync \
-    && apt-get clean
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # make a temporary copy of libraries
 COPY --from=toolkit /usr/local/bin /tmp/local/bin
@@ -55,6 +56,7 @@ RUN \
         libopenslide-dev \
         libgomp1 \
     && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
     && ldconfig
 
 # copy libraries to the target paths

@@ -2,9 +2,9 @@ ARG BASE_IMAGE
 FROM ${BASE_IMAGE} as libs.base-toolkit
 
 # set metadata
-LABEL website="https://github.com/deephealthproject/"
-LABEL description="DeepHealth European Distributed Deep Learning Library"
-LABEL software="deephealth-eddl,deephealth-ecvl"
+LABEL website="https://github.com/deephealthproject/" \
+      description="DeepHealth European Distributed Deep Learning Library" \
+      software="deephealth-eddl,deephealth-ecvl"
 
 # set cmake version
 ARG cmake_release="3.14.6"
@@ -31,7 +31,7 @@ ENV BUILD_TARGET=${BUILD_TARGET}
 
 # Install software requirements
 RUN \
-    echo "\nInstalling software requirements..." >&2 \
+    echo "\nInstalling base software requirements..." >&2 \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get update -y -q \
     && apt-get install -y --no-install-recommends  \
@@ -106,3 +106,4 @@ RUN \
     && cmake .. \
     && make install \
     && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
