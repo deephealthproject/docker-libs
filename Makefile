@@ -10,6 +10,12 @@ ifeq ($(UNAME_S),Darwin)
 	XARGS_OPT =
 endif
 
+# config file
+CONFIG_FILE ?= settings.conf
+ifneq ($(wildcard $(CONFIG_FILE)),)
+include $(CONFIG_FILE)
+endif
+
 # date.time as build number
 BUILD_NUMBER := $(or ${BUILD_NUMBER},$(shell date '+%Y%m%d.%H%M%S'))
 
