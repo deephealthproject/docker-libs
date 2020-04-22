@@ -22,7 +22,8 @@ RUN echo "\nBuilding EDDL library..." >&2 \
     && mkdir build \
     && cd build \
     && cmake \
-        -D BUILD_TARGET=GPU \
+        -D BUILD_TARGET=${BUILD_TARGET} \
+        -D DBUILD_EXAMPLES=ON \
         -D BUILD_TESTS=ON \
         -D BUILD_SHARED_LIB=ON \
         -D BUILD_PROTOBUF=ON \
