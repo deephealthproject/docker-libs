@@ -27,15 +27,34 @@ RUN cd /tmp/local && sed -e 's+/usr/local/++g' /tmp/local/install_manifest.txt |
 ######################
 #### TARGET Stage ####
 ######################
-FROM ${BASE_IMAGE} AS libs.eddl
+FROM scratch AS libs.eddl
 
 # Set metadata
-LABEL website="https://github.com/deephealthproject"
-LABEL description="DeepHealth European Distributed Deep Learning Library"
-LABEL software="deephealth-eddl"
+LABEL website="https://github.com/deephealthproject" \
+      description="DeepHealth European Distributed Deep Learning Library" \
+      software="deephealth-eddl"
 
-# copy libraries to the target paths
-COPY --from=prepare_install /usr/local/etc /usr/local/etc
-COPY --from=prepare_install /usr/local/include /usr/local/include
-COPY --from=prepare_install /usr/local/lib /usr/local/lib
-COPY --from=prepare_install /usr/local/share /usr/local/share
+COPY --from=prepare_install /bin /bin
+COPY --from=prepare_install /boot /boot
+COPY --from=prepare_install /dev /dev
+COPY --from=prepare_install /etc /etc
+COPY --from=prepare_install /home /home
+COPY --from=prepare_install /lib /lib
+COPY --from=prepare_install /lib64 /lib64
+COPY --from=prepare_install /media /media
+COPY --from=prepare_install /mnt /mnt
+COPY --from=prepare_install /opt /opt
+COPY --from=prepare_install /proc /proc
+COPY --from=prepare_install /root /root
+COPY --from=prepare_install /run /run
+COPY --from=prepare_install /sbin /sbin
+COPY --from=prepare_install /srv /srv
+COPY --from=prepare_install /sys /sys
+COPY --from=prepare_install /usr /usr
+COPY --from=prepare_install /var /var
+
+# create the /tmp folder with right permissions
+RUN mkdir -p /tmp && chmod 1777 /tmp
+
+# default cmd
+CMD ["/bin/bash"]
