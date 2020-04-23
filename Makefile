@@ -705,7 +705,7 @@ define check_image
 	printf "\nSearching image $(1)... " ; \
 	images=$(docker images -q ${1}) 2> /dev/null ; \
 	if [ -z "$${images}" ]; then \
-		docker pull ${DOCKER_REPOSITORY_OWNER}/${1} 2> /dev/null ; \
+		[ "${_DO_NOT_PULL_DOCKER_IMAGES}" == "0" ] && docker pull ${DOCKER_REPOSITORY_OWNER}/${1} 2> /dev/null ; \
 		docker tag ${DOCKER_REPOSITORY_OWNER}/${1} ${1} 2> /dev/null ; \
 	fi ; \
 	printf "\n"
