@@ -49,7 +49,8 @@ RUN \
         --slave /usr/bin/x86_64-linux-gnu-g++ x86_64-linux-gnu-g++ /usr/bin/x86_64-linux-gnu-g++-8 \
     && echo "\n > Installing cmake (version '${cmake_release}')..." >&2 \
     && cd /tmp/ \
-    && wget --quiet https://github.com/Kitware/CMake/releases/download/v3.14.6/cmake-${cmake_release}-Linux-x86_64.tar.gz \
+    && wget --quiet --no-check-certificate \
+        https://github.com/Kitware/CMake/releases/download/v${cmake_release}/cmake-${cmake_release}-Linux-x86_64.tar.gz \
     && tar xzf cmake-${cmake_release}-Linux-x86_64.tar.gz \
     && rm cmake*.tar.gz \
     && mv cmake*/bin/* /usr/local/bin/ \
@@ -59,7 +60,8 @@ RUN \
     && rm -rf /tmp/cmake* \
     && echo "\n > Installing OpenCV (version '${opencv_release}')..." >&2 \
     && cd /tmp/ \
-    && wget --quiet https://github.com/opencv/opencv/archive/${opencv_release}.tar.gz \
+    && wget --quiet --no-check-certificate \
+        https://github.com/opencv/opencv/archive/${opencv_release}.tar.gz \
     && tar xzf ${opencv_release}.tar.gz \
     && rm ${opencv_release}.tar.gz \
     && cd opencv-${opencv_release} \
@@ -76,7 +78,8 @@ RUN \
     # https://devtalk.nvidia.com/default/topic/1026622/nvcc-can-t-compile-code-that-uses-eigen/
     && echo "\n > Installing Eigen (version '${eigen_release}')..." >&2 \
     && cd /tmp \
-    && wget --quiet https://gitlab.com/libeigen/eigen/-/archive/${eigen_release}/eigen-${eigen_release}.tar.gz \
+    && wget --quiet --no-check-certificate \
+        https://gitlab.com/libeigen/eigen/-/archive/${eigen_release}/eigen-${eigen_release}.tar.gz \
     && tar xzf eigen-${eigen_release}.tar.gz \
     && rm eigen-${eigen_release}.tar.gz \
     && cd eigen-${eigen_release} \
@@ -89,7 +92,8 @@ RUN \
     && rm -rf /tmp/eigen-${eigen_release} \
     && echo "\n > Installing ProtoBuf (version '${protobuf_release}')..." >&2 \
     && cd /tmp \
-    && wget --quiet https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_release}/protobuf-all-${protobuf_release}.tar.gz \
+    && wget --quiet --no-check-certificate \
+        https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_release}/protobuf-all-${protobuf_release}.tar.gz \
     && tar xf protobuf-all-${protobuf_release}.tar.gz \
     && rm protobuf-all-${protobuf_release}.tar.gz \
     && cd protobuf-${protobuf_release}/ \
