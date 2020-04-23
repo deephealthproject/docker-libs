@@ -13,11 +13,4 @@ RUN \
    && apt-get clean \
    && rm -rf /var/lib/apt/lists/* \
    && python3 -m pip install --upgrade --no-cache-dir \
-      setuptools pip numpy pybind11 pytest \
-   # link the cudart, cublas and curand libraries on "standard" system locations
-   && /bin/bash -c "if [[ "${BUILD_TARGET}" == "GPU" ]]; then \
-        ln -s /usr/local/cuda-10.1/targets/x86_64-linux/lib/libcudart.so /usr/lib/ \
-        && ln -s /usr/local/cuda-10.1/targets/x86_64-linux/lib/libcurand.so /usr/lib/ \
-        && ln -s /usr/local/cuda-10.1/targets/x86_64-linux/lib/libcublas.so /usr/lib/ \
-        && export EDDL_WITH_CUDA="true" ; \
-    fi"
+      setuptools pip numpy pybind11 pytest
