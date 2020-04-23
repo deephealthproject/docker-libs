@@ -751,7 +751,7 @@ _test: \
 	test_pyecvl test_pyecvl_toolkit
 
 test_eddl: eddl_folder ## Test 'eddl' images
-	$(eval EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION}))
+	$(call set_library_revision,libs,eddl)
 	@$(call test_image,\
 		eddl:${EDDL_IMAGE_VERSION_TAG},\
 		tests/test_eddl.sh,\
@@ -759,11 +759,11 @@ test_eddl: eddl_folder ## Test 'eddl' images
 	)
 	
 test_eddl_toolkit: eddl_folder ## Test 'eddl' images
-	$(eval EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION}))
+	$(call set_library_revision,libs,eddl)
 	@$(call test_image,eddl-toolkit:${EDDL_IMAGE_VERSION_TAG},tests/test_eddl.sh)
 
 test_ecvl: ecvl_folder ## Test 'ecvl' images
-	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
+	$(call set_library_revision,libs,ecvl)
 	@$(call test_image,\
 		ecvl:${ECVL_IMAGE_VERSION_TAG},\
 		tests/test_ecvl.sh,\
@@ -771,11 +771,11 @@ test_ecvl: ecvl_folder ## Test 'ecvl' images
 	)
 
 test_ecvl_toolkit: ecvl_folder ## Test 'ecvl' images
-	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
+	$(call set_library_revision,libs,ecvl)
 	@$(call test_image,ecvl-toolkit:${ECVL_IMAGE_VERSION_TAG},tests/test_ecvl.sh)
 
 test_pyeddl: pyeddl_folder ## Test 'ecvl' images
-	$(eval PYEDDL_IMAGE_VERSION_TAG := $(or ${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION}))
+	$(call set_library_revision,pylibs,pyeddl)
 	@$(call test_image,\
 		pyeddl:${PYEDDL_IMAGE_VERSION_TAG},\
 		tests/test_pyeddl.sh,\
@@ -783,12 +783,12 @@ test_pyeddl: pyeddl_folder ## Test 'ecvl' images
 	)
 
 test_pyeddl_toolkit: pyeddl_folder ## Test 'ecvl' images
-	$(eval PYEDDL_IMAGE_VERSION_TAG := $(or ${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION}))
+	$(call set_library_revision,pylibs,pyeddl)
 	@$(call test_image,pyeddl-toolkit:${PYEDDL_IMAGE_VERSION_TAG},tests/test_pyeddl.sh)
 
 test_pyecvl: pyecvl_folder ## Test 'ecvl' images
-	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
-	$(eval PYECVL_IMAGE_VERSION_TAG := $(or ${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION}))
+	$(call set_library_revision,libs,ecvl)
+	$(call set_library_revision,pylibs,pyecvl)
 	@$(call test_image,\
 		pyecvl:${PYECVL_IMAGE_VERSION_TAG},\
 		tests/test_pyecvl.sh,\
@@ -797,8 +797,8 @@ test_pyecvl: pyecvl_folder ## Test 'ecvl' images
 	)
 
 test_pyecvl_toolkit: #pyecvl_folder ## Test 'ecvl' images
-	$(eval PYECVL_IMAGE_VERSION_TAG := $(or ${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION}))
-	@@$(call test_image,pyecvl-toolkit:${PYECVL_IMAGE_VERSION_TAG},tests/test_pyecvl.sh)
+	$(call set_library_revision,pylibs,pyecvl)
+	@$(call test_image,pyecvl-toolkit:${PYECVL_IMAGE_VERSION_TAG},tests/test_pyecvl.sh)
 
 ############################################################################################################################
 ### Push Docker images
