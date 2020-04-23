@@ -160,6 +160,7 @@ endif
 define build_new_image
 	echo "Building Docker image '${image_name}' ( tags: ${tag} ${extra_tags})..." ; \
 	$(eval tags := $(filter-out undefined,$(foreach tag,$(extra_tags),-t $(image_name):$(tag))))
+	$(eval _DO_NOT_PULL_DOCKER_IMAGES := 1)
 	cd ${image} \
 	&& docker build ${BUILD_CACHE_OPT} \
 		-f ${target}.Dockerfile \
