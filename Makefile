@@ -46,7 +46,7 @@ develop_suffix = -toolkit
 LIBS_TAG := $(shell git tag -l --points-at HEAD | tail -n 1)
 LIBS_REVISION := $(shell git rev-parse --short HEAD | sed -E 's/-//; s/ .*//')
 LIBS_BRANCH := $(shell git name-rev --name-only HEAD | sed -E 's+(remotes/|origin/)++g; s+/+-+g; s/ .*//')
-LIBS_VERSION := $(shell if [[ -n "${LIBS_TAG}" ]]; then echo ${LIBS_TAG}; else echo ${LIBS_BRANCH}-${LIBS_REVISION}; fi)
+LIBS_VERSION := $(shell if [[ -n "${LIBS_TAG}" ]]; then echo ${LIBS_TAG}; else echo ${LIBS_REVISION}; fi)
 
 # set container version equal to the repository version
 CONTAINER_VERSION := $(LIBS_VERSION)
