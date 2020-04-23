@@ -367,7 +367,7 @@ endef
 _ecvl_folder:
 	$(call clone_ecvl)
 
-ecvl_folder: _ecvl_folder
+ecvl_folder: _ecvl_folder pyecvl_folder
 	$(call set_library_revision,libs,ecvl) \
 	$(call log_library_revision,ECVL)
 
@@ -530,7 +530,7 @@ build_eddl: _build_libs_base build_eddl_toolkit ## Build 'eddl' image
 		--label EDDL_REVISION=${EDDL_REVISION},libs-base:$(DOCKER_BASE_IMAGE_VERSION_TAG),eddl-toolkit:$(EDDL_IMAGE_VERSION_TAG))
 	$(call log_image_revision,eddl,${EDDL_IMAGE_VERSION_TAG},install,EDDL)
 
-build_ecvl: _build_libs_base build_eddl build_ecvl_toolkit## Build 'ecvl' image
+build_ecvl: _build_libs_base build_ecvl_toolkit build_eddl ## Build 'ecvl' image
 	$(call build_image,libs,ecvl,${ECVL_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
