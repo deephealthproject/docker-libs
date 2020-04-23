@@ -555,12 +555,29 @@ build_libs: build_ecvl ## Build 'libs' image
 
 ############# pylibs-toolkit #############
 
-_build_pylibs_base_toolkit: build_ecvl_toolkit
-	$(eval PYLIBS_BASE_IMAGE_VERSION_TAG := base_${DOCKER_BASE_IMAGE_VERSION_TAG}-eddl_${EDDL_IMAGE_VERSION_TAG}-ecvl_${ECVL_IMAGE_VERSION_TAG})
+_build_pyeddl_base_toolkit: build_eddl_toolkit
+	$(eval PYLIBS_BASE_IMAGE_VERSION_TAG := base_${DOCKER_BASE_IMAGE_VERSION_TAG}-eddl_${EDDL_IMAGE_VERSION_TAG})
+	$(call build_image,pylibs,pylibs-base-toolkit,${PYLIBS_BASE_IMAGE_VERSION_TAG},\
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION),eddl-toolkit:$(EDDL_IMAGE_VERSION_TAG))
+
+_build_pyecvl_base_toolkit: build_ecvl_toolkit pyeddl_folder apply_pyeddl_patches
+	$(eval PYLIBS_BASE_IMAGE_VERSION_TAG := base_${DOCKER_BASE_IMAGE_VERSION_TAG}-pyeddl_eddl_${PYEDDL_IMAGE_VERSION_TAG}-eddl_${EDDL_IMAGE_VERSION_TAG}-ecvl_${ECVL_IMAGE_VERSION_TAG})
 	$(call build_image,pylibs,pylibs-base-toolkit,${PYLIBS_BASE_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION),ecvl-toolkit:$(ECVL_IMAGE_VERSION_TAG))
+	$(call build_image,pylibs,pyeddl-toolkit,${PYLIBS_BASE_IMAGE_VERSION_TAG},\
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
+		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
+		--label EDDL_BRANCH=${EDDL_BRANCH} \
+		--label EDDL_REVISION=${EDDL_REVISION} \
+		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
+		--label ECVL_BRANCH=${ECVL_BRANCH} \
+		--label ECVL_REVISION=${ECVL_REVISION} \
+		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
+		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
+		--label PYEDDL_REVISION=${PYEDDL_REVISION},pylibs-base-toolkit:$(PYLIBS_BASE_IMAGE_VERSION_TAG))
+	$(call log_image_revision,pyeddl-toolkit,${PYLIBS_BASE_IMAGE_VERSION_TAG},install,PYEDDL)
 
-build_pyeddl_toolkit: pyeddl_folder _build_pylibs_base_toolkit apply_pyeddl_patches ## Build 'pyeddl-toolkit' image
+build_pyeddl_toolkit: pyeddl_folder _build_pyeddl_base_toolkit apply_pyeddl_patches ## Build 'pyeddl-toolkit' image
 	$(call build_image,pylibs,pyeddl-toolkit,${PYEDDL_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
@@ -574,7 +591,7 @@ build_pyeddl_toolkit: pyeddl_folder _build_pylibs_base_toolkit apply_pyeddl_patc
 		--label PYEDDL_REVISION=${PYEDDL_REVISION},pylibs-base-toolkit:$(PYLIBS_BASE_IMAGE_VERSION_TAG))
 	$(call log_image_revision,pyeddl-toolkit,${PYEDDL_IMAGE_VERSION_TAG},install,PYEDDL)
 
-build_pyecvl_toolkit: pyecvl_folder build_pyeddl_toolkit ## Build 'pyecvl-toolkit' image
+build_pyecvl_toolkit: pyecvl_folder _build_pyecvl_base_toolkit ## Build 'pyecvl-toolkit' image
 	$(call build_image,pylibs,pyecvl-toolkit,${PYECVL_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
@@ -588,7 +605,7 @@ build_pyecvl_toolkit: pyecvl_folder build_pyeddl_toolkit ## Build 'pyecvl-toolki
 		--label PYECVL_REVISION=${PYECVL_REVISION} \
 		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
 		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
-		--label PYEDDL_REVISION=${PYEDDL_REVISION},pyeddl-toolkit:$(PYEDDL_IMAGE_VERSION_TAG))
+		--label PYEDDL_REVISION=${PYEDDL_REVISION},pyeddl-toolkit:$(PYLIBS_BASE_IMAGE_VERSION_TAG))
 	$(call log_image_revision,pyecvl-toolkit,${PYECVL_IMAGE_VERSION_TAG},install,PYECVL)
 
 build_pylibs_toolkit: build_pyecvl_toolkit ## Build 'pylibs-toolkit' image
@@ -611,12 +628,29 @@ build_pylibs_toolkit: build_pyecvl_toolkit ## Build 'pylibs-toolkit' image
 
 ############# pylibs #############
 
-_build_pylibs_base: build_ecvl
-	$(eval PYLIBS_BASE_IMAGE_VERSION_TAG := base_${DOCKER_BASE_IMAGE_VERSION_TAG}-eddl_${EDDL_IMAGE_VERSION_TAG}-ecvl_${ECVL_IMAGE_VERSION_TAG})
+_build_pyeddl_base: build_eddl
+	$(eval PYLIBS_BASE_IMAGE_VERSION_TAG := base_${DOCKER_BASE_IMAGE_VERSION_TAG}-eddl_${EDDL_IMAGE_VERSION_TAG})
+	$(call build_image,pylibs,pylibs-base,${PYLIBS_BASE_IMAGE_VERSION_TAG},\
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION),eddl:$(EDDL_IMAGE_VERSION_TAG))
+
+_build_pyecvl_base: build_ecvl
+	$(eval PYLIBS_BASE_IMAGE_VERSION_TAG := base_${DOCKER_BASE_IMAGE_VERSION_TAG}-pyeddl_${PYEDDL_IMAGE_VERSION_TAG}-eddl_${EDDL_IMAGE_VERSION_TAG}-ecvl_${ECVL_IMAGE_VERSION_TAG})
 	$(call build_image,pylibs,pylibs-base,${PYLIBS_BASE_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION),ecvl:$(ECVL_IMAGE_VERSION_TAG))
+	$(call build_image,pylibs,pyeddl,${PYLIBS_BASE_IMAGE_VERSION_TAG},\
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
+		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
+		--label EDDL_BRANCH=${EDDL_BRANCH} \
+		--label EDDL_REVISION=${EDDL_REVISION} \
+		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
+		--label ECVL_BRANCH=${ECVL_BRANCH} \
+		--label ECVL_REVISION=${ECVL_REVISION} \
+		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
+		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
+		--label PYEDDL_REVISION=${PYEDDL_REVISION},pylibs-base:$(PYLIBS_BASE_IMAGE_VERSION_TAG),pyeddl-toolkit:$(PYEDDL_IMAGE_VERSION_TAG))
+	$(call log_image_revision,pyeddl,${PYLIBS_BASE_IMAGE_VERSION_TAG},install,PYEDDL)
 
-build_pyeddl: build_pyeddl_toolkit _build_pylibs_base ## Build 'pyeddl' image
+build_pyeddl: build_pyeddl_toolkit _build_pyeddl_base ## Build 'pyeddl' image
 	$(call build_image,pylibs,pyeddl,${PYEDDL_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
@@ -630,7 +664,7 @@ build_pyeddl: build_pyeddl_toolkit _build_pylibs_base ## Build 'pyeddl' image
 		--label PYEDDL_REVISION=${PYEDDL_REVISION},pylibs-base:$(PYLIBS_BASE_IMAGE_VERSION_TAG),pyeddl-toolkit:$(PYEDDL_IMAGE_VERSION_TAG))
 	$(call log_image_revision,pyeddl,${PYEDDL_IMAGE_VERSION_TAG},install,PYEDDL)
 
-build_pyecvl: build_pyecvl_toolkit build_pyeddl ## Build 'pyecvl' image
+build_pyecvl: build_pyecvl_toolkit _build_pyecvl_base ## Build 'pyecvl' image
 	$(call build_image,pylibs,pyecvl,${PYECVL_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
@@ -644,7 +678,7 @@ build_pyecvl: build_pyecvl_toolkit build_pyeddl ## Build 'pyecvl' image
 		--label PYECVL_REVISION=${PYECVL_REVISION} \
 		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
 		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
-		--label PYEDDL_REVISION=${PYEDDL_REVISION},pyeddl:$(PYEDDL_IMAGE_VERSION_TAG),pyecvl-toolkit:$(PYECVL_IMAGE_VERSION_TAG))
+		--label PYEDDL_REVISION=${PYEDDL_REVISION},pyeddl:$(PYLIBS_BASE_IMAGE_VERSION_TAG),pyecvl-toolkit:$(PYECVL_IMAGE_VERSION_TAG))
 	$(call log_image_revision,pyecvl,${PYECVL_IMAGE_VERSION_TAG},install,PYECVL)
 
 build_pylibs: build_pyecvl ## Build 'pylibs' image
@@ -959,9 +993,9 @@ clean: clean_images clean_sources clean_logs
 	_build_libs_base_toolkit \
 	build_eddl_toolkit build_ecvl_toolkit build_libs_toolkit \
 	_build_libs_base build_eddl build_ecvl build_libs \
-	_build_pylibs_base_toolkit _build_pylibs_base \
+	_build_pyeddl_base_toolkit _build_pyecvl_base_toolkit _build_pylibs_base \
 	build_pyeddl_toolkit build_pyecvl_toolkit build_pylibs_toolkit\
-	_build_pylibs_base build_pyeddl build_pyecvl build_pylibs \
+	_build_pyeddl_base _build_pyecvl_base build_pyeddl build_pyecvl build_pylibs \
 	_docker_login docker_login \
 	push _push \
 	push_libs push_eddl push_ecvl \
