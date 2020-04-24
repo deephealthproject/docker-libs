@@ -633,7 +633,7 @@ _build_pyeddl_base: build_eddl
 	$(call build_image,pylibs,pylibs-base,${PYLIBS_BASE_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION),eddl:$(EDDL_IMAGE_VERSION_TAG))
 
-_build_pyecvl_base: build_ecvl
+_build_pyecvl_base: build_ecvl build_pyeddl_toolkit
 	$(eval PYLIBS_BASE_IMAGE_VERSION_TAG := base_${DOCKER_BASE_IMAGE_VERSION_TAG}-pyeddl_${PYEDDL_IMAGE_VERSION_TAG}-eddl_${EDDL_IMAGE_VERSION_TAG}-ecvl_${ECVL_IMAGE_VERSION_TAG})
 	$(call build_image,pylibs,pylibs-base,${PYLIBS_BASE_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION),ecvl:$(ECVL_IMAGE_VERSION_TAG))
