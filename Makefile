@@ -576,7 +576,6 @@ _build_pyecvl_base_toolkit: build_ecvl_toolkit pyeddl_folder apply_pyeddl_patche
 		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
 		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
 		--label PYEDDL_REVISION=${PYEDDL_REVISION},pylibs-base-toolkit:$(PYLIBS_BASE_IMAGE_VERSION_TAG))
-	$(call log_image_revision,pyeddl-toolkit,${PYLIBS_BASE_IMAGE_VERSION_TAG},install,PYEDDL)
 
 build_pyeddl_toolkit: pyeddl_folder _build_pyeddl_base_toolkit apply_pyeddl_patches ## Build 'pyeddl-toolkit' image
 	$(call build_image,pylibs,pyeddl-toolkit,${PYEDDL_IMAGE_VERSION_TAG},\
@@ -649,7 +648,6 @@ _build_pyecvl_base: build_ecvl
 		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
 		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
 		--label PYEDDL_REVISION=${PYEDDL_REVISION},pylibs-base:$(PYLIBS_BASE_IMAGE_VERSION_TAG),pyeddl-toolkit:$(PYEDDL_IMAGE_VERSION_TAG))
-	$(call log_image_revision,pyeddl,${PYLIBS_BASE_IMAGE_VERSION_TAG},install,PYEDDL)
 
 build_pyeddl: build_pyeddl_toolkit _build_pyeddl_base ## Build 'pyeddl' image
 	$(call build_image,pylibs,pyeddl,${PYEDDL_IMAGE_VERSION_TAG},\
