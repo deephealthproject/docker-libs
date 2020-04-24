@@ -31,4 +31,5 @@ RUN echo "\nBuilding ECVL library..." >&2 \
         .. \
     && make -j$(grep -c ^processor /proc/cpuinfo) \
     && echo "\n Installing ECVL library..." >&2 \
-    && make install
+    && make install \
+    && ldconfig

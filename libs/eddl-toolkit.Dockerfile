@@ -30,4 +30,5 @@ RUN echo "\nBuilding EDDL library..." >&2 \
         .. \
     && make -j$(grep -c ^processor /proc/cpuinfo) \
     && echo "\n Installing EDDL library..." >&2 \
-    && make install 
+    && make install \
+    && ldconfig

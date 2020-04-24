@@ -100,7 +100,6 @@ RUN \
     && ./configure \
     && make -j$(nproc) \
     && make install \
-    && ldconfig \
     && rm -rf /tmp/protobuf-${protobuf_release} \
     && echo "\n > Installing GTest library..." >&2 \
     && apt-get install -y --no-install-recommends libgtest-dev \
@@ -110,4 +109,5 @@ RUN \
     && cmake .. \
     && make install \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && ldconfig
