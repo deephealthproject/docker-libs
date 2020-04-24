@@ -562,7 +562,7 @@ _build_pyeddl_base_toolkit: build_eddl_toolkit
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION),eddl-toolkit:$(EDDL_IMAGE_VERSION_TAG))
 
 _build_pyecvl_base_toolkit: build_ecvl_toolkit pyeddl_folder apply_pyeddl_patches
-	$(eval PYLIBS_BASE_IMAGE_VERSION_TAG := base_${DOCKER_BASE_IMAGE_VERSION_TAG}-pyeddl_eddl_${PYEDDL_IMAGE_VERSION_TAG}-eddl_${EDDL_IMAGE_VERSION_TAG}-ecvl_${ECVL_IMAGE_VERSION_TAG})
+	$(eval PYLIBS_BASE_IMAGE_VERSION_TAG := base_${DOCKER_BASE_IMAGE_VERSION_TAG}-pyeddl_${PYEDDL_IMAGE_VERSION_TAG}-eddl_${EDDL_IMAGE_VERSION_TAG}-ecvl_${ECVL_IMAGE_VERSION_TAG})
 	$(call build_image,pylibs,pylibs-base-toolkit,${PYLIBS_BASE_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION),ecvl-toolkit:$(ECVL_IMAGE_VERSION_TAG))
 	$(call build_image,pylibs,pyeddl-toolkit,${PYLIBS_BASE_IMAGE_VERSION_TAG},\
