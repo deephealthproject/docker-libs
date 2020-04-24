@@ -7,7 +7,7 @@ set -e
 PYEDDL_SRC=${PYEDDL_SRC:-"/usr/local/src/pyeddl"}
 
 # run tests
-cd ${PYEDDL_SRC} && pytest tests 
+cd ${PYEDDL_SRC}
 
 echo 'Downloading test dataset'
 wget -q  https://www.dropbox.com/s/khrb3th2z6owd9t/trX.bin
@@ -19,15 +19,14 @@ echo 'Running tests....'
 pytest tests
 
 # run examples
-cd ${PYEDDL_SRC}/examples
 if [ -z "${GPU_RUNTIME}" ]; then
     echo 'Running CPU examples...'
-    python3 Tensor/array_tensor_save.py
-    python3 NN/1_MNIST/mnist_auto_encoder.py --epochs 1
+    python3 examples/Tensor/array_tensor_save.py
+    python3 examples/NN/1_MNIST/mnist_auto_encoder.py --epochs 1
 else
     echo "Running GPU examples..."
-    python3 Tensor/array_tensor_save.py
-    bash NN/1_MNIST/run_all_fast.sh
-    bash NN/py_loss_metric/run_all_fast.sh
-    bash onnx/run_all_fast.sh
+    python3 examples/Tensor/array_tensor_save.py
+    bash examples/NN/1_MNIST/run_all_fast.sh
+    bash examples/NN/py_loss_metric/run_all_fast.sh
+    bash examples/onnx/run_all_fast.sh
 fi
