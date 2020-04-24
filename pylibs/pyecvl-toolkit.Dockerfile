@@ -19,8 +19,8 @@ COPY ${pyecvl_src_origin} ${pyecvl_src_target}
 RUN \
    cd ${pyecvl_src_target} \
    && echo "\nLinking ecvl library..." >&2 \
-   && rm -r third_party/ecvl \
-   && rm -r third_party/pyeddl \
+   && rm -rf third_party/ecvl \
+   && rm -rf third_party/pyeddl \
    && ln -s ${ecvl_src} third_party/ecvl \
    && ln -s ${pyeddl_src_target} third_party/pyeddl \
    && echo "\nInstalling pyecvl module..." >&2 \

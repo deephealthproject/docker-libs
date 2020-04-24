@@ -25,7 +25,7 @@ RUN /bin/bash -c "if [[ \"${BUILD_TARGET}\" == \"GPU\" ]]; then \
     fi" \
     && cd ${pyeddl_src_target} \
     && echo "\nLinking eddl library..." >&2 \
-    && rm -r third_party/eddl \
+    && rm -rf third_party/eddl \
     && ln -s ${eddl_src} third_party/ \
     && echo "\nInstalling pyeddl module..." >&2 \
     && python3 setup.py install --record install.log \
