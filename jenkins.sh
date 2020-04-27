@@ -22,7 +22,7 @@ DOCKER_PASSWORD=${DOCKER_PASSWORD:-}
 GIT_URL=${GIT_URL:-}
 
 # set script version
-VERSION=0.2.1
+VERSION=0.3.0
 
 function abspath() {
   local path="${*}"
