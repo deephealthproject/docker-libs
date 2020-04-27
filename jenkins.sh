@@ -7,11 +7,6 @@ set -o pipefail
 # without errtrace functions don't inherit the ERR trap
 set -o errtrace
 
-# set base images
-export DOCKER_NVIDIA_DEVELOP_IMAGE="${DOCKER_NVIDIA_DEVELOP_IMAGE:-nvidia/cuda:10.1-devel}"
-export DOCKER_NVIDIA_RUNTIME_IMAGE="${DOCKER_NVIDIA_RUNTIME_IMAGE:-nvidia/cuda:10.1-runtime}"
-export DOCKER_BASE_IMAGE_VERSION_TAG="${DOCKER_BASE_IMAGE_VERSION_TAG:-0.2.1}"
-
 # default libs version
 export DOCKER_LIBS_REPO="${DOCKER_LIBS_REPO:-https://github.com/deephealthproject/docker-libs.git}"
 export DOCKER_LIBS_BRANCH=${DOCKER_LIBS_BRANCH:-develop}
@@ -99,8 +94,6 @@ function help() {
     * DOCKER_PASSWORD
 
   ENVIRONMENT defaults:
-    * DOCKER_NVIDIA_DEVELOP_IMAGE     => nvidia/cuda:10.1-devel
-    * DOCKER_NVIDIA_RUNTIME_IMAGE     => nvidia/cuda:10.1-runtime
     * DOCKER_BASE_IMAGE_VERSION_TAG   => 0.2.0
     * DOCKER_LIBS_REPO                => https://github.com/deephealthproject/docker-libs.git
     * DOCKER_LIBS_BRANCH              => develop
@@ -156,7 +149,7 @@ function run() {
     REPOSITORY=$(basename $(git rev-parse --show-toplevel)) ;
   fi
   # set library name
-  LIB_NAME=$(echo "${REPOSITORY}" | tr a-z A-Z | sed 's+DOCKER-LIBS+LIBS+')
+  LIB_NAME=$(echo "${REPOSITORY}" | tr a-z A-Z | sed 's+DOCKER-LIBS+LIBS+; s+-+_+')
 
   # set git tag & branch & image prefix
   # and define whether to push lates tag
@@ -177,15 +170,11 @@ function run() {
 
   # define Docker image tags
   export BUILD_NUMBER=${BUILD_NUMBER:-$(date '+%Y%m%d%H%M%S')}
-  export DOCKER_IMAGE_TAG="${DOCKER_IMAGE_PREFIX}_build${BUILD_NUMBER}"
-  export DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_PREFIX} ${NORMALIZED_BRANCH_NAME}_build${BUILD_NUMBER}"
+  export DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_PREFIX}_build${BUILD_NUMBER}"
+  #export DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_TAG_EXTRA} ${NORMALIZED_BRANCH_NAME}_build${BUILD_NUMBER}"
 
-  # set revision
-  export ${LIB_NAME}_REVISION=${REVISION}
   # set branch
   export ${LIB_NAME}_BRANCH=${BRANCH_NAME}
-  # set image build tag
-  export ${LIB_NAME}_IMAGE_VERSION_TAG=${DOCKER_IMAGE_TAG}
 
   # log environment
   printenv

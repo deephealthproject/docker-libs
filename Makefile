@@ -10,8 +10,18 @@ ifeq ($(UNAME_S),Darwin)
 	XARGS_OPT =
 endif
 
+# config file
+CONFIG_FILE ?= settings.conf
+ifneq ($(wildcard $(CONFIG_FILE)),)
+include $(CONFIG_FILE)
+endif
+
 # date.time as build number
 BUILD_NUMBER := $(or ${BUILD_NUMBER},$(shell date '+%Y%m%d.%H%M%S'))
+
+# set build target: (CPU, GPU)
+BUILD_TARGET := $(or $(BUILD_TARGET),CPU)
+build_target_opts := --build-arg BUILD_TARGET=$(BUILD_TARGET)
 
 # log file with dependencies
 IMAGES_LOG := .images.log
@@ -32,26 +42,49 @@ DOCKER_REPOSITORY_OWNER := $(or ${DOCKER_REPOSITORY_OWNER},${DOCKER_USER})
 runtime_suffix = 
 develop_suffix = -toolkit
 
+# extract info about repository revision 
+LIBS_TAG := $(shell git tag -l --points-at HEAD | tail -n 1)
+LIBS_REVISION := $(shell git rev-parse --short HEAD | sed -E 's/-//; s/ .*//')
+LIBS_BRANCH := $(shell git name-rev --name-only HEAD | sed -E 's+(remotes/|origin/)++g; s+/+-+g; s/ .*//')
+LIBS_VERSION := $(shell if [[ -n "${LIBS_TAG}" ]]; then echo ${LIBS_TAG}; else echo ${LIBS_REVISION}; fi)
+
+# set container version equal to the repository version
+CONTAINER_VERSION := $(LIBS_VERSION)
+
+# set base image version
+DOCKER_BASE_IMAGE_VERSION := ${DOCKER_BASE_IMAGE_VERSION}
+
 # latest tag settings
 DOCKER_IMAGE_LATEST := $(or ${DOCKER_IMAGE_LATEST},false)
 
 # extra tags
 DOCKER_IMAGE_TAG_EXTRA := ${DOCKER_IMAGE_TAG_EXTRA}
 
+# set tag suffix
+DOCKER_IMAGE_TAG_SUFFIX := $(shell [[ "$(ENABLE_TARGET_SUFFIX_IMAGE_TAG)" == "true" ]] && echo -$(BUILD_TARGET) | tr '[:upper:]' '[:lower:]')
+
 # set default Docker image TAG
 DOCKER_IMAGE_TAG := $(or ${DOCKER_IMAGE_TAG},${BUILD_NUMBER})
 
+# set docker-libs version tag
+DOCKER_LIBS_IMAGE_VERSION_TAG := $(or ${LIBS_IMAGE_VERSION_TAG},${LIBS_TAG},${LIBS_VERSION})$(DOCKER_IMAGE_TAG_SUFFIX)
+DOCKER_LIBS_EXTRA_TAGS := $(LIBS_VERSION)$(DOCKER_IMAGE_TAG_SUFFIX) $(LIBS_REVISION)$(DOCKER_IMAGE_TAG_SUFFIX)
+
 # set default Base images
 DOCKER_BASE_IMAGE_SKIP_PULL := $(or ${DOCKER_BASE_IMAGE_SKIP_PULL},true)
-DOCKER_NVIDIA_DEVELOP_IMAGE := $(or ${DOCKER_NVIDIA_DEVELOP_IMAGE},nvidia/cuda:10.1-devel)
-DOCKER_NVIDIA_RUNTIME_IMAGE := $(or ${DOCKER_NVIDIA_RUNTIME_IMAGE},nvidia/cuda:10.1-runtime)
+DOCKER_UBUNTU_IMAGE := $(or ${DOCKER_UBUNTU_IMAGE},ubuntu:18.04)
+DOCKER_NVIDIA_DEVELOP_IMAGE := $(or ${DOCKER_NVIDIA_DEVELOP_IMAGE},nvidia/cuda:10.1-devel-ubuntu18.04)
+DOCKER_NVIDIA_RUNTIME_IMAGE := $(or ${DOCKER_NVIDIA_RUNTIME_IMAGE},nvidia/cuda:10.1-runtime-ubuntu18.04)
+
 # extract name and tag of nvidia images
+DOCKER_UBUNTU_IMAGE_NAME := $(shell echo ${DOCKER_UBUNTU_IMAGE} | sed -e 's+:.*++')
+DOCKER_UBUNTU_IMAGE_TAG := $(shell echo ${DOCKER_UBUNTU_IMAGE} | sed -E 's@.+:(.+)@\1@')
 DOCKER_NVIDIA_DEVELOP_IMAGE_NAME := $(shell echo ${DOCKER_NVIDIA_DEVELOP_IMAGE} | sed -e 's+:.*++')
 DOCKER_NVIDIA_DEVELOP_IMAGE_TAG := $(shell echo ${DOCKER_NVIDIA_DEVELOP_IMAGE} | sed -E 's@.+:(.+)@\1@')
 DOCKER_NVIDIA_RUNTIME_IMAGE_NAME := $(shell echo ${DOCKER_NVIDIA_RUNTIME_IMAGE} | sed -e 's+:.*++')
 DOCKER_NVIDIA_RUNTIME_IMAGE_TAG := $(shell echo ${DOCKER_NVIDIA_RUNTIME_IMAGE} | sed -E 's@.+:(.+)@\1@')
 
-DOCKER_BASE_IMAGE_VERSION_TAG := $(or ${DOCKER_BASE_IMAGE_VERSION_TAG},${DOCKER_IMAGE_TAG})
+DOCKER_BASE_IMAGE_VERSION_TAG := $(CONTAINER_VERSION)$(DOCKER_IMAGE_TAG_SUFFIX)
 EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION})
 ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION})
 PYEDDL_IMAGE_VERSION_TAG := $(or ${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION})
@@ -92,12 +125,6 @@ PYEDDL_BRANCH := $(or ${PYEDDL_BRANCH},master)
 PYEDDL_REVISION := ${PYEDDL_REVISION}
 PYEDDL_TAG :=
 
-# config file
-CONFIG_FILE ?= settings.conf
-ifneq ($(wildcard $(CONFIG_FILE)),)
-include $(CONFIG_FILE)
-endif
-
 # disable image pull
 DISABLE_PULL ?= 0
 _DO_NOT_PULL_DOCKER_IMAGES = 0
@@ -121,17 +148,6 @@ ifeq ($(DOCKER_IMAGE_LATEST),$(filter $(DOCKER_IMAGE_LATEST),1 true TRUE))
 	push_latest_tags = true
 endif
 
-# extract info about repository revision 
-LIBS_TAG := $(shell git tag -l --points-at HEAD | tail -n 1)
-LIBS_REVISION := $(shell git rev-parse --short HEAD | sed -E 's/-//; s/ .*//')
-LIBS_BRANCH := $(shell git name-rev --name-only HEAD | sed -E 's+(remotes/|origin/)++g; s+/+-+g; s/ .*//')
-LIBS_VERSION := $(shell if [[ -n "${LIBS_TAG}" ]]; then echo ${LIBS_TAG}; else echo ${LIBS_BRANCH}-${LIBS_REVISION}; fi)
-LIBS_IMAGE_VERSION_TAG := $(or ${LIBS_IMAGE_VERSION_TAG},${LIBS_TAG},${LIBS_VERSION})
-LIBS_EXTRA_TAGS := $(LIBS_VERSION) $(LIBS_REVISION)
-
-# set container version equal to the repository version
-CONTAINER_VERSION := $(LIBS_VERSION)
-
 # auxiliary flag 
 DOCKER_LOGIN_DONE := $(or ${DOCKER_LOGIN_DONE},false)
 
@@ -144,10 +160,11 @@ endif
 define build_new_image
 	echo "Building Docker image '${image_name}' ( tags: ${tag} ${extra_tags})..." ; \
 	$(eval tags := $(filter-out undefined,$(foreach tag,$(extra_tags),-t $(image_name):$(tag))))
+	$(eval _DO_NOT_PULL_DOCKER_IMAGES := 1)
 	cd ${image} \
 	&& docker build ${BUILD_CACHE_OPT} \
 		-f ${target}.Dockerfile \
-		${base} ${toolkit} \
+		${base} ${toolkit} ${extra_args} \
 		-t ${image_name}:${tag} ${tags} ${latest_tags} ${labels} . 
 endef
 
@@ -159,6 +176,7 @@ define build_image
 	$(eval base := $(if $(5), --build-arg BASE_IMAGE=$(5)))
 	$(eval toolkit := $(if $(6), --build-arg TOOLKIT_IMAGE=$(6)))
 	$(eval extra_tags := $(7))
+	$(eval extra_args := $(8))
 	$(eval image_name := ${DOCKER_IMAGE_PREFIX}${target}${${target}_suffix})
 	$(eval full_image_name := $(shell prefix=""; if [ -n "${DOCKER_REGISTRY}" ]; then prefix="${DOCKER_REGISTRY}/"; fi; echo "${prefix}${DOCKER_REPOSITORY_OWNER}/${image_name}"))
 	$(eval latest_tags := $(shell if [ "${push_latest_tags}" == "true" ]; then echo "-t ${image_name}:latest"; fi))
@@ -271,7 +289,7 @@ define set_library_revision
 	$(eval lib := $(shell echo $(2) | tr a-z A-Z))
 	$(eval ${lib}_REVISION := $(call get_revision,$(1)/$(2)))
 	$(eval $(lib)_TAG = $(call get_tag,$(1)/$(2)))
-	$(eval ${lib}_IMAGE_VERSION_TAG = $(or ${${lib}_IMAGE_VERSION_TAG},${${lib}_TAG},${${lib}_REVISION}))
+	$(eval ${lib}_IMAGE_VERSION_TAG = $(or $(filter %-cpu %-gpu,$(${lib}_IMAGE_VERSION_TAG)),$(or ${${lib}_IMAGE_VERSION_TAG},${${lib}_TAG},${${lib}_REVISION})$(DOCKER_IMAGE_TAG_SUFFIX)))
 	@echo "${lib} rev: ${${lib}_REVISION} ${${lib}_TAG} (image-tag: ${${lib}_IMAGE_VERSION_TAG})"
 endef
 
@@ -350,7 +368,7 @@ endef
 _ecvl_folder:
 	$(call clone_ecvl)
 
-ecvl_folder: _ecvl_folder
+ecvl_folder: _ecvl_folder pyecvl_folder
 	$(call set_library_revision,libs,ecvl) \
 	$(call log_library_revision,ECVL)
 
@@ -457,9 +475,14 @@ _build: \
 ############# libs-toolkit #############
 
 _build_libs_base_toolkit:
-	$(call build_image,libs,libs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG},\
-		--label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_NVIDIA_DEVELOP_IMAGE))
-	$(call log_image_revision,$(DOCKER_NVIDIA_DEVELOP_IMAGE_NAME),$(DOCKER_NVIDIA_DEVELOP_IMAGE_TAG))
+	$(if $(findstring $(BUILD_TARGET), GPU),\
+		echo "Building for GPU"; \
+		$(call build_image,libs,libs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG}, --label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_NVIDIA_DEVELOP_IMAGE),,,${build_target_opts}) \
+		$(call log_image_revision,$(DOCKER_NVIDIA_DEVELOP_IMAGE_NAME),$(DOCKER_NVIDIA_DEVELOP_IMAGE_TAG)),\
+		echo "Building for CPU"; \
+		$(call build_image,libs,libs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG}, --label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_UBUNTU_IMAGE),,,${build_target_opts}) \
+		$(call log_image_revision,$(DOCKER_UBUNTU_IMAGE_NAME),$(DOCKER_UBUNTU_IMAGE_TAG)) \
+	)
 
 build_eddl_toolkit: eddl_folder _build_libs_base_toolkit apply_pyeddl_patches ## Build 'eddl-toolkit' image
 	$(call build_image,libs,eddl-toolkit,${EDDL_IMAGE_VERSION_TAG},\
@@ -478,22 +501,27 @@ build_ecvl_toolkit: ecvl_folder build_eddl_toolkit ## Build 'ecvl-toolkit' image
 	$(call log_image_revision,ecvl-toolkit,${ECVL_IMAGE_VERSION_TAG},install,ECVL)
 
 build_libs_toolkit: build_ecvl_toolkit ## Build 'libs-toolkit' image
-	$(call build_image,libs,libs-toolkit,${LIBS_IMAGE_VERSION_TAG},\
+	$(call build_image,libs,libs-toolkit,${DOCKER_LIBS_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
 		--label EDDL_REVISION=${EDDL_REVISION} \
 		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
 		--label ECVL_BRANCH=${ECVL_BRANCH} \
-		--label ECVL_REVISION=${ECVL_REVISION},ecvl-toolkit:$(ECVL_IMAGE_VERSION_TAG),,${LIBS_REVISION})
+		--label ECVL_REVISION=${ECVL_REVISION},ecvl-toolkit:$(ECVL_IMAGE_VERSION_TAG),,${DOCKER_LIBS_EXTRA_TAGS})
 
 
 ############# libs #############
 
 _build_libs_base: _build_libs_base_toolkit
-	$(call build_image,libs,libs-base,${DOCKER_BASE_IMAGE_VERSION_TAG},\
-		--label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_NVIDIA_RUNTIME_IMAGE),libs-base-toolkit:$(DOCKER_BASE_IMAGE_VERSION_TAG))
-	$(call log_image_revision,$(DOCKER_NVIDIA_RUNTIME_IMAGE_NAME),$(DOCKER_NVIDIA_RUNTIME_IMAGE_TAG))
+	$(if $(findstring $(BUILD_TARGET), GPU),\
+		$(call build_image,libs,libs-base,${DOCKER_BASE_IMAGE_VERSION_TAG},\
+			--label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_NVIDIA_RUNTIME_IMAGE),libs-base-toolkit:$(DOCKER_BASE_IMAGE_VERSION_TAG),,${build_target_opts})\
+		$(call log_image_revision,$(DOCKER_NVIDIA_RUNTIME_IMAGE_NAME),$(DOCKER_NVIDIA_RUNTIME_IMAGE_TAG)),\
+		$(call build_image,libs,libs-base,${DOCKER_BASE_IMAGE_VERSION_TAG},\
+			--label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_UBUNTU_IMAGE),libs-base-toolkit:$(DOCKER_BASE_IMAGE_VERSION_TAG),,${build_target_opts})\
+		$(call log_image_revision,$(DOCKER_UBUNTU_IMAGE_NAME),$(DOCKER_UBUNTU_IMAGE_TAG))\
+	)
 
 build_eddl: _build_libs_base build_eddl_toolkit ## Build 'eddl' image
 	$(call build_image,libs,eddl,${EDDL_IMAGE_VERSION_TAG},\
@@ -503,7 +531,7 @@ build_eddl: _build_libs_base build_eddl_toolkit ## Build 'eddl' image
 		--label EDDL_REVISION=${EDDL_REVISION},libs-base:$(DOCKER_BASE_IMAGE_VERSION_TAG),eddl-toolkit:$(EDDL_IMAGE_VERSION_TAG))
 	$(call log_image_revision,eddl,${EDDL_IMAGE_VERSION_TAG},install,EDDL)
 
-build_ecvl: _build_libs_base build_eddl build_ecvl_toolkit## Build 'ecvl' image
+build_ecvl: _build_libs_base build_ecvl_toolkit build_eddl ## Build 'ecvl' image
 	$(call build_image,libs,ecvl,${ECVL_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
@@ -515,25 +543,41 @@ build_ecvl: _build_libs_base build_eddl build_ecvl_toolkit## Build 'ecvl' image
 	$(call log_image_revision,ecvl,${ECVL_IMAGE_VERSION_TAG},install,ECVL)
 
 build_libs: build_ecvl ## Build 'libs' image
-	$(call build_image,libs,libs,${LIBS_IMAGE_VERSION_TAG},\
+	$(call build_image,libs,libs,${DOCKER_LIBS_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
 		--label EDDL_REVISION=${EDDL_REVISION} \
 		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
 		--label ECVL_BRANCH=${ECVL_BRANCH} \
-		--label ECVL_REVISION=${ECVL_REVISION},ecvl:$(ECVL_IMAGE_VERSION_TAG),,${LIBS_REVISION})
+		--label ECVL_REVISION=${ECVL_REVISION},ecvl:$(ECVL_IMAGE_VERSION_TAG),,${DOCKER_LIBS_EXTRA_TAGS})
 
 
 
 ############# pylibs-toolkit #############
 
-_build_pylibs_base_toolkit: build_ecvl_toolkit
-	$(eval PYLIBS_BASE_IMAGE_VERSION_TAG := base_${DOCKER_BASE_IMAGE_VERSION_TAG}-eddl_${EDDL_IMAGE_VERSION_TAG}-ecvl_${ECVL_IMAGE_VERSION_TAG})
+_build_pyeddl_base_toolkit: build_eddl_toolkit
+	$(eval PYLIBS_BASE_IMAGE_VERSION_TAG := base_${DOCKER_BASE_IMAGE_VERSION_TAG}-eddl_${EDDL_IMAGE_VERSION_TAG})
+	$(call build_image,pylibs,pylibs-base-toolkit,${PYLIBS_BASE_IMAGE_VERSION_TAG},\
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION),eddl-toolkit:$(EDDL_IMAGE_VERSION_TAG))
+
+_build_pyecvl_base_toolkit: build_ecvl_toolkit pyeddl_folder apply_pyeddl_patches
+	$(eval PYLIBS_BASE_IMAGE_VERSION_TAG := base_${DOCKER_BASE_IMAGE_VERSION_TAG}-pyeddl_${PYEDDL_IMAGE_VERSION_TAG}-eddl_${EDDL_IMAGE_VERSION_TAG}-ecvl_${ECVL_IMAGE_VERSION_TAG})
 	$(call build_image,pylibs,pylibs-base-toolkit,${PYLIBS_BASE_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION),ecvl-toolkit:$(ECVL_IMAGE_VERSION_TAG))
+	$(call build_image,pylibs,pyeddl-toolkit,${PYLIBS_BASE_IMAGE_VERSION_TAG},\
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
+		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
+		--label EDDL_BRANCH=${EDDL_BRANCH} \
+		--label EDDL_REVISION=${EDDL_REVISION} \
+		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
+		--label ECVL_BRANCH=${ECVL_BRANCH} \
+		--label ECVL_REVISION=${ECVL_REVISION} \
+		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
+		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
+		--label PYEDDL_REVISION=${PYEDDL_REVISION},pylibs-base-toolkit:$(PYLIBS_BASE_IMAGE_VERSION_TAG))
 
-build_pyeddl_toolkit: pyeddl_folder _build_pylibs_base_toolkit apply_pyeddl_patches ## Build 'pyeddl-toolkit' image
+build_pyeddl_toolkit: pyeddl_folder _build_pyeddl_base_toolkit apply_pyeddl_patches ## Build 'pyeddl-toolkit' image
 	$(call build_image,pylibs,pyeddl-toolkit,${PYEDDL_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
@@ -547,7 +591,7 @@ build_pyeddl_toolkit: pyeddl_folder _build_pylibs_base_toolkit apply_pyeddl_patc
 		--label PYEDDL_REVISION=${PYEDDL_REVISION},pylibs-base-toolkit:$(PYLIBS_BASE_IMAGE_VERSION_TAG))
 	$(call log_image_revision,pyeddl-toolkit,${PYEDDL_IMAGE_VERSION_TAG},install,PYEDDL)
 
-build_pyecvl_toolkit: pyecvl_folder build_pyeddl_toolkit ## Build 'pyecvl-toolkit' image
+build_pyecvl_toolkit: pyecvl_folder _build_pyecvl_base_toolkit ## Build 'pyecvl-toolkit' image
 	$(call build_image,pylibs,pyecvl-toolkit,${PYECVL_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
@@ -561,11 +605,11 @@ build_pyecvl_toolkit: pyecvl_folder build_pyeddl_toolkit ## Build 'pyecvl-toolki
 		--label PYECVL_REVISION=${PYECVL_REVISION} \
 		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
 		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
-		--label PYEDDL_REVISION=${PYEDDL_REVISION},pyeddl-toolkit:$(PYEDDL_IMAGE_VERSION_TAG))
+		--label PYEDDL_REVISION=${PYEDDL_REVISION},pyeddl-toolkit:$(PYLIBS_BASE_IMAGE_VERSION_TAG))
 	$(call log_image_revision,pyecvl-toolkit,${PYECVL_IMAGE_VERSION_TAG},install,PYECVL)
 
 build_pylibs_toolkit: build_pyecvl_toolkit ## Build 'pylibs-toolkit' image
-	$(call build_image,pylibs,pylibs-toolkit,${LIBS_IMAGE_VERSION_TAG},\
+	$(call build_image,pylibs,pylibs-toolkit,${DOCKER_LIBS_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
@@ -578,17 +622,34 @@ build_pylibs_toolkit: build_pyecvl_toolkit ## Build 'pylibs-toolkit' image
 		--label PYECVL_REVISION=${PYECVL_REVISION} \
 		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
 		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
-		--label PYEDDL_REVISION=${PYEDDL_REVISION},pyecvl-toolkit:$(PYECVL_IMAGE_VERSION_TAG),,${LIBS_REVISION})
+		--label PYEDDL_REVISION=${PYEDDL_REVISION},pyecvl-toolkit:$(PYECVL_IMAGE_VERSION_TAG),,${DOCKER_LIBS_EXTRA_TAGS})
 
 
 
 ############# pylibs #############
 
-_build_pylibs_base: build_ecvl
-	$(call build_image,pylibs,pylibs-base,${DOCKER_BASE_IMAGE_VERSION_TAG},\
-		--label CONTAINER_VERSION=$(CONTAINER_VERSION),ecvl:$(ECVL_IMAGE_VERSION_TAG))
+_build_pyeddl_base: build_eddl
+	$(eval PYLIBS_BASE_IMAGE_VERSION_TAG := base_${DOCKER_BASE_IMAGE_VERSION_TAG}-eddl_${EDDL_IMAGE_VERSION_TAG})
+	$(call build_image,pylibs,pylibs-base,${PYLIBS_BASE_IMAGE_VERSION_TAG},\
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION),eddl:$(EDDL_IMAGE_VERSION_TAG))
 
-build_pyeddl: build_pyeddl_toolkit _build_pylibs_base ## Build 'pyeddl' image
+_build_pyecvl_base: build_ecvl build_pyeddl_toolkit
+	$(eval PYLIBS_BASE_IMAGE_VERSION_TAG := base_${DOCKER_BASE_IMAGE_VERSION_TAG}-pyeddl_${PYEDDL_IMAGE_VERSION_TAG}-eddl_${EDDL_IMAGE_VERSION_TAG}-ecvl_${ECVL_IMAGE_VERSION_TAG})
+	$(call build_image,pylibs,pylibs-base,${PYLIBS_BASE_IMAGE_VERSION_TAG},\
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION),ecvl:$(ECVL_IMAGE_VERSION_TAG))
+	$(call build_image,pylibs,pyeddl,${PYLIBS_BASE_IMAGE_VERSION_TAG},\
+		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
+		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
+		--label EDDL_BRANCH=${EDDL_BRANCH} \
+		--label EDDL_REVISION=${EDDL_REVISION} \
+		--label ECVL_REPOSITORY=${ECVL_REPOSITORY} \
+		--label ECVL_BRANCH=${ECVL_BRANCH} \
+		--label ECVL_REVISION=${ECVL_REVISION} \
+		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
+		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
+		--label PYEDDL_REVISION=${PYEDDL_REVISION},pylibs-base:$(PYLIBS_BASE_IMAGE_VERSION_TAG),pyeddl-toolkit:$(PYEDDL_IMAGE_VERSION_TAG))
+
+build_pyeddl: build_pyeddl_toolkit _build_pyeddl_base ## Build 'pyeddl' image
 	$(call build_image,pylibs,pyeddl,${PYEDDL_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
@@ -599,10 +660,10 @@ build_pyeddl: build_pyeddl_toolkit _build_pylibs_base ## Build 'pyeddl' image
 		--label ECVL_REVISION=${ECVL_REVISION} \
 		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
 		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
-		--label PYEDDL_REVISION=${PYEDDL_REVISION},pylibs-base:$(DOCKER_BASE_IMAGE_VERSION_TAG),pyeddl-toolkit:$(PYEDDL_IMAGE_VERSION_TAG))
+		--label PYEDDL_REVISION=${PYEDDL_REVISION},pylibs-base:$(PYLIBS_BASE_IMAGE_VERSION_TAG),pyeddl-toolkit:$(PYEDDL_IMAGE_VERSION_TAG))
 	$(call log_image_revision,pyeddl,${PYEDDL_IMAGE_VERSION_TAG},install,PYEDDL)
 
-build_pyecvl: build_pyecvl_toolkit build_pyeddl ## Build 'pyecvl' image
+build_pyecvl: build_pyecvl_toolkit _build_pyecvl_base ## Build 'pyecvl' image
 	$(call build_image,pylibs,pyecvl,${PYECVL_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
@@ -616,11 +677,11 @@ build_pyecvl: build_pyecvl_toolkit build_pyeddl ## Build 'pyecvl' image
 		--label PYECVL_REVISION=${PYECVL_REVISION} \
 		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
 		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
-		--label PYEDDL_REVISION=${PYEDDL_REVISION},pyeddl:$(PYEDDL_IMAGE_VERSION_TAG),pyecvl-toolkit:$(PYECVL_IMAGE_VERSION_TAG))
+		--label PYEDDL_REVISION=${PYEDDL_REVISION},pyeddl:$(PYLIBS_BASE_IMAGE_VERSION_TAG),pyecvl-toolkit:$(PYECVL_IMAGE_VERSION_TAG))
 	$(call log_image_revision,pyecvl,${PYECVL_IMAGE_VERSION_TAG},install,PYECVL)
 
 build_pylibs: build_pyecvl ## Build 'pylibs' image
-	$(call build_image,pylibs,pylibs,${LIBS_IMAGE_VERSION_TAG},\
+	$(call build_image,pylibs,pylibs,${DOCKER_LIBS_IMAGE_VERSION_TAG},\
 		--label CONTAINER_VERSION=$(CONTAINER_VERSION) \
 		--label EDDL_REPOSITORY=${EDDL_REPOSITORY} \
 		--label EDDL_BRANCH=${EDDL_BRANCH} \
@@ -633,7 +694,7 @@ build_pylibs: build_pyecvl ## Build 'pylibs' image
 		--label PYECVL_REVISION=${PYECVL_REVISION} \
 		--label PYEDDL_REPOSITORY=${PYEDDL_REPOSITORY} \
 		--label PYEDDL_BRANCH=${PYEDDL_BRANCH} \
-		--label PYEDDL_REVISION=${PYEDDL_REVISION},pyecvl:$(PYECVL_IMAGE_VERSION_TAG),,${LIBS_REVISION})
+		--label PYEDDL_REVISION=${PYEDDL_REVISION},pyecvl:$(PYECVL_IMAGE_VERSION_TAG),,${DOCKER_LIBS_EXTRA_TAGS})
 
 
 ############################################################################################################################
@@ -641,10 +702,10 @@ build_pylibs: build_pyecvl ## Build 'pylibs' image
 ############################################################################################################################
 define check_image
 	printf "\nSearching image $(1)... " ; \
-	images=$(docker images -q ${1}) ; \
+	images=$(docker images -q ${1}) 2> /dev/null ; \
 	if [ -z "$${images}" ]; then \
-		docker pull ${DOCKER_REPOSITORY_OWNER}/${1}; \
-		docker tag ${DOCKER_REPOSITORY_OWNER}/${1} ${1}; \
+		[ "${_DO_NOT_PULL_DOCKER_IMAGES}" == "0" ] && docker pull ${DOCKER_REPOSITORY_OWNER}/${1} 2> /dev/null ; \
+		docker tag ${DOCKER_REPOSITORY_OWNER}/${1} ${1} 2> /dev/null ; \
 	fi ; \
 	printf "\n"
 endef
@@ -688,54 +749,58 @@ _test: \
 	test_pyecvl test_pyecvl_toolkit
 
 test_eddl: eddl_folder ## Test 'eddl' images
-	$(eval EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION}))
+	$(call set_library_revision,libs,eddl)
 	@$(call test_image,\
 		eddl:${EDDL_IMAGE_VERSION_TAG},\
-		tests/test_eddl.sh,\
+		$(shell python3 tests/inventory.py ${EDDL_LIB_PATH} tests/eddl),\
 		eddl-toolkit:${EDDL_IMAGE_VERSION_TAG}=/usr/local/src/eddl \
 	)
 	
 test_eddl_toolkit: eddl_folder ## Test 'eddl' images
-	$(eval EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION}))
-	@$(call test_image,eddl-toolkit:${EDDL_IMAGE_VERSION_TAG},tests/test_eddl.sh)
+	$(call set_library_revision,libs,eddl)
+	@$(call test_image,eddl-toolkit:${EDDL_IMAGE_VERSION_TAG},\
+		$(shell python3 tests/inventory.py ${EDDL_LIB_PATH} tests/eddl))
 
 test_ecvl: ecvl_folder ## Test 'ecvl' images
-	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
+	$(call set_library_revision,libs,ecvl)
 	@$(call test_image,\
 		ecvl:${ECVL_IMAGE_VERSION_TAG},\
-		tests/test_ecvl.sh,\
+		$(shell python3 tests/inventory.py ${ECVL_LIB_PATH} tests/ecvl),\
 		ecvl-toolkit:${ECVL_IMAGE_VERSION_TAG}=/usr/local/src/ecvl \
 	)
 
 test_ecvl_toolkit: ecvl_folder ## Test 'ecvl' images
-	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
-	@$(call test_image,ecvl-toolkit:${ECVL_IMAGE_VERSION_TAG},tests/test_ecvl.sh)
+	$(call set_library_revision,libs,ecvl)
+	@$(call test_image,ecvl-toolkit:${ECVL_IMAGE_VERSION_TAG},\
+		$(shell python3 tests/inventory.py ${ECVL_LIB_PATH} tests/ecvl))
 
 test_pyeddl: pyeddl_folder ## Test 'ecvl' images
-	$(eval PYEDDL_IMAGE_VERSION_TAG := $(or ${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION}))
+	$(call set_library_revision,pylibs,pyeddl)
 	@$(call test_image,\
 		pyeddl:${PYEDDL_IMAGE_VERSION_TAG},\
-		tests/test_pyeddl.sh,\
+		$(shell python3 tests/inventory.py ${PYEDDL_LIB_PATH} tests/pyeddl),\
 		pyeddl-toolkit:${PYEDDL_IMAGE_VERSION_TAG}=/usr/local/src/pyeddl\
 	)
 
 test_pyeddl_toolkit: pyeddl_folder ## Test 'ecvl' images
-	$(eval PYEDDL_IMAGE_VERSION_TAG := $(or ${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION}))
-	@$(call test_image,pyeddl-toolkit:${PYEDDL_IMAGE_VERSION_TAG},tests/test_pyeddl.sh)
+	$(call set_library_revision,pylibs,pyeddl)
+	@$(call test_image,pyeddl-toolkit:${PYEDDL_IMAGE_VERSION_TAG},\
+		$(shell python3 tests/inventory.py ${PYEDDL_LIB_PATH} tests/pyeddl))
 
 test_pyecvl: pyecvl_folder ## Test 'ecvl' images
-	$(eval ECVL_IMAGE_VERSION_TAG := $(or ${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION}))
-	$(eval PYECVL_IMAGE_VERSION_TAG := $(or ${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION}))
+	$(call set_library_revision,libs,ecvl)
+	$(call set_library_revision,pylibs,pyecvl)
 	@$(call test_image,\
 		pyecvl:${PYECVL_IMAGE_VERSION_TAG},\
-		tests/test_pyecvl.sh,\
+		$(shell python3 tests/inventory.py ${PYECVL_LIB_PATH} tests/pyecvl),\
 		'ecvl-toolkit:${ECVL_IMAGE_VERSION_TAG}=/usr/local/src/ecvl' \
 		'pyecvl-toolkit:${PYECVL_IMAGE_VERSION_TAG}=/usr/local/src/pyecvl' \
 	)
 
 test_pyecvl_toolkit: #pyecvl_folder ## Test 'ecvl' images
-	$(eval PYECVL_IMAGE_VERSION_TAG := $(or ${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION}))
-	@@$(call test_image,pyecvl-toolkit:${PYECVL_IMAGE_VERSION_TAG},tests/test_pyecvl.sh)
+	$(call set_library_revision,pylibs,pyecvl)
+	@$(call test_image,pyecvl-toolkit:${PYECVL_IMAGE_VERSION_TAG},\
+		$(shell python3 tests/inventory.py ${PYECVL_LIB_PATH} tests/pyecvl))
 
 ############################################################################################################################
 ### Push Docker images
@@ -752,7 +817,7 @@ _push: \
 	push_pyecvl push_pyecvl_toolkit
 
 push_libs: docker_login ## Push 'libs' image
-	$(call push_image,libs,${LIBS_IMAGE_VERSION_TAG},${LIBS_EXTRA_TAGS})
+	$(call push_image,libs,${DOCKER_LIBS_IMAGE_VERSION_TAG},${DOCKER_LIBS_EXTRA_TAGS})
 
 push_libs_base: docker_login ## Push 'lib-base' image
 	$(call push_image,libs-base,${DOCKER_BASE_IMAGE_VERSION_TAG})
@@ -764,7 +829,7 @@ push_ecvl: docker_login ecvl_folder ## Push 'ecvl' image
 	$(call push_image,ecvl,${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION} ${ECVL_TAG})
 
 push_libs_toolkit: docker_login ## Push 'libs-toolkit' image
-	$(call push_image,libs-toolkit,${LIBS_IMAGE_VERSION_TAG},${LIBS_EXTRA_TAGS})
+	$(call push_image,libs-toolkit,${DOCKER_LIBS_IMAGE_VERSION_TAG},${DOCKER_LIBS_EXTRA_TAGS})
 
 push_libs_base_toolkit: docker_login ## Push 'libs-base-toolkit' image
 	$(call push_image,libs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG})
@@ -776,7 +841,7 @@ push_ecvl_toolkit: docker_login ecvl_folder ## Push 'ecvl-toolkit' images
 	$(call push_image,ecvl-toolkit,${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION} ${ECVL_TAG})
 
 push_pylibs: docker_login ## Push 'pylibs' images
-	$(call push_image,pylibs,${LIBS_IMAGE_VERSION_TAG},${LIBS_EXTRA_TAGS})
+	$(call push_image,pylibs,${DOCKER_LIBS_IMAGE_VERSION_TAG},${DOCKER_LIBS_EXTRA_TAGS})
 
 push_pyeddl: docker_login pyeddl_folder ## Push 'pyeddl' images
 	$(call push_image,pyeddl,${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION} ${PYEDDL_TAG})
@@ -785,7 +850,7 @@ push_pyecvl: docker_login pyecvl_folder ## Push 'pyecvl' images
 	$(call push_image,pyecvl,${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION} ${PYECVL_TAG})
 
 push_pylibs_toolkit: docker_login ## Push 'pylibs-toolkit' images
-	$(call push_image,pylibs-toolkit,${LIBS_IMAGE_VERSION_TAG},${LIBS_EXTRA_TAGS})
+	$(call push_image,pylibs-toolkit,${DOCKER_LIBS_IMAGE_VERSION_TAG},${DOCKER_LIBS_EXTRA_TAGS})
 
 push_pyeddl_toolkit: docker_login pyeddl_folder ## Push 'pyeddl-toolkit' images
 	$(call push_image,pyeddl-toolkit,${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION} ${PYEDDL_TAG})
@@ -931,9 +996,9 @@ clean: clean_images clean_sources clean_logs
 	_build_libs_base_toolkit \
 	build_eddl_toolkit build_ecvl_toolkit build_libs_toolkit \
 	_build_libs_base build_eddl build_ecvl build_libs \
-	_build_pylibs_base_toolkit _build_pylibs_base \
+	_build_pyeddl_base_toolkit _build_pyecvl_base_toolkit _build_pylibs_base \
 	build_pyeddl_toolkit build_pyecvl_toolkit build_pylibs_toolkit\
-	_build_pylibs_base build_pyeddl build_pyecvl build_pylibs \
+	_build_pyeddl_base _build_pyecvl_base build_pyeddl build_pyecvl build_pylibs \
 	_docker_login docker_login \
 	push _push \
 	push_libs push_eddl push_ecvl \

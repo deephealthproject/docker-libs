@@ -17,17 +17,16 @@ RUN sed -e 's+/usr/local/++g' install.log | \
 FROM ${BASE_IMAGE} as base
 
 # set metadata
-LABEL website="https://github.com/deephealthproject/"
-LABEL description="DeepHealth European Distributed Deep Learning Library"
-LABEL software="deephealth-eddl,deephealth-ecvl,deephealth-pyeddl"
-
-# enable CUDA support
-ENV EDDL_WITH_CUDA 'true'
+LABEL website="https://github.com/deephealthproject/" \
+      description="DeepHealth European Distributed Deep Learning Library" \
+      software="deephealth-eddl,deephealth-ecvl,deephealth-pyeddl"
 
 # link the cudart, cublas and curand libraries on "standard" system locations
-RUN ln -s /usr/local/cuda-10.1/targets/x86_64-linux/lib/libcudart.so /usr/lib/ \
-    && ln -s /usr/local/cuda-10.1/targets/x86_64-linux/lib/libcurand.so /usr/lib/ \
-    && ln -s /usr/local/cuda-10.1/targets/x86_64-linux/lib/libcublas.so /usr/lib/
+RUN /bin/bash -c "if [[ \"${BUILD_TARGET}\" == \"GPU\" ]]; then \
+        ln -s /usr/local/cuda-10.1/targets/x86_64-linux/lib/libcudart.so /usr/lib/ \
+        && ln -s /usr/local/cuda-10.1/targets/x86_64-linux/lib/libcurand.so /usr/lib/ \
+        && ln -s /usr/local/cuda-10.1/targets/x86_64-linux/lib/libcublas.so /usr/lib/ ; \
+    fi"
 
 # Run git submodule update [--init] --recursive first
 COPY --from=intermediate_stage /intermediate_path/bin/* /usr/local/bin/

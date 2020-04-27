@@ -1,5 +1,6 @@
 ARG BASE_IMAGE
 ARG TOOLKIT_IMAGE
+ARG BUILD_TARGET="CPU"
 ARG OPENV_INSTALL_MANIFEST="/usr/local/opencv/install_manifest.txt"
 
 # set toolkit image
@@ -12,7 +13,8 @@ FROM ${BASE_IMAGE} AS prepare_install
 
 RUN apt-get update -y -q \
     && apt-get install -y --no-install-recommends wget rsync \
-    && apt-get clean
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # make a temporary copy of libraries
 COPY --from=toolkit /usr/local/bin /tmp/local/bin
@@ -33,9 +35,14 @@ RUN cd /tmp/local && sed -e 's+/usr/local/++g' *_manifest.txt | \
 ####################
 FROM ${BASE_IMAGE} AS base
 
-LABEL website="https://github.com/deephealthproject"
-LABEL description="DeepHealth European Distributed Deep Learning Library"
-LABEL software="deephealth-eddl,deephealth-ecvl"
+LABEL website="https://github.com/deephealthproject" \
+      description="DeepHealth European Distributed Deep Learning Library" \
+      software="deephealth-eddl,deephealth-ecvl" \
+      maintainer="marcoenrico.piras@crs4.it"
+
+# set build target
+ARG BUILD_TARGET
+ENV BUILD_TARGET ${BUILD_TARGET}
 
 # Install software requirements
 RUN \
@@ -50,6 +57,7 @@ RUN \
         libopenslide-dev \
         libgomp1 \
     && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
     && ldconfig
 
 # copy libraries to the target paths

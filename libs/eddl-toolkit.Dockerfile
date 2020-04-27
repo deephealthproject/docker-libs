@@ -2,9 +2,9 @@ ARG BASE_IMAGE
 FROM ${BASE_IMAGE} AS libs.eddl-toolkit
 
 # set metadata
-LABEL website="https://github.com/deephealthproject/"
-LABEL description="DeepHealth European Distributed Deep Learning Library"
-LABEL software="deephealth-eddl"
+LABEL website="https://github.com/deephealthproject/" \
+      description="DeepHealth European Distributed Deep Learning Library" \
+      software="deephealth-eddl"
 
 # set arguments
 ARG eddl_src_origin="eddl"
@@ -22,11 +22,13 @@ RUN echo "\nBuilding EDDL library..." >&2 \
     && mkdir build \
     && cd build \
     && cmake \
-        -D BUILD_TARGET=GPU \
+        -D BUILD_TARGET=${BUILD_TARGET} \
+        -D DBUILD_EXAMPLES=ON \
         -D BUILD_TESTS=ON \
         -D BUILD_SHARED_LIB=ON \
         -D BUILD_PROTOBUF=ON \
         .. \
     && make -j$(grep -c ^processor /proc/cpuinfo) \
     && echo "\n Installing EDDL library..." >&2 \
-    && make install 
+    && make install \
+    && ldconfig
