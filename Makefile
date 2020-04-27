@@ -752,51 +752,55 @@ test_eddl: eddl_folder ## Test 'eddl' images
 	$(call set_library_revision,libs,eddl)
 	@$(call test_image,\
 		eddl:${EDDL_IMAGE_VERSION_TAG},\
-		tests/test_eddl.sh,\
+		$(shell python3 tests/inventory.py ${EDDL_LIB_PATH} tests/eddl),\
 		eddl-toolkit:${EDDL_IMAGE_VERSION_TAG}=/usr/local/src/eddl \
 	)
 	
 test_eddl_toolkit: eddl_folder ## Test 'eddl' images
 	$(call set_library_revision,libs,eddl)
-	@$(call test_image,eddl-toolkit:${EDDL_IMAGE_VERSION_TAG},tests/test_eddl.sh)
+	@$(call test_image,eddl-toolkit:${EDDL_IMAGE_VERSION_TAG},\
+		$(shell python3 tests/inventory.py ${EDDL_LIB_PATH} tests/eddl))
 
 test_ecvl: ecvl_folder ## Test 'ecvl' images
 	$(call set_library_revision,libs,ecvl)
 	@$(call test_image,\
 		ecvl:${ECVL_IMAGE_VERSION_TAG},\
-		tests/test_ecvl.sh,\
+		$(shell python3 tests/inventory.py ${ECVL_LIB_PATH} tests/ecvl),\
 		ecvl-toolkit:${ECVL_IMAGE_VERSION_TAG}=/usr/local/src/ecvl \
 	)
 
 test_ecvl_toolkit: ecvl_folder ## Test 'ecvl' images
 	$(call set_library_revision,libs,ecvl)
-	@$(call test_image,ecvl-toolkit:${ECVL_IMAGE_VERSION_TAG},tests/test_ecvl.sh)
+	@$(call test_image,ecvl-toolkit:${ECVL_IMAGE_VERSION_TAG},\
+		$(shell python3 tests/inventory.py ${ECVL_LIB_PATH} tests/ecvl))
 
 test_pyeddl: pyeddl_folder ## Test 'ecvl' images
 	$(call set_library_revision,pylibs,pyeddl)
 	@$(call test_image,\
 		pyeddl:${PYEDDL_IMAGE_VERSION_TAG},\
-		tests/test_pyeddl.sh,\
+		$(shell python3 tests/inventory.py ${PYEDDL_LIB_PATH} tests/pyeddl),\
 		pyeddl-toolkit:${PYEDDL_IMAGE_VERSION_TAG}=/usr/local/src/pyeddl\
 	)
 
 test_pyeddl_toolkit: pyeddl_folder ## Test 'ecvl' images
 	$(call set_library_revision,pylibs,pyeddl)
-	@$(call test_image,pyeddl-toolkit:${PYEDDL_IMAGE_VERSION_TAG},tests/test_pyeddl.sh)
+	@$(call test_image,pyeddl-toolkit:${PYEDDL_IMAGE_VERSION_TAG},\
+		$(shell python3 tests/inventory.py ${PYEDDL_LIB_PATH} tests/pyeddl))
 
 test_pyecvl: pyecvl_folder ## Test 'ecvl' images
 	$(call set_library_revision,libs,ecvl)
 	$(call set_library_revision,pylibs,pyecvl)
 	@$(call test_image,\
 		pyecvl:${PYECVL_IMAGE_VERSION_TAG},\
-		tests/test_pyecvl.sh,\
+		$(shell python3 tests/inventory.py ${PYECVL_LIB_PATH} tests/pyecvl),\
 		'ecvl-toolkit:${ECVL_IMAGE_VERSION_TAG}=/usr/local/src/ecvl' \
 		'pyecvl-toolkit:${PYECVL_IMAGE_VERSION_TAG}=/usr/local/src/pyecvl' \
 	)
 
 test_pyecvl_toolkit: #pyecvl_folder ## Test 'ecvl' images
 	$(call set_library_revision,pylibs,pyecvl)
-	@$(call test_image,pyecvl-toolkit:${PYECVL_IMAGE_VERSION_TAG},tests/test_pyecvl.sh)
+	@$(call test_image,pyecvl-toolkit:${PYECVL_IMAGE_VERSION_TAG},\
+		$(shell python3 tests/inventory.py ${PYECVL_LIB_PATH} tests/pyecvl))
 
 ############################################################################################################################
 ### Push Docker images
