@@ -37,7 +37,8 @@ FROM ${BASE_IMAGE} AS base
 
 LABEL website="https://github.com/deephealthproject" \
       description="DeepHealth European Distributed Deep Learning Library" \
-      software="deephealth-eddl,deephealth-ecvl"
+      software="deephealth-eddl,deephealth-ecvl" \
+      maintainer="marcoenrico.piras@crs4.it"
 
 # set build target
 ARG BUILD_TARGET

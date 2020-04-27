@@ -4,7 +4,8 @@ FROM ${BASE_IMAGE} as libs.base-toolkit
 # set metadata
 LABEL website="https://github.com/deephealthproject/" \
       description="DeepHealth European Distributed Deep Learning Library" \
-      software="deephealth-eddl,deephealth-ecvl"
+      software="deephealth-eddl,deephealth-ecvl" \
+      maintainer="marcoenrico.piras@crs4.it"
 
 # set cmake version
 ARG cmake_release="3.14.6"
