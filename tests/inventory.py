@@ -30,42 +30,31 @@ def get_current_repo_revision(repo_path):
     return repo_list
 
 
-def get_test_revisions(tests_path=".", order_by=None):
-    revisions = {os.path.basename(v).split(".")[0]: v \
-                 for v in glob(os.path.join(tests_path, "*.sh"))}
-    return revisions if not order_by else \
-        [rev for x in order_by for rev in revisions.items() if rev[0] == x]
+def get_test_revisions(tests_path=".", commits=None, reverse=False):
+    revisions = sorted([(os.path.basename(v).split(".")[0],v) \
+                 for v in glob(os.path.join(tests_path, "*.sh"))], \
+                key=lambda x: commits.index(x[0]), reverse=reverse)
+    _logger.debug("revisions %r", revisions)
+    return revisions
 
 
 def find_test_revision(repo_path=".", tests_path="."):
     found_revision = None
-
     commits = get_repo_commits(repo_path)
     current_revision = get_current_repo_revision(repo_path)
-    test_revision_order = commits.copy()
-    test_revision_order.reverse()
-    test_revisions = get_test_revisions(tests_path, test_revision_order)
-
-    _logger.debug("List of commits %r", commits)
-    _logger.debug("Current revision %r", current_revision)
-    _logger.debug("Test revisions %r", test_revisions)
-
-    remaining_revisions = test_revisions
-    while len(remaining_revisions) > 0:
-        found_revision = remaining_revisions.pop()
-        _logger.debug("Current found %r", found_revision)
-        _logger.debug("Remaining revisions: %r", len(remaining_revisions))
-
-        if len(remaining_revisions) == 0 \
-           or commits.index(current_revision) < commits.index(found_revision[0]):
+    test_revisions = get_test_revisions(tests_path, commits, reverse=True)
+    if len(test_revisions) == 0:
+        return None
+    current_candidate = test_revisions.pop()
+    while (len(test_revisions)>0):
+        next_candidate = test_revisions.pop()
+        if commits.index(current_revision) < commits.index(current_candidate[0]) \
+            or commits.index(current_revision) >= commits.index(current_candidate[0]) \
+            and commits.index(current_revision) < commits.index(next_candidate[0]):
             break
-        _logger.debug("indexes %d %d", commits.index(found_revision[0]), commits.index(remaining_revisions[-1][0]))
-        current_slice = [commits[x] \
-                         for x in range(commits.index(found_revision[0]), \
-                                        commits.index(remaining_revisions[-1][0]))]
-        if current_revision in current_slice:
-            break
-    return found_revision
+        else:
+            current_candidate = next_candidate
+    return current_candidate
 
 
 def main():
