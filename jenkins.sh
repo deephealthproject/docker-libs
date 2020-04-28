@@ -22,7 +22,7 @@ DOCKER_PASSWORD=${DOCKER_PASSWORD:-}
 GIT_URL=${GIT_URL:-}
 
 # set script version
-VERSION=0.2.1
+VERSION=0.3.0
 
 function abspath() {
   local path="${*}"
@@ -170,7 +170,7 @@ function run() {
 
   # define Docker image tags
   export BUILD_NUMBER=${BUILD_NUMBER:-$(date '+%Y%m%d%H%M%S')}
-  export DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_PREFIX}_build${BUILD_NUMBER}"
+  #export DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_PREFIX}_build${BUILD_NUMBER}"
   #export DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_TAG_EXTRA} ${NORMALIZED_BRANCH_NAME}_build${BUILD_NUMBER}"
 
   # set branch
