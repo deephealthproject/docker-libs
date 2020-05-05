@@ -748,7 +748,7 @@ _test: \
 	test_pyeddl test_pyeddl_toolkit \
 	test_pyecvl test_pyecvl_toolkit
 
-test_eddl: eddl_folder ## Test 'eddl' images
+test_eddl: eddl_folder ## Test 'eddl' image
 	$(call set_library_revision,libs,eddl)
 	@$(call test_image,\
 		eddl:${EDDL_IMAGE_VERSION_TAG},\
@@ -756,12 +756,12 @@ test_eddl: eddl_folder ## Test 'eddl' images
 		eddl-toolkit:${EDDL_IMAGE_VERSION_TAG}=/usr/local/src/eddl \
 	)
 	
-test_eddl_toolkit: eddl_folder ## Test 'eddl' images
+test_eddl_toolkit: eddl_folder ## Test 'eddl-toolkit' image
 	$(call set_library_revision,libs,eddl)
 	@$(call test_image,eddl-toolkit:${EDDL_IMAGE_VERSION_TAG},\
 		$(shell python3 tests/inventory.py ${EDDL_LIB_PATH} tests/eddl))
 
-test_ecvl: ecvl_folder ## Test 'ecvl' images
+test_ecvl: ecvl_folder ## Test 'ecvl' image
 	$(call set_library_revision,libs,ecvl)
 	@$(call test_image,\
 		ecvl:${ECVL_IMAGE_VERSION_TAG},\
@@ -769,12 +769,12 @@ test_ecvl: ecvl_folder ## Test 'ecvl' images
 		ecvl-toolkit:${ECVL_IMAGE_VERSION_TAG}=/usr/local/src/ecvl \
 	)
 
-test_ecvl_toolkit: ecvl_folder ## Test 'ecvl' images
+test_ecvl_toolkit: ecvl_folder ## Test 'ecvl-toolkit' image
 	$(call set_library_revision,libs,ecvl)
 	@$(call test_image,ecvl-toolkit:${ECVL_IMAGE_VERSION_TAG},\
 		$(shell python3 tests/inventory.py ${ECVL_LIB_PATH} tests/ecvl))
 
-test_pyeddl: pyeddl_folder ## Test 'ecvl' images
+test_pyeddl: pyeddl_folder ## Test 'pyeddl' image
 	$(call set_library_revision,pylibs,pyeddl)
 	@$(call test_image,\
 		pyeddl:${PYEDDL_IMAGE_VERSION_TAG},\
@@ -782,12 +782,12 @@ test_pyeddl: pyeddl_folder ## Test 'ecvl' images
 		pyeddl-toolkit:${PYEDDL_IMAGE_VERSION_TAG}=/usr/local/src/pyeddl\
 	)
 
-test_pyeddl_toolkit: pyeddl_folder ## Test 'ecvl' images
+test_pyeddl_toolkit: pyeddl_folder ## Test 'pyeddl-toolkit' images
 	$(call set_library_revision,pylibs,pyeddl)
 	@$(call test_image,pyeddl-toolkit:${PYEDDL_IMAGE_VERSION_TAG},\
 		$(shell python3 tests/inventory.py ${PYEDDL_LIB_PATH} tests/pyeddl))
 
-test_pyecvl: pyecvl_folder ## Test 'ecvl' images
+test_pyecvl: pyecvl_folder ## Test 'pyecvl' image
 	$(call set_library_revision,libs,ecvl)
 	$(call set_library_revision,pylibs,pyecvl)
 	@$(call test_image,\
@@ -797,7 +797,7 @@ test_pyecvl: pyecvl_folder ## Test 'ecvl' images
 		'pyecvl-toolkit:${PYECVL_IMAGE_VERSION_TAG}=/usr/local/src/pyecvl' \
 	)
 
-test_pyecvl_toolkit: #pyecvl_folder ## Test 'ecvl' images
+test_pyecvl_toolkit: #pyecvl_folder ## Test 'pyecvl-toolkit' image
 	$(call set_library_revision,pylibs,pyecvl)
 	@$(call test_image,pyecvl-toolkit:${PYECVL_IMAGE_VERSION_TAG},\
 		$(shell python3 tests/inventory.py ${PYECVL_LIB_PATH} tests/pyecvl))
@@ -834,28 +834,28 @@ push_libs_toolkit: docker_login ## Push 'libs-toolkit' image
 push_libs_base_toolkit: docker_login ## Push 'libs-base-toolkit' image
 	$(call push_image,libs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG})
 
-push_eddl_toolkit: docker_login eddl_folder ## Push 'eddl-toolkit' images
+push_eddl_toolkit: docker_login eddl_folder ## Push 'eddl-toolkit' image
 	$(call push_image,eddl-toolkit,${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION} ${EDDL_TAG})
 
-push_ecvl_toolkit: docker_login ecvl_folder ## Push 'ecvl-toolkit' images
+push_ecvl_toolkit: docker_login ecvl_folder ## Push 'ecvl-toolkit' image
 	$(call push_image,ecvl-toolkit,${ECVL_IMAGE_VERSION_TAG},${ECVL_REVISION} ${ECVL_TAG})
 
-push_pylibs: docker_login ## Push 'pylibs' images
+push_pylibs: docker_login ## Push 'pylibs' image
 	$(call push_image,pylibs,${DOCKER_LIBS_IMAGE_VERSION_TAG},${DOCKER_LIBS_EXTRA_TAGS})
 
-push_pyeddl: docker_login pyeddl_folder ## Push 'pyeddl' images
+push_pyeddl: docker_login pyeddl_folder ## Push 'pyeddl' image
 	$(call push_image,pyeddl,${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION} ${PYEDDL_TAG})
 
-push_pyecvl: docker_login pyecvl_folder ## Push 'pyecvl' images
+push_pyecvl: docker_login pyecvl_folder ## Push 'pyecvl' image
 	$(call push_image,pyecvl,${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION} ${PYECVL_TAG})
 
-push_pylibs_toolkit: docker_login ## Push 'pylibs-toolkit' images
+push_pylibs_toolkit: docker_login ## Push 'pylibs-toolkit' image
 	$(call push_image,pylibs-toolkit,${DOCKER_LIBS_IMAGE_VERSION_TAG},${DOCKER_LIBS_EXTRA_TAGS})
 
-push_pyeddl_toolkit: docker_login pyeddl_folder ## Push 'pyeddl-toolkit' images
+push_pyeddl_toolkit: docker_login pyeddl_folder ## Push 'pyeddl-toolkit' image
 	$(call push_image,pyeddl-toolkit,${PYEDDL_IMAGE_VERSION_TAG},${PYEDDL_REVISION} ${PYEDDL_TAG})
 
-push_pyecvl_toolkit: docker_login pyecvl_folder ## Push 'pyeddl-toolkit' images
+push_pyecvl_toolkit: docker_login pyecvl_folder ## Push 'pyecvl-toolkit' image
 	$(call push_image,pyecvl-toolkit,${PYECVL_IMAGE_VERSION_TAG},${PYECVL_REVISION} ${PYECVL_TAG})
 
 ############################################################################################################################
