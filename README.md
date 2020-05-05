@@ -101,14 +101,14 @@ build_pyeddl                   Build 'pyeddl' image
 build_pyecvl                   Build 'pyecvl' image
 build_pylibs                   Build 'pylibs' image
 test                           Test all docker images
-test_eddl                      Test 'eddl' images
-test_eddl_toolkit              Test 'eddl' images
-test_ecvl                      Test 'ecvl' images
-test_ecvl_toolkit              Test 'ecvl' images
-test_pyeddl                    Test 'ecvl' images
-test_pyeddl_toolkit            Test 'ecvl' images
-test_pyecvl                    Test 'ecvl' images
-test_pyecvl_toolkit            Test 'ecvl' images
+test_eddl                      Test 'eddl' image
+test_eddl_toolkit              Test 'eddl-toolkit' image
+test_ecvl                      Test 'ecvl' image
+test_ecvl_toolkit              Test 'ecvl-toolkit' image
+test_pyeddl                    Test 'pyeddl' image
+test_pyeddl_toolkit            Test 'pyeddl-toolkit' images
+test_pyecvl                    Test 'pyecvl' image
+test_pyecvl_toolkit            Test 'pyecvl-toolkit' image
 push                           Push all images
 push_libs                      Push 'libs' image
 push_libs_base                 Push 'lib-base' image
@@ -116,14 +116,14 @@ push_eddl                      Push 'eddl' image
 push_ecvl                      Push 'ecvl' image
 push_libs_toolkit              Push 'libs-toolkit' image
 push_libs_base_toolkit         Push 'libs-base-toolkit' image
-push_eddl_toolkit              Push 'eddl-toolkit' images
-push_ecvl_toolkit              Push 'ecvl-toolkit' images
-push_pylibs                    Push 'pylibs' images
-push_pyeddl                    Push 'pyeddl' images
-push_pyecvl                    Push 'pyecvl' images
-push_pylibs_toolkit            Push 'pylibs-toolkit' images
-push_pyeddl_toolkit            Push 'pyeddl-toolkit' images
-push_pyecvl_toolkit            Push 'pyeddl-toolkit' images
+push_eddl_toolkit              Push 'eddl-toolkit' image
+push_ecvl_toolkit              Push 'ecvl-toolkit' image
+push_pylibs                    Push 'pylibs' image
+push_pyeddl                    Push 'pyeddl' image
+push_pyecvl                    Push 'pyecvl' image
+push_pylibs_toolkit            Push 'pylibs-toolkit' image
+push_pyeddl_toolkit            Push 'pyeddl-toolkit' image
+push_pyecvl_toolkit            Push 'pyecvl-toolkit' image
 publish                        Publish all images to a Docker Registry (e.g., DockerHub)
 publish_libs                   Publish 'libs' image
 publish_eddl                   Publish 'eddl' image
@@ -145,6 +145,7 @@ clean_pyecvl_sources           clean repository containing PyECVL source code
 clean_libs_sources             clean repository containing libs source code
 clean_pylibs_sources           clean repository containing pylibs source code
 clean_sources                  clean repository containing source code
+clean_logs                     clean logs
 ```
 
 Edit the file `settings.conf` to customize your images (e.g., software revision, Docker registry, etc.)
