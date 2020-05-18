@@ -173,8 +173,9 @@ function run() {
   #export DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_PREFIX}_build${BUILD_NUMBER}"
   #export DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_TAG_EXTRA} ${NORMALIZED_BRANCH_NAME}_build${BUILD_NUMBER}"
 
-  # set branch
+  # set branch and revision
   export ${LIB_NAME}_BRANCH=${BRANCH_NAME}
+  export ${LIB_NAME}_REVISION=${REVISION}
 
   # log environment
   printenv
