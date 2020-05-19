@@ -8,7 +8,7 @@ LABEL website="https://github.com/deephealthproject/" \
       maintainer="marcoenrico.piras@crs4.it"
 
 # set cmake version
-ARG cmake_release="3.14.6"
+ARG cmake_release="3.17.2"
 
 # set OpenCV version
 ARG opencv_release="3.4.6"
