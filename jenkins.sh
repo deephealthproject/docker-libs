@@ -80,6 +80,7 @@ function help() {
   ${script_name} -v        prints the '${script_name}' version
 
   OPTIONS:
+    --target [CPU|GPU]                Set the build target (CPU or GPU; default= GPU)
     --clean-sources                   Remove library sources
     --clean-images                    Remove local Docker images
     --disable-cache                   Disable Docker cache
@@ -88,13 +89,13 @@ function help() {
     --disable-push                    Disable push of Docker images
     --disable-tests                   Disable tests of Docker images
     --disable-docker-login            Disable login on Docker registry
+    --debug                           Enable debug logs
 
   ENVIRONMENT requirements:
     * DOCKER_USER
     * DOCKER_PASSWORD
 
   ENVIRONMENT defaults:
-    * DOCKER_BASE_IMAGE_VERSION_TAG   => 0.2.0
     * DOCKER_LIBS_REPO                => https://github.com/deephealthproject/docker-libs.git
     * DOCKER_LIBS_BRANCH              => develop
     * DOCKER_REPOSITORY_OWNER         => dhealth
@@ -116,6 +117,7 @@ DISABLE_BUILD=0
 DISABLE_PUSH=0
 DISABLE_TESTS=0
 DISABLE_DOCKER_LOGIN=0
+BUILD_TARGET=GPU
 
 # get docker-libs repository
 function clone_docker_libs() {
@@ -173,8 +175,9 @@ function run() {
   #export DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_PREFIX}_build${BUILD_NUMBER}"
   #export DOCKER_IMAGE_TAG_EXTRA="${DOCKER_IMAGE_TAG_EXTRA} ${NORMALIZED_BRANCH_NAME}_build${BUILD_NUMBER}"
 
-  # set branch
+  # set branch and revision
   export ${LIB_NAME}_BRANCH=${BRANCH_NAME}
+  export ${LIB_NAME}_REVISION=${REVISION}
 
   # log environment
   printenv
@@ -257,6 +260,10 @@ do
         -h) help; exit 0 ;;
         -v) print_version; exit 0 ;;
 
+        --debug)
+          DEBUG=true
+          shift ;;
+
         --clean-sources)
           CLEAN_SOURCES=true
           shift ;;
@@ -289,6 +296,14 @@ do
           DISABLE_DOCKER_LOGIN=1
           shift ;;
 
+        --target)
+          if [[ "CPU GPU" =~ (^|[[:space:]])${2}($|[[:space:]]) ]]; then
+            BUILD_TARGET=$2 ;
+          else
+            usage_error "The target '$2' is not a valid target"
+          fi
+          shift 2 ;;
+
         *) # unknown option
           POSITIONAL+=("$opt") # save it in an array for later
           shift ;;
@@ -303,6 +318,7 @@ debug_log "docker-libs branch: ${DOCKER_LIBS_BRANCH}"
 debug_log "docker-libs revision: ${DOCKER_LIBS_VERSION}"
 debug_log "disable cache: ${DISABLE_CACHE}"
 debug_log "disable pull: ${DISABLE_PULL}"
+debug_log "build target: ${BUILD_TARGET}"
 
 #
 export DOCKER_LIBS_BRANCH
@@ -311,6 +327,7 @@ export CLEAN_IMAGES
 export CLEAN_SOURCES
 export DISABLE_CACHE
 export DISABLE_PULL
+export BUILD_TARGET
 
 # exec
 run
