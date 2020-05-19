@@ -25,7 +25,7 @@ RUN echo "\nBuilding ECVL library..." >&2 \
         -D ECVL_BUILD_EXAMPLES=ON \
         -D ECVL_BUILD_GUI=OFF \
         -D ECVL_WITH_OPENSLIDE=ON \
-        -D ECVL_DATASET_PARSER=ON \
+        -D ECVL_DATASET=ON \
         -D ECVL_WITH_DICOM=ON \
         -D ECVL_BUILD_EDDL=ON \
         -D ECVL_GPU=ON \
