@@ -321,13 +321,25 @@ help: ## Show help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 libraries_list:
-	@sort -u ${LIBRARIES_LOG}
+	@if [[ -f "${LIBRARIES_LOG}" ]]; then \
+		sort -u ${LIBRARIES_LOG} ; \
+	else \
+		echo "log file not found" ; \
+	fi
 
 images_list:
-	@sort -u ${IMAGES_LOG}
+	@if [[ -f "${IMAGES_LOG}" ]]; then \
+		sort -u ${IMAGES_LOG} ; \
+	else \
+		echo "log file not found" ; \
+	fi
 
 dependencies_list:
-	@sort -u ${DEPENCIES_LOG}
+	@if [[ -f "${DEPENDENCIES_LOG}" ]]; then \
+		sort -u ${DEPENDENCIES_LOG} ; \
+	else \
+		echo "log file not found" ; \
+	fi
 
 dependency_graph: ## make a dependency graph of the involved libraries
 	@echo "digraph {"  > ${DEPENDENCY_GRAPH_FILE} \
