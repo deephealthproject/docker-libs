@@ -23,6 +23,6 @@ printf "Copying nvidia environment from ${NvidiaImage}\n" >&2
 
 printf "FROM scratch\n"
 # We copy the entire environment except for TERM and HOSTNAME
-docker run -it --rm --entrypoint /usr/bin/env "${NvidiaImage}" | \
+docker run --rm --entrypoint /usr/bin/env "${NvidiaImage}" | \
   sed -n -e '/^TERM=/d; /^HOSTNAME=/d; s/^/ENV /p;'
 
