@@ -527,7 +527,7 @@ build_libs_toolkit: build_ecvl_toolkit ## Build 'libs-toolkit' image
 
 build_nvidia_scratch: ## Build a scratch image with only env variable required for the NVIDIA runtime 
 	cd libs \
-	&& ./gen-base-runtime.sh ${DOCKER_NVIDIA_RUNTIME_IMAGE} > nvidia-scratch.Dockerfile \
+	&& ./gen-nvidia-scratch-dockerfile.sh ${DOCKER_NVIDIA_RUNTIME_IMAGE} > nvidia-scratch.Dockerfile \
 	&& docker build -t nvidia-scratch -f nvidia-scratch.Dockerfile .
 
 _build_libs_base: _build_libs_base_toolkit build_nvidia_scratch
