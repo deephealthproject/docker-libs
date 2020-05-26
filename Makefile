@@ -154,7 +154,7 @@ DOCKER_LOGIN_DONE := $(or ${DOCKER_LOGIN_DONE},false)
 # Arguments to execute tests with Docker
 DOCKER_RUN := docker run -i --rm #-u 1000:1000
 ifneq (${GPU_RUNTIME},)
-	DOCKER_RUN := ${DOCKER_RUN} ${GPU_RUNTIME}
+	DOCKER_RUN := ${DOCKER_RUN} ${GPU_RUNTIME} -e GPU_RUNTIME="${GPU_RUNTIME}"
 endif
 
 define build_new_image
@@ -321,13 +321,25 @@ help: ## Show help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 libraries_list:
-	@sort -u ${LIBRARIES_LOG}
+	@if [[ -f "${LIBRARIES_LOG}" ]]; then \
+		sort -u ${LIBRARIES_LOG} ; \
+	else \
+		echo "log file not found" ; \
+	fi
 
 images_list:
-	@sort -u ${IMAGES_LOG}
+	@if [[ -f "${IMAGES_LOG}" ]]; then \
+		sort -u ${IMAGES_LOG} ; \
+	else \
+		echo "log file not found" ; \
+	fi
 
 dependencies_list:
-	@sort -u ${DEPENCIES_LOG}
+	@if [[ -f "${DEPENDENCIES_LOG}" ]]; then \
+		sort -u ${DEPENDENCIES_LOG} ; \
+	else \
+		echo "log file not found" ; \
+	fi
 
 dependency_graph: ## make a dependency graph of the involved libraries
 	@echo "digraph {"  > ${DEPENDENCY_GRAPH_FILE} \
@@ -513,7 +525,12 @@ build_libs_toolkit: build_ecvl_toolkit ## Build 'libs-toolkit' image
 
 ############# libs #############
 
-_build_libs_base: _build_libs_base_toolkit
+build_nvidia_scratch: ## Build a scratch image with only env variable required for the NVIDIA runtime 
+	cd libs \
+	&& ./gen-nvidia-scratch-dockerfile.sh ${DOCKER_NVIDIA_RUNTIME_IMAGE} > nvidia-scratch.Dockerfile \
+	&& docker build -t nvidia-scratch -f nvidia-scratch.Dockerfile .
+
+_build_libs_base: _build_libs_base_toolkit build_nvidia_scratch
 	$(if $(findstring $(BUILD_TARGET), GPU),\
 		$(call build_image,libs,libs-base,${DOCKER_BASE_IMAGE_VERSION_TAG},\
 			--label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_NVIDIA_RUNTIME_IMAGE),libs-base-toolkit:$(DOCKER_BASE_IMAGE_VERSION_TAG),,${build_target_opts})\
@@ -731,7 +748,7 @@ define test_image
 	done ; \
 	printf "\n\n" ; \
 	$(call check_image,${image}) ; \
-	cat ${test_script} | ${DOCKER_RUN} -e GPU_RUNTIME="${GPU_RUNTIME}" $${volumes} ${image} /bin/bash ; \
+	cat ${test_script} | ${DOCKER_RUN} $${volumes} ${image} /bin/bash ; \
 	exit_code=$$? ; \
 	for cname in $${cnames}; do \
 	printf "\nRemoving temp container instance '$${cname}'... " >&2; \
@@ -992,7 +1009,7 @@ clean: clean_images clean_sources clean_logs
 	pyecvl_folder _pyeddl_shallow_clone _pyecvl_first_level_dependencies _pyecvl_second_level_dependencies \
 	apply_pyeddl_patches apply_pyecvl_patches \
 	clean clean_libs clean_pylibs apply_libs_patches \
-	build _build \
+	build _build build_nvidia_scratch \
 	_build_libs_base_toolkit \
 	build_eddl_toolkit build_ecvl_toolkit build_libs_toolkit \
 	_build_libs_base build_eddl build_ecvl build_libs \

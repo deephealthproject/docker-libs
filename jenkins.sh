@@ -239,14 +239,16 @@ function run() {
   fi
 
   # print images
-  log "\n\nList of Docker images..."
-  log "*************************************************************************************************************"
-  make images_list
+  if [[ ${DISABLE_BUILD} == 0 ]]; then
+    log "\n\nList of Docker images..."
+    log "*************************************************************************************************************"
+    make images_list
 
-  # print libraries
-  log "\n\nList of Libraries..."
-  log "*************************************************************************************************************"
-  make libraries_list
+    # print libraries
+    log "\n\nList of Libraries..."
+    log "*************************************************************************************************************"
+    make libraries_list
+  fi
 }
 
 # parse arguments

@@ -22,39 +22,20 @@ COPY --from=toolkit /usr/local/src/eddl/build/install_manifest.txt /tmp/local/in
 
 # merge existing system directories with those containing libraries
 RUN cd /tmp/local && sed -e 's+/usr/local/++g' /tmp/local/install_manifest.txt | \
-    while IFS= read -r line; do echo ">>> $line" ; rsync --relative "${line}" "/usr/local/" || exit ; done
+    while IFS= read -r line; do echo ">>> $line" ; rsync --relative "${line}" "/usr/local/" || exit ; done \
+    && rm -rf /tmp/*
 
 ######################
 #### TARGET Stage ####
 ######################
-FROM scratch AS libs.eddl
+FROM nvidia-scratch AS libs.eddl
 
 # Set metadata
 LABEL website="https://github.com/deephealthproject" \
       description="DeepHealth European Distributed Deep Learning Library" \
       software="deephealth-eddl"
 
-COPY --from=prepare_install /bin /bin
-COPY --from=prepare_install /boot /boot
-COPY --from=prepare_install /dev /dev
-COPY --from=prepare_install /etc /etc
-COPY --from=prepare_install /home /home
-COPY --from=prepare_install /lib /lib
-COPY --from=prepare_install /lib64 /lib64
-COPY --from=prepare_install /media /media
-COPY --from=prepare_install /mnt /mnt
-COPY --from=prepare_install /opt /opt
-COPY --from=prepare_install /proc /proc
-COPY --from=prepare_install /root /root
-COPY --from=prepare_install /run /run
-COPY --from=prepare_install /sbin /sbin
-COPY --from=prepare_install /srv /srv
-COPY --from=prepare_install /sys /sys
-COPY --from=prepare_install /usr /usr
-COPY --from=prepare_install /var /var
-
-# create the /tmp folder with right permissions
-RUN mkdir -p /tmp && chmod 1777 /tmp
+COPY --from=prepare_install / /
 
 # default cmd
 CMD ["/bin/bash"]
