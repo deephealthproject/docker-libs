@@ -3,5 +3,6 @@
 .*.log
 libs/eddl
 libs/ecvl
+libs/nvidia-scratch.Dockerfile
 pylibs/pyeddl
 pylibs/pyecvl
