@@ -525,7 +525,12 @@ build_libs_toolkit: build_ecvl_toolkit ## Build 'libs-toolkit' image
 
 ############# libs #############
 
-_build_libs_base: _build_libs_base_toolkit
+build_nvidia_scratch: ## Build a scratch image with only env variable required for the NVIDIA runtime 
+	cd libs \
+	&& ./gen-base-runtime.sh ${DOCKER_NVIDIA_RUNTIME_IMAGE} > nvidia-scratch.Dockerfile \
+	&& docker build -t nvidia-scratch -f nvidia-scratch.Dockerfile .
+
+_build_libs_base: _build_libs_base_toolkit build_nvidia_scratch
 	$(if $(findstring $(BUILD_TARGET), GPU),\
 		$(call build_image,libs,libs-base,${DOCKER_BASE_IMAGE_VERSION_TAG},\
 			--label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_NVIDIA_RUNTIME_IMAGE),libs-base-toolkit:$(DOCKER_BASE_IMAGE_VERSION_TAG),,${build_target_opts})\
@@ -1004,7 +1009,7 @@ clean: clean_images clean_sources clean_logs
 	pyecvl_folder _pyeddl_shallow_clone _pyecvl_first_level_dependencies _pyecvl_second_level_dependencies \
 	apply_pyeddl_patches apply_pyecvl_patches \
 	clean clean_libs clean_pylibs apply_libs_patches \
-	build _build \
+	build _build build_nvidia_scratch \
 	_build_libs_base_toolkit \
 	build_eddl_toolkit build_ecvl_toolkit build_libs_toolkit \
 	_build_libs_base build_eddl build_ecvl build_libs \
