@@ -213,7 +213,7 @@ function run() {
   # make tests
   if [[ ${DISABLE_TESTS} == 0 ]]; then 
     if [[ -n ${lib_suffix} ]]; then
-      #make test${lib_suffix} ;
+      make test${lib_suffix} ;
       make test${lib_suffix}_toolkit ;
     else
       make test ;
@@ -231,7 +231,7 @@ function run() {
       export DOCKER_LOGIN_DONE="true"
     fi
     if [[ -n ${lib_suffix} ]]; then
-      #make push${lib_suffix} ;
+      make push${lib_suffix} ;
       make push${lib_suffix}_toolkit ;
     else
       make push ;
