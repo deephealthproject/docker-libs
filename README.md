@@ -72,6 +72,7 @@ corresponding toolkit image.**
 ### Summary of DeepHealth Docker images
 
 | Runtime image | Toolkit image | Library tracked | Dependencies included |
+|---------------|---------------|---------------|---------------|
 | dhealth/eddl | dhealth/eddl-toolkit | EDDLL | |
 | dhealth/ecvl | dhealth/ecvl-toolkit | ECVL | EDDLL |
 | dhealth/pyeddl | dhealth/pyeddl-toolkit | PyEDDLL | EDDLL |
