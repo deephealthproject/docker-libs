@@ -22,6 +22,7 @@ RUN echo "\nBuilding ECVL library..." >&2 \
     && mkdir build \
     && cd build \
     && cmake \
+        -D ECVL_SHARED=ON \
         -D ECVL_BUILD_EXAMPLES=ON \
         -D ECVL_BUILD_GUI=OFF \
         -D ECVL_WITH_OPENSLIDE=ON \
