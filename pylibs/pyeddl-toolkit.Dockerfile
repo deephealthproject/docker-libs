@@ -16,7 +16,7 @@ ARG pyeddl_src_target="/usr/local/src/pyeddl"
 # Run git submodule update [--init] --recursive first
 COPY ${pyeddl_src_origin} ${pyeddl_src_target}
 
-# Update path to dynamic/shared libreries
+# Update path to dynamic/shared
 ENV LD_LIBRARY_PATH="/usr/local/cuda-10.1/targets/x86_64-linux/lib:${LD_LIBRARY_PATH}"
 
 # link the cudart, cublas and curand libraries on "standard" system locations
@@ -28,6 +28,6 @@ RUN /bin/bash -c "if [[ \"${BUILD_TARGET}\" == \"GPU\" ]]; then \
     && rm -rf third_party/eddl \
     && ln -s ${eddl_src} third_party/ \
     && echo "\nInstalling pyeddl module..." >&2 \
-    && python3 setup.py build_ext -L /usr/local/cuda-10.1/targets/x86_64-linux/lib && \
+    && python3 setup.py build_ext -L /usr/local/cuda-10.1/targets/x86_64-linux/lib \
     && python3 setup.py install --record install.log \
     && rm -rf build/temp.*
