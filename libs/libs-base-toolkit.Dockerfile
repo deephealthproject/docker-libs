@@ -11,7 +11,7 @@ LABEL website="https://github.com/deephealthproject/" \
 ARG cmake_release="3.18.0"
 
 # set OpenCV version
-ARG opencv_release="3.4.9"
+ARG opencv_release="3.4.10"
 ENV OPENCV_RELEASE ${opencv_release}
 ENV OPENCV_INSTALL_MANIFEST "/usr/local/opencv/install_manifest.txt"
 
