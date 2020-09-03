@@ -29,14 +29,14 @@ else
     # replace `bash examples/NN/1_MNIST/run_all_fast.sh`
     # with explicit call the example passing the "--small" when allowed
     python3 examples/NN/1_MNIST/mnist_auto_encoder.py --small --gpu --epochs 1
-    python3 examples/NN/1_MNIST/mnist_conv.py --gpu --epochs 1
-    python3 examples/NN/1_MNIST/mnist_losses.py --gpu --epochs 1
-    python3 examples/NN/1_MNIST/mnist_mlp_da.py --gpu --epochs 1
-    python3 examples/NN/1_MNIST/mnist_mlp_initializers.py --gpu --epochs 1
-    python3 examples/NN/1_MNIST/mnist_mlp.py --gpu --epochs 1
-    python3 examples/NN/1_MNIST/mnist_mlp_regularizers.py --gpu --epochs 1
-    python3 examples/NN/1_MNIST/mnist_mlp_train_batch.py --gpu --epochs 1
-    python3 examples/NN/1_MNIST/mnist_rnn.py --gpu --epochs 1
+    python3 examples/NN/1_MNIST/mnist_conv.py --gpu --small --epochs 1
+    python3 examples/NN/1_MNIST/mnist_losses.py --gpu --small --epochs 1
+    python3 examples/NN/1_MNIST/mnist_mlp_da.py --gpu --small --epochs 1
+    python3 examples/NN/1_MNIST/mnist_mlp_initializers.py --gpu --small  --epochs 1
+    python3 examples/NN/1_MNIST/mnist_mlp.py --gpu --small --epochs 1
+    python3 examples/NN/1_MNIST/mnist_mlp_regularizers.py --gpu --small --epochs 1
+    python3 examples/NN/1_MNIST/mnist_mlp_train_batch.py --gpu --small --epochs 1
+    python3 examples/NN/1_MNIST/mnist_rnn.py --gpu --small --epochs 1
     bash examples/NN/py_loss_metric/run_all_fast.sh
     bash examples/onnx/run_all_fast.sh
 fi
