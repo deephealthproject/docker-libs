@@ -14,4 +14,6 @@ RUN \
    && apt-get clean \
    && rm -rf /var/lib/apt/lists/* \
    && python3 -m pip install --upgrade --no-cache-dir \
-      setuptools pip numpy pybind11 pytest 
+      pip setuptools \
+   && python3 -m pip install --upgrade --no-cache-dir \
+      numpy pybind11 pytest
