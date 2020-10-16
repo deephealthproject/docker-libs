@@ -29,6 +29,7 @@ else
     wget -q https://www.dropbox.com/s/7psutd4m4wna2d5/mnist_tsX.bin
     wget -q https://www.dropbox.com/s/q0tnbjvaenb4tjs/mnist_tsY.bin
     sed -i '/mnist_conv$/d' examples/NN/1_MNIST/run_all_fast.sh
+    sed -i '/mnist_losses$/d' examples/NN/1_MNIST/run_all_fast.sh
     bash examples/NN/1_MNIST/run_all_fast.sh
     rm -fv mnist_*.bin
 fi
