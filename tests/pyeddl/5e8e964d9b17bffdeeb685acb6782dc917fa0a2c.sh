@@ -28,11 +28,7 @@ else
     wget -q https://www.dropbox.com/s/m82hmmrg46kcugp/mnist_trY.bin
     wget -q https://www.dropbox.com/s/7psutd4m4wna2d5/mnist_tsX.bin
     wget -q https://www.dropbox.com/s/q0tnbjvaenb4tjs/mnist_tsY.bin
-    # bash examples/NN/1_MNIST/run_all_fast.sh
-    # sed -i 's|CS_GPU()|CS_GPU(mem="low_mem")|' examples/NN/1_MNIST/mnist_conv.py
-    # python3 examples/NN/1_MNIST/mnist_conv.py --epochs 1 --gpu --small
-    python3 examples/NN/1_MNIST/mnist_auto_encoder.py --epochs 1 --gpu --small
-    python3 examples/NN/1_MNIST/mnist_auto_encoder_merging.py --epochs 1 --gpu --small
-    python3 examples/NN/1_MNIST/mnist_conv1D.py --epochs 1 --gpu --small
+    sed -i '/mnist_conv$/d' examples/NN/1_MNIST/run_all_fast.sh
+    bash examples/NN/1_MNIST/run_all_fast.sh
     rm -fv mnist_*.bin
 fi
