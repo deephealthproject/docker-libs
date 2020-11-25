@@ -14,7 +14,6 @@ pytest tests
 
 if [ -z "${GPU_RUNTIME}" ]; then
     echo 'Running CPU examples'
-    python3 examples/Tensor/array_tensor_save.py
     wget -q https://www.dropbox.com/s/khrb3th2z6owd9t/mnist_trX.bin
     wget -q https://www.dropbox.com/s/m82hmmrg46kcugp/mnist_trY.bin
     wget -q https://www.dropbox.com/s/7psutd4m4wna2d5/mnist_tsX.bin
@@ -23,7 +22,6 @@ if [ -z "${GPU_RUNTIME}" ]; then
     rm -fv mnist_*.bin
 else
     echo 'Running GPU examples'
-    python3 examples/Tensor/array_tensor_save.py
     wget -q https://www.dropbox.com/s/khrb3th2z6owd9t/mnist_trX.bin
     wget -q https://www.dropbox.com/s/m82hmmrg46kcugp/mnist_trY.bin
     wget -q https://www.dropbox.com/s/7psutd4m4wna2d5/mnist_tsX.bin

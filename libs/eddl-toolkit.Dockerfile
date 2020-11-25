@@ -23,10 +23,11 @@ RUN echo "\nBuilding EDDL library..." >&2 \
     && cd build \
     && cmake \
         -D BUILD_TARGET=${BUILD_TARGET} \
-        -D DBUILD_EXAMPLES=ON \
+        -D BUILD_EXAMPLES=OFF \
         -D BUILD_TESTS=ON \
-        -D BUILD_SHARED_LIB=ON \
+        -D BUILD_SHARED_LIBS=ON \
         -D BUILD_PROTOBUF=ON \
+        -D BUILD_HPC=OFF \
         .. \
     && make -j$(grep -c ^processor /proc/cpuinfo) \
     && echo "\n Installing EDDL library..." >&2 \
