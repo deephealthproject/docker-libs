@@ -31,7 +31,7 @@ RUN echo "\nBuilding ECVL library..." >&2 \
         -D ECVL_BUILD_EDDL=ON \
         -D ECVL_GPU=ON \
         .. \
-    && make -j$(grep -c ^processor /proc/cpuinfo) \
+    && make -j$(( $(nproc) < 24 ? $(nproc) : 24 )) \
     && echo "\n Installing ECVL library..." >&2 \
     && make install \
     && ldconfig

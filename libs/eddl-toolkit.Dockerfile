@@ -29,7 +29,7 @@ RUN echo "\nBuilding EDDL library..." >&2 \
         -D BUILD_PROTOBUF=ON \
         -D BUILD_HPC=OFF \
         .. \
-    && make -j$(grep -c ^processor /proc/cpuinfo) \
+    && make -j$(( $(nproc) < 24 ? $(nproc) : 24 )) \
     && echo "\n Installing EDDL library..." >&2 \
     && make install \
     && ldconfig
