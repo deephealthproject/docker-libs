@@ -70,7 +70,7 @@ RUN \
     && cd build \
     && cmake -D CMAKE_BUILD_TYPE=RELEASE \
              -D OPENCV_GENERATE_PKGCONFIG=ON .. \
-    && make -j$(nproc) \
+    && make -j$(( $(nproc) < 24 ? $(nproc) : 24 )) \
     && make install \
     && mkdir -p $(dirname ${OPENCV_INSTALL_MANIFEST}) \
     && cp $(basename ${OPENCV_INSTALL_MANIFEST}) $(dirname ${OPENCV_INSTALL_MANIFEST})/ \
@@ -99,7 +99,7 @@ RUN \
     && rm protobuf-all-${protobuf_release}.tar.gz \
     && cd protobuf-${protobuf_release}/ \
     && ./configure \
-    && make -j$(nproc) \
+    && make -j$(( $(nproc) < 24 ? $(nproc) : 24 )) \
     && make install \
     && rm -rf /tmp/protobuf-${protobuf_release} \
     && echo "\n > Installing GTest library..." >&2 \
