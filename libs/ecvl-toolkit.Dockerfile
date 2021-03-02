@@ -30,6 +30,8 @@ RUN echo "\nBuilding ECVL library..." >&2 \
         -D ECVL_WITH_DICOM=ON \
         -D ECVL_BUILD_EDDL=ON \
         -D ECVL_GPU=ON \
+        -D CMAKE_CUDA_STANDARD=14 \
+        -D CMAKE_CUDA_STANDARD_REQUIRED=TRUE \
         .. \
     && make -j$(( $(nproc) < 24 ? $(nproc) : 24 )) \
     && echo "\n Installing ECVL library..." >&2 \
