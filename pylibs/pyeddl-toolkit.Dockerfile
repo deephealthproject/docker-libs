@@ -20,6 +20,8 @@ COPY ${pyeddl_src_origin} ${pyeddl_src_target}
 ENV LD_LIBRARY_PATH="/usr/local/cuda-10.1/targets/x86_64-linux/lib:${LD_LIBRARY_PATH}"
 
 # link the cudart, cublas and curand libraries on "standard" system locations
+# FIXME: EDDL_WITH_CUDA should also be exported for CUDNN build target
+#   however, it seems to work even though it's not being exported
 RUN /bin/bash -c "if [[ \"${BUILD_TARGET}\" == \"GPU\" ]]; then \
       export EDDL_WITH_CUDA=\"true\" ; \
     fi" \

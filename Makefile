@@ -76,15 +76,22 @@ DOCKER_UBUNTU_IMAGE := $(or ${DOCKER_UBUNTU_IMAGE},ubuntu:18.04)
 DOCKER_NVIDIA_DEVELOP_IMAGE := $(or ${DOCKER_NVIDIA_DEVELOP_IMAGE},nvidia/cuda:10.1-devel-ubuntu18.04)
 DOCKER_NVIDIA_RUNTIME_IMAGE := $(or ${DOCKER_NVIDIA_RUNTIME_IMAGE},nvidia/cuda:10.1-runtime-ubuntu18.04)
 DOCKER_CUDNN_DEVELOP_IMAGE := $(or ${DOCKER_CUDNN_DEVELOP_IMAGE},nvidia/cuda:10.1-cudnn8-devel-ubuntu18.04)
-DOCKER_CUDNN_RUNTIME_IMAGE := $(or ${DOCKER_CUDNN_RUNTIME_IMAGE},nvidia/cuda:10.1-runtime-ubuntu18.04)
+DOCKER_CUDNN_RUNTIME_IMAGE := $(or ${DOCKER_CUDNN_RUNTIME_IMAGE},nvidia/cuda:10.1-cudnn8-runtime-ubuntu18.04)
+
+ifeq ($(BUILD_TARGET), CUDNN)
+	DOCKER_RUNTIME_IMAGE := $(DOCKER_CUDNN_RUNTIME_IMAGE)
+else
+	DOCKER_RUNTIME_IMAGE := $(DOCKER_NVIDIA_RUNTIME_IMAGE)
+endif
 
 # extract name and tag of nvidia images
 DOCKER_UBUNTU_IMAGE_NAME := $(shell echo ${DOCKER_UBUNTU_IMAGE} | sed -e 's+:.*++')
 DOCKER_UBUNTU_IMAGE_TAG := $(shell echo ${DOCKER_UBUNTU_IMAGE} | sed -E 's@.+:(.+)@\1@')
 DOCKER_NVIDIA_DEVELOP_IMAGE_NAME := $(shell echo ${DOCKER_NVIDIA_DEVELOP_IMAGE} | sed -e 's+:.*++')
 DOCKER_NVIDIA_DEVELOP_IMAGE_TAG := $(shell echo ${DOCKER_NVIDIA_DEVELOP_IMAGE} | sed -E 's@.+:(.+)@\1@')
-DOCKER_NVIDIA_RUNTIME_IMAGE_NAME := $(shell echo ${DOCKER_NVIDIA_RUNTIME_IMAGE} | sed -e 's+:.*++')
-DOCKER_NVIDIA_RUNTIME_IMAGE_TAG := $(shell echo ${DOCKER_NVIDIA_RUNTIME_IMAGE} | sed -E 's@.+:(.+)@\1@')
+DOCKER_RUNTIME_IMAGE_NAME := $(shell echo ${DOCKER_RUNTIME_IMAGE} | sed -e 's+:.*++')
+DOCKER_RUNTIME_IMAGE_TAG := $(shell echo ${DOCKER_RUNTIME_IMAGE} | sed -E 's@.+:(.+)@\1@')
+
 
 DOCKER_BASE_IMAGE_VERSION_TAG := $(CONTAINER_VERSION)$(DOCKER_IMAGE_TAG_SUFFIX)
 EDDL_IMAGE_VERSION_TAG := $(or ${EDDL_IMAGE_VERSION_TAG},${EDDL_REVISION})
@@ -533,20 +540,20 @@ build_libs_toolkit: build_ecvl_toolkit ## Build 'libs-toolkit' image
 
 ############# libs #############
 
-build_nvidia_scratch: ## Build a scratch image with only env variable required for the NVIDIA runtime 
+build_nvidia_scratch: ## Build a scratch image with only env variable required for the NVIDIA runtime
 	cd libs \
-	&& ./gen-nvidia-scratch-dockerfile.sh ${DOCKER_NVIDIA_RUNTIME_IMAGE} > nvidia-scratch.Dockerfile \
+	&& ./gen-nvidia-scratch-dockerfile.sh ${DOCKER_RUNTIME_IMAGE} > nvidia-scratch.Dockerfile \
 	&& docker build -t nvidia-scratch -f nvidia-scratch.Dockerfile .
 
+
 _build_libs_base: _build_libs_base_toolkit build_nvidia_scratch
-	$(if $(findstring $(BUILD_TARGET), GPU),\
-		$(call build_image,libs,libs-base,${DOCKER_BASE_IMAGE_VERSION_TAG},\
-			--label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_NVIDIA_RUNTIME_IMAGE),libs-base-toolkit:$(DOCKER_BASE_IMAGE_VERSION_TAG),,${build_target_opts})\
-		$(call log_image_revision,$(DOCKER_NVIDIA_RUNTIME_IMAGE_NAME),$(DOCKER_NVIDIA_RUNTIME_IMAGE_TAG)),\
-		$(call build_image,libs,libs-base,${DOCKER_BASE_IMAGE_VERSION_TAG},\
-			--label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_UBUNTU_IMAGE),libs-base-toolkit:$(DOCKER_BASE_IMAGE_VERSION_TAG),,${build_target_opts})\
-		$(call log_image_revision,$(DOCKER_UBUNTU_IMAGE_NAME),$(DOCKER_UBUNTU_IMAGE_TAG))\
-	)
+ifeq ($(BUILD_TARGET), CPU)
+	$(call build_image,libs,libs-base,${DOCKER_BASE_IMAGE_VERSION_TAG}, --label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_UBUNTU_IMAGE),libs-base-toolkit:$(DOCKER_BASE_IMAGE_VERSION_TAG),,${build_target_opts})
+	$(call log_image_revision,$(DOCKER_UBUNTU_IMAGE_NAME),$(DOCKER_UBUNTU_IMAGE_TAG))
+else
+	$(call build_image,libs,libs-base,${DOCKER_BASE_IMAGE_VERSION_TAG}, --label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_RUNTIME_IMAGE),libs-base-toolkit:$(DOCKER_BASE_IMAGE_VERSION_TAG),,${build_target_opts})
+	$(call log_image_revision,$(DOCKER_RUNTIME_IMAGE_NAME),$(DOCKER_RUNTIME_IMAGE_TAG))
+endif
 
 build_eddl: _build_libs_base build_eddl_toolkit ## Build 'eddl' image
 	$(call build_image,libs,eddl,${EDDL_IMAGE_VERSION_TAG},\
@@ -780,7 +787,7 @@ test_eddl: eddl_folder ## Test 'eddl' image
 		$(shell python3 tests/inventory.py ${EDDL_LIB_PATH} tests/eddl),\
 		eddl-toolkit:${EDDL_IMAGE_VERSION_TAG}=/usr/local/src/eddl \
 	)
-	
+
 test_eddl_toolkit: eddl_folder ## Test 'eddl-toolkit' image
 	$(call set_library_revision,libs,eddl)
 	@$(call test_image,eddl-toolkit:${EDDL_IMAGE_VERSION_TAG},\
