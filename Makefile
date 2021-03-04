@@ -75,6 +75,8 @@ DOCKER_BASE_IMAGE_SKIP_PULL := $(or ${DOCKER_BASE_IMAGE_SKIP_PULL},true)
 DOCKER_UBUNTU_IMAGE := $(or ${DOCKER_UBUNTU_IMAGE},ubuntu:18.04)
 DOCKER_NVIDIA_DEVELOP_IMAGE := $(or ${DOCKER_NVIDIA_DEVELOP_IMAGE},nvidia/cuda:10.1-devel-ubuntu18.04)
 DOCKER_NVIDIA_RUNTIME_IMAGE := $(or ${DOCKER_NVIDIA_RUNTIME_IMAGE},nvidia/cuda:10.1-runtime-ubuntu18.04)
+DOCKER_CUDNN_DEVELOP_IMAGE := $(or ${DOCKER_CUDNN_DEVELOP_IMAGE},nvidia/cuda:10.1-cudnn8-devel-ubuntu18.04)
+DOCKER_CUDNN_RUNTIME_IMAGE := $(or ${DOCKER_CUDNN_RUNTIME_IMAGE},nvidia/cuda:10.1-runtime-ubuntu18.04)
 
 # extract name and tag of nvidia images
 DOCKER_UBUNTU_IMAGE_NAME := $(shell echo ${DOCKER_UBUNTU_IMAGE} | sed -e 's+:.*++')
@@ -487,14 +489,20 @@ _build: \
 ############# libs-toolkit #############
 
 _build_libs_base_toolkit:
-	$(if $(findstring $(BUILD_TARGET), GPU),\
-		echo "Building for GPU"; \
-		$(call build_image,libs,libs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG}, --label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_NVIDIA_DEVELOP_IMAGE),,,${build_target_opts}) \
-		$(call log_image_revision,$(DOCKER_NVIDIA_DEVELOP_IMAGE_NAME),$(DOCKER_NVIDIA_DEVELOP_IMAGE_TAG)),\
-		echo "Building for CPU"; \
-		$(call build_image,libs,libs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG}, --label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_UBUNTU_IMAGE),,,${build_target_opts}) \
-		$(call log_image_revision,$(DOCKER_UBUNTU_IMAGE_NAME),$(DOCKER_UBUNTU_IMAGE_TAG)) \
-	)
+ifeq ($(BUILD_TARGET), GPU)
+	echo "Building for GPU"
+	$(call build_image,libs,libs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG}, --label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_NVIDIA_DEVELOP_IMAGE),,,${build_target_opts})
+	$(call log_image_revision,$(DOCKER_NVIDIA_DEVELOP_IMAGE_NAME),$(DOCKER_NVIDIA_DEVELOP_IMAGE_TAG))
+else ifeq ($(BUILD_TARGET), CUDNN)
+	echo "Building for CUDNN"
+	$(call build_image,libs,libs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG}, --label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_CUDNN_DEVELOP_IMAGE),,,${build_target_opts})
+	$(call log_image_revision,$(DOCKER_CUDNN_DEVELOP_IMAGE_NAME),$(DOCKER_CUDNN_DEVELOP_IMAGE_TAG))
+else
+	echo "Building for CPU"
+	$(call build_image,libs,libs-base-toolkit,${DOCKER_BASE_IMAGE_VERSION_TAG}, --label CONTAINER_VERSION=$(CONTAINER_VERSION),$(DOCKER_UBUNTU_IMAGE),,,${build_target_opts})
+	$(call log_image_revision,$(DOCKER_UBUNTU_IMAGE_NAME),$(DOCKER_UBUNTU_IMAGE_TAG))
+endif
+
 
 build_eddl_toolkit: eddl_folder _build_libs_base_toolkit apply_pyeddl_patches ## Build 'eddl-toolkit' image
 	$(call build_image,libs,eddl-toolkit,${EDDL_IMAGE_VERSION_TAG},\
