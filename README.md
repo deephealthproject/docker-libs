@@ -200,4 +200,3 @@ clean_logs                     clean logs
 ```
 
 Edit the file `settings.conf` to customize your images (e.g., software revision, Docker registry, etc.)
-
