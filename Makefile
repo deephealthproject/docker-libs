@@ -19,7 +19,7 @@ endif
 # date.time as build number
 BUILD_NUMBER := $(or ${BUILD_NUMBER},$(shell date '+%Y%m%d.%H%M%S'))
 
-# set build target: (CPU, GPU)
+# set build target: (CPU, GPU, CUDNN)
 BUILD_TARGET := $(or $(BUILD_TARGET),CPU)
 build_target_opts := --build-arg BUILD_TARGET=$(BUILD_TARGET)
 
@@ -298,7 +298,7 @@ define set_library_revision
 	$(eval lib := $(shell echo $(2) | tr a-z A-Z))
 	$(eval ${lib}_REVISION := $(call get_revision,$(1)/$(2)))
 	$(eval $(lib)_TAG = $(call get_tag,$(1)/$(2)))
-	$(eval ${lib}_IMAGE_VERSION_TAG = $(or $(filter %-cpu %-gpu,$(${lib}_IMAGE_VERSION_TAG)),$(or ${${lib}_IMAGE_VERSION_TAG},${${lib}_TAG},${${lib}_REVISION})$(DOCKER_IMAGE_TAG_SUFFIX)))
+	$(eval ${lib}_IMAGE_VERSION_TAG = $(or $(filter %-cpu %-gpu %-cudnn,$(${lib}_IMAGE_VERSION_TAG)),$(or ${${lib}_IMAGE_VERSION_TAG},${${lib}_TAG},${${lib}_REVISION})$(DOCKER_IMAGE_TAG_SUFFIX)))
 	@echo "${lib} rev: ${${lib}_REVISION} ${${lib}_TAG} (image-tag: ${${lib}_IMAGE_VERSION_TAG})"
 endef
 
