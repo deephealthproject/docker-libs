@@ -20,7 +20,7 @@ endif
 BUILD_NUMBER := $(or ${BUILD_NUMBER},$(shell date '+%Y%m%d.%H%M%S'))
 
 # set build target: (CPU, GPU, CUDNN)
-BUILD_TARGET := $(or $(BUILD_TARGET),CPU)
+BUILD_TARGET := $(or $(BUILD_TARGET), GPU)
 build_target_opts := --build-arg BUILD_TARGET=$(BUILD_TARGET)
 
 # log file with dependencies
