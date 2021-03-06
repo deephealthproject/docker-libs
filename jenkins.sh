@@ -80,7 +80,7 @@ function help() {
   ${script_name} -v        prints the '${script_name}' version
 
   OPTIONS:
-    --target [CPU|GPU]                Set the build target (CPU or GPU; default= GPU)
+    --target [CPU|GPU|CUDNN]          Set the build target (CPU, GPU or CUDNN; default= GPU)
     --clean-sources                   Remove library sources
     --clean-images                    Remove local Docker images
     --disable-cache                   Disable Docker cache
@@ -299,7 +299,7 @@ do
           shift ;;
 
         --target)
-          if [[ "CPU GPU" =~ (^|[[:space:]])${2}($|[[:space:]]) ]]; then
+          if [[ "CPU GPU CUDNN" =~ (^|[[:space:]])${2}($|[[:space:]]) ]]; then
             BUILD_TARGET=$2 ;
           else
             usage_error "The target '$2' is not a valid target"

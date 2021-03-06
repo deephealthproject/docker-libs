@@ -17,6 +17,7 @@ ENV ECVL_SRC ${ecvl_src_target}
 COPY ${ecvl_src_origin} ${ECVL_SRC}
 
 # Build and install ECVL library
+# FIXME: ECVL_GPU should be ON only when ${BUILD_TARGET} is not CPU
 RUN echo "\nBuilding ECVL library..." >&2 \
     && cd ${ECVL_SRC} \
     && mkdir build \
