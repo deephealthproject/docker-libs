@@ -19,7 +19,6 @@ ENV OPENCV_INSTALL_MANIFEST "/usr/local/opencv/install_manifest.txt"
 ARG eigen_release="3.3.7"
 ENV EIGEN_RELEASE ${eigen_release}
 ENV EIGEN_INSTALL_MANIFEST "/usr/local/eigen/install_manifest.txt"
-ENV CPATH="/usr/local/include/eigen3:${CPATH}"
 
 # set ProtoBuf version
 ARG protobuf_release="3.11.4"
@@ -112,3 +111,5 @@ RUN \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && ldconfig
+
+ENV CPATH="/usr/local/include/eigen3:/usr/include/openslide:${CPATH}"
