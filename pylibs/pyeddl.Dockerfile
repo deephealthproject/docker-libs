@@ -23,9 +23,9 @@ LABEL website="https://github.com/deephealthproject/" \
 
 # link the cudart, cublas and curand libraries on "standard" system locations
 RUN /bin/bash -c "if [[ \"${BUILD_TARGET}\" == \"GPU\" ]]; then \
-        ln -s /usr/local/cuda-10.1/targets/x86_64-linux/lib/libcudart.so /usr/lib/ \
-        && ln -s /usr/local/cuda-10.1/targets/x86_64-linux/lib/libcurand.so /usr/lib/ \
-        && ln -s /usr/local/cuda-10.1/targets/x86_64-linux/lib/libcublas.so /usr/lib/ ; \
+        ln -s /usr/local/cuda-11.3/targets/x86_64-linux/lib/libcudart.so /usr/lib/ \
+        && ln -s /usr/local/cuda-11.3/targets/x86_64-linux/lib/libcurand.so /usr/lib/ \
+        && ln -s /usr/local/cuda-11.3/targets/x86_64-linux/lib/libcublas.so /usr/lib/ ; \
     fi"
 
 # Run git submodule update [--init] --recursive first
